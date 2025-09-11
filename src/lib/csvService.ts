@@ -113,11 +113,11 @@ class CSVService {
     
     // Add default admin accounts if not found in CSV
     const defaultAdmins = [
-      { admin_id: '1', username: 'super_admin', password: 'Super@Admin123', admin_type: 'super_admin', name: 'Super Administrator' },
-      { admin_id: '2', username: 'admin', password: 'Admin@Varaha', admin_type: 'admin', name: 'System Administrator' },
-      { admin_id: '3', username: 'reception', password: 'Admin@321', admin_type: 'reception', name: 'Reception Desk' },
-      { admin_id: '4', username: 'doctor', password: 'Admin@321', admin_type: 'doctor', name: 'Dr. Medical Officer' },
-      { admin_id: '5', username: 'console', password: 'Admin@321', admin_type: 'console', name: 'Console Operator' }
+      { admin_id: '1', username: 'superadmin', password: 'admin123', admin_type: 'superadmin', name: 'Super Administrator' },
+      { admin_id: '2', username: 'admin', password: 'admin123', admin_type: 'admin', name: 'System Administrator' },
+      { admin_id: '3', username: 'reception', password: 'admin123', admin_type: 'reception', name: 'Reception Desk' },
+      { admin_id: '4', username: 'doctor', password: 'admin123', admin_type: 'doctor', name: 'Dr. Medical Officer' },
+      { admin_id: '5', username: 'console', password: 'admin123', admin_type: 'console', name: 'Console Operator' }
     ];
     
     return admins.length > 0 ? admins : defaultAdmins;

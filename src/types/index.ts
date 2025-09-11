@@ -55,8 +55,38 @@ export interface User {
   id?: number;
   username: string;
   password?: string;
-  admin_type: 'admin' | 'superadmin' | 'doctor' | 'nurse';
+  admin_type: 'admin' | 'superadmin' | 'doctor' | 'nurse' | 'console' | 'reception';
   hospital_id?: number;
+}
+
+export interface ReportData {
+  id?: number;
+  patient_name: string;
+  cro: string;
+  hospital_name: string;
+  doctor_name: string;
+  amount: number;
+  date: string;
+  category: string;
+  scan_type: string;
+  status: string;
+}
+
+export interface RevenueReport {
+  date: string;
+  total_patients: number;
+  total_scans: number;
+  total_amount: number;
+  hospital_wise: Array<{
+    hospital_name: string;
+    patients: number;
+    amount: number;
+  }>;
+  category_wise: Array<{
+    category: string;
+    patients: number;
+    amount: number;
+  }>;
 }
 
 export interface TimeSlot {

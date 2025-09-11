@@ -18,8 +18,9 @@ export default function Login() {
   const roles = [
     { id: 'super_admin', name: 'Super Admin', icon: Shield, color: 'from-red-500 to-red-600', bgColor: 'bg-red-50', textColor: 'text-red-700', username: 'super_admin', password: 'Super@Admin123' },
     { id: 'admin', name: 'Admin', icon: Shield, color: 'from-blue-500 to-blue-600', bgColor: 'bg-blue-50', textColor: 'text-blue-700', username: 'admin', password: 'Admin@Varaha' },
-    { id: 'reception', name: 'Receptionist', icon: UserCheck, color: 'from-rose-500 to-rose-600', bgColor: 'bg-rose-50', textColor: 'text-rose-700', username: 'reception', password: 'Admin@321' },
+    { id: 'reception', name: 'Reception', icon: UserCheck, color: 'from-rose-500 to-rose-600', bgColor: 'bg-rose-50', textColor: 'text-rose-700', username: 'reception', password: 'Admin@321' },
     { id: 'doctor', name: 'Doctor', icon: Stethoscope, color: 'from-emerald-500 to-emerald-600', bgColor: 'bg-emerald-50', textColor: 'text-emerald-700', username: 'doctor', password: 'Admin@321' },
+    { id: 'accounts', name: 'Accounts', icon: UserCheck, color: 'from-teal-500 to-teal-600', bgColor: 'bg-teal-50', textColor: 'text-teal-700', username: 'nurse', password: 'Admin@321' },
     { id: 'console', name: 'Console', icon: Monitor, color: 'from-violet-500 to-violet-600', bgColor: 'bg-violet-50', textColor: 'text-violet-700', username: 'console', password: 'Admin@321' },
   ];
 
@@ -44,7 +45,15 @@ export default function Login() {
 
       if (response.ok) {
         localStorage.setItem('user', JSON.stringify(data.user));
-        router.push('/dashboard');
+        
+        // Redirect based on user role
+        if (data.user.admin_type === 'super_admin') {
+          router.push('/superadmin/dashboard');
+        } else if (data.user.admin_type === 'admin') {
+          router.push('/admin/dashboard');
+        } else {
+          router.push('/dashboard');
+        }
       } else {
         setError(data.error || 'Login failed');
       }

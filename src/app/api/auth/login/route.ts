@@ -1,55 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getConnection, isDbConnected } from '@/lib/db';
-import { csvService } from '@/lib/csvService';
-import { RowDataPacket } from 'mysql2';
 
 export async function POST(request: NextRequest) {
   try {
     const { username, password } = await request.json();
-    let user = null;
-
-    // Try MySQL first
-    if (isDbConnected()) {
-      try {
-        const connection = await getConnection();
-        const [rows] = await connection.execute<RowDataPacket[]>(
-          'SELECT * FROM admin WHERE username = ?',
-          [username]
-        );
-        if (rows.length > 0) {
-          user = rows[0] as any;
-        }
-      } catch (error) {
-        console.error('MySQL query failed, falling back to CSV:', error);
-      }
-    }
-
-    // Fallback to CSV if MySQL failed or no user found
-    if (!user) {
-      console.log('Using CSV fallback for authentication');
-      const admins = await csvService.getAdmins();
-      user = admins.find(admin => admin.username === username);
-    }
-
-    if (!user) {
-      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
-    }
     
-    // Direct password comparison (as in PHP SDK admin)
-    if (user.password !== password) {
+    const defaultAdmins = [
+      { admin_id: '1', username: 'super_admin', password: 'Super@Admin123', admin_type: 'super_admin', name: 'Super Administrator' },
+      { admin_id: '2', username: 'admin', password: 'Admin@Varaha', admin_type: 'admin', name: 'System Administrator' },
+      { admin_id: '3', username: 'reception', password: 'Admin@321', admin_type: 'reception', name: 'Reception Desk' },
+      { admin_id: '4', username: 'doctor', password: 'Admin@321', admin_type: 'doctor', name: 'Dr. Medical Officer' },
+      { admin_id: '5', username: 'nurse', password: 'Admin@321', admin_type: 'nurse', name: 'Nursing Staff' },
+      { admin_id: '6', username: 'console', password: 'Admin@321', admin_type: 'console', name: 'Console Operator' }
+    ];
+    
+    const user = defaultAdmins.find(admin => admin.username === username && admin.password === password);
+
+    if (!user) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
-    // Remove password from response
     const { password: _, ...userWithoutPassword } = user;
 
     return NextResponse.json({
       success: true,
-      user: userWithoutPassword,
-      dataSource: isDbConnected() ? 'mysql' : 'csv'
+      user: userWithoutPassword
     });
   } catch (error) {
-    console.error('Login error:', error);
     return NextResponse.json({ error: 'Login failed' }, { status: 500 });
   }
 }

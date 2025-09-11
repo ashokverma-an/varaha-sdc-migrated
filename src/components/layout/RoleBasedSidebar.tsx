@@ -28,36 +28,24 @@ export default function RoleBasedSidebar({ userRole }: SidebarProps) {
   };
 
   const roleConfigs = {
-    super_admin: {
+    superadmin: {
       icon: Shield,
       color: 'from-red-600 to-red-700',
       bgColor: 'bg-red-50',
       menus: [
-        { id: 'dashboard', label: 'Dashboard', icon: BarChart3, href: '/dashboard' },
-        { id: 'hospitals', label: 'CT Centers', icon: Hospital, href: '/admin/hospitals' },
-        { id: 'doctors', label: 'Doctors', icon: Stethoscope, href: '/super_admin/doctors' },
-        { id: 'scans', label: 'Scans', icon: Camera, href: '/super_admin/scans' },
+        { id: 'dashboard', label: 'Dashboard', icon: BarChart3, href: '/superadmin/dashboard' },
+        { id: 'patient-report', label: 'Patient Report', icon: FileText, href: '/superadmin/patient-report' },
+        { id: 'revenue-report', label: 'Revenue Report', icon: TrendingUp, href: '/superadmin/revenue-report' },
+        { id: 'console-report', label: 'Console Report', icon: Monitor, href: '/superadmin/con-r-report' },
         { 
-          id: 'patients', 
-          label: 'Patients', 
-          icon: Users, 
+          id: 'doctor-reports', 
+          label: 'Doctor Reports', 
+          icon: Stethoscope, 
           submenu: [
-            { label: 'New Patient', href: '/patients/new', icon: UserPlus },
-            { label: 'Patient List', href: '/patients', icon: ClipboardList }
+            { label: 'Pending Reports', href: '/superadmin/report-pending-list', icon: Clock },
+            { label: 'View Reports', href: '/superadmin/view-report', icon: FileText }
           ]
-        },
-        { 
-          id: 'nursing', 
-          label: 'Nursing', 
-          icon: Activity, 
-          submenu: [
-            { label: 'Patient Queue', href: '/nursing', icon: Users },
-            { label: 'Patient Care', href: '/nursing/care', icon: Activity }
-          ]
-        },
-        { id: 'console', label: 'Console', icon: Monitor, href: '/console' },
-        { id: 'reports', label: 'Reports', icon: FileText, href: '/reports' },
-        { id: 'settings', label: 'Settings', icon: Settings, href: '/settings' }
+        }
       ]
     },
     admin: {
@@ -65,19 +53,19 @@ export default function RoleBasedSidebar({ userRole }: SidebarProps) {
       color: 'from-sky-500 to-sky-600',
       bgColor: 'bg-sky-50',
       menus: [
-        { id: 'dashboard', label: 'Dashboard', icon: BarChart3, href: '/dashboard' },
-        { id: 'hospitals', label: 'Hospital', icon: Hospital, href: '/hospitals' },
-        { id: 'category', label: 'Category', icon: ClipboardList, href: '/category' },
-        { id: 'patient-edit', label: 'Patient Edit', icon: Users, href: '/patient-edit' },
-        { id: 'patient-reprint', label: 'Patient Reprint', icon: FileText, href: '/patient-reprint' },
+        { id: 'dashboard', label: 'Dashboard', icon: BarChart3, href: '/admin/dashboard' },
+        { id: 'hospital', label: 'Hospital', icon: Hospital, href: '/admin/hospital' },
+        { id: 'category', label: 'Category', icon: Tag, href: '/admin/category' },
+        { id: 'patient-edit', label: 'Patient Edit', icon: Edit, href: '/admin/patient-edit' },
+        { id: 'patient-reprint', label: 'Patient Reprint', icon: FileText, href: '/admin/patient-reprint' },
         { 
           id: 'reports', 
           label: 'Reports', 
           icon: FileText, 
           submenu: [
-            { label: 'Daily Report', href: '/reports/daily', icon: Calendar },
-            { label: 'Appointment Report', href: '/reports/appointment', icon: ClipboardList },
-            { label: 'Console Report', href: '/reports/console', icon: Monitor }
+            { label: 'Daily Report', href: '/admin/daily-revenue-report', icon: Calendar },
+            { label: 'Appointment Report', href: '/admin/appointment-report', icon: ClipboardList },
+            { label: 'Console Report', href: '/admin/console-report', icon: Monitor }
           ]
         },
         { 
@@ -85,8 +73,8 @@ export default function RoleBasedSidebar({ userRole }: SidebarProps) {
           label: 'Add', 
           icon: UserPlus, 
           submenu: [
-            { label: 'Patient Registration (New)', href: '/patients/new', icon: UserPlus },
-            { label: 'Patient Registration (List)', href: '/patients', icon: ClipboardList }
+            { label: 'Patient Registration (New)', href: '/admin/patient-new', icon: UserPlus },
+            { label: 'Patient Registration (List)', href: '/admin/patient-list', icon: ClipboardList }
           ]
         }
       ]
@@ -168,13 +156,13 @@ export default function RoleBasedSidebar({ userRole }: SidebarProps) {
       color: 'from-violet-600 to-violet-700',
       bgColor: 'bg-violet-50',
       menus: [
-        { id: 'dashboard', label: 'Dashboard', icon: BarChart3, href: '/dashboard' },
-        { id: 'console-report', label: 'Console Report', icon: FileText, href: '/reports/console' }
+        { id: 'dashboard', label: 'Dashboard', icon: BarChart3, href: '/console/dashboard' },
+        { id: 'daily-report', label: 'Daily Report', icon: FileText, href: '/console/daily-report' }
       ]
     }
   };
 
-  const config = roleConfigs[userRole as keyof typeof roleConfigs] || roleConfigs.super_admin;
+  const config = roleConfigs[userRole as keyof typeof roleConfigs] || roleConfigs.superadmin;
   const RoleIcon = config.icon;
 
   return (

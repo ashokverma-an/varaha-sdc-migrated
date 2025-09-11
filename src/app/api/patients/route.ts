@@ -1,125 +1,94 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getConnection, isDbConnected, testConnection } from '@/lib/db';
-import { csvService } from '@/lib/csvService';
+import { dbQuery } from '@/lib/db';
+
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const format = searchParams.get('format');
+
+    const query = `
+      SELECT p.*, h.hospital_name, d.dname as doctor_name 
+      FROM patient_new p 
+      LEFT JOIN hospital h ON p.hospital_name = h.h_id 
+      LEFT JOIN doctor d ON p.doctor_name = d.d_id 
+      ORDER BY p.patient_id DESC
+    `;
+
+    const patients = await dbQuery(query);
+
+    if (format === 'excel') {
+      const excelData = generatePatientsExcel(patients);
+      return new NextResponse(excelData, {
+        headers: {
+          'Content-Type': 'application/vnd.ms-excel',
+          'Content-Disposition': `attachment; filename="PATIENTS_LIST_${new Date().toISOString().split('T')[0]}.xls"`
+        }
+      });
+    }
+
+    return NextResponse.json(patients);
+  } catch (error) {
+    console.error('Error fetching patients:', error);
+    return NextResponse.json({ error: 'Failed to fetch patients' }, { status: 500 });
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
     const data = await request.json();
     
-    // Test DB connection first
-    await testConnection();
+    // Generate CRO number
+    const croResult = await dbQuery('SELECT MAX(patient_id) as max_id FROM patient_new');
+    const nextId = (croResult[0]?.max_id || 0) + 1;
+    const cro = `CRO${nextId.toString().padStart(6, '0')}`;
     
-    if (isDbConnected()) {
-      const connection = await getConnection();
-
-      // Generate CRO number
-      const croQuery = 'SELECT MAX(patient_id) as maxId FROM patient_new';
-      const [croResult] = await connection.execute(croQuery);
-      const nextId = (croResult as any)[0].maxId + 1 || 1;
-      const cro = `CRO${String(nextId).padStart(6, '0')}`;
-
-      // Insert patient
-      const insertQuery = `
-        INSERT INTO patient_new (
-          cro, patient_name, age, age_type, gender, category, address, city, 
-          contact_number, hospital_id, doctor_name, added_on, admin_id
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `;
-
-      const values = [
-        cro,
-        `${data.prefix} ${data.firstName}`,
-        data.age,
-        data.ageType,
-        data.gender,
-        data.category,
-        data.address,
-        data.city,
-        data.contactNumber,
-        data.hospitalName,
-        data.doctorName,
-        new Date().toISOString().split('T')[0],
-        data.adminId || 1
-      ];
-
-      await connection.execute(insertQuery, values);
-
-      return NextResponse.json({ 
-        success: true, 
-        message: 'Patient registered successfully',
-        cro: cro
-      });
-    } else {
-      // CSV mode - return mock success for testing
-      const cro = `CRO${String(Date.now()).slice(-6)}`;
-      return NextResponse.json({ 
-        success: true, 
-        message: 'Patient registered successfully (CSV mode - testing only)',
-        cro: cro,
-        mode: 'csv'
-      });
-    }
-
+    const result = await dbQuery(`
+      INSERT INTO patient_new (
+        cro, patient_name, age, gender, contact_number, address,
+        hospital_name, doctor_name, category, amount, date,
+        allot_date, allot_time, scan_type, remark, scan_status
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
+    `, [
+      cro, data.patient_name, data.age, data.gender, data.contact_number,
+      data.address, data.hospital_name, data.doctor_name, data.category,
+      data.amount, data.date, data.allot_date, data.allot_time,
+      data.scan_type, data.remark
+    ]);
+    
+    return NextResponse.json({ success: true, id: result.insertId, cro });
   } catch (error) {
-    console.error('Patient registration error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Registration failed' },
-      { status: 500 }
-    );
+    console.error('Error creating patient:', error);
+    return NextResponse.json({ error: 'Failed to create patient' }, { status: 500 });
   }
 }
 
-export async function GET(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const search = searchParams.get('search') || '';
-    const category = searchParams.get('category') || '';
+function generatePatientsExcel(patients: any[]): string {
+  let excel = `<html><body><table border="1">`;
+  excel += `<tr><th colspan="10">VARAHA SDC - PATIENTS LIST</th></tr>`;
+  excel += `<tr><th>S.No</th><th>CRO</th><th>Patient Name</th><th>Age/Gender</th><th>Contact</th><th>Hospital</th><th>Doctor</th><th>Category</th><th>Amount</th><th>Date</th></tr>`;
 
-    // Test DB connection first
-    await testConnection();
+  let totalAmount = 0;
+  patients.forEach((patient, index) => {
+    totalAmount += parseFloat(patient.amount || 0);
+    excel += `<tr>`;
+    excel += `<td>${index + 1}</td>`;
+    excel += `<td>${patient.cro || ''}</td>`;
+    excel += `<td>${patient.patient_name || ''}</td>`;
+    excel += `<td>${patient.age || ''}/${patient.gender || ''}</td>`;
+    excel += `<td>${patient.contact_number || ''}</td>`;
+    excel += `<td>${patient.hospital_name || ''}</td>`;
+    excel += `<td>${patient.doctor_name || ''}</td>`;
+    excel += `<td>${patient.category || ''}</td>`;
+    excel += `<td>${patient.amount || 0}</td>`;
+    const date = new Date(patient.date);
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const formattedDate = patient.date ? `${date.getDate()}-${months[date.getMonth()]}-${date.getFullYear()}` : '';
+    excel += `<td>${formattedDate}</td>`;
+    excel += `</tr>`;
+  });
 
-    if (isDbConnected()) {
-      const connection = await getConnection();
-      let query = `
-        SELECT p.*, h.h_name as hospital_name, d.dname as doctor_name 
-        FROM patient_new p
-        LEFT JOIN hospital h ON p.hospital_id = h.h_id
-        LEFT JOIN doctor d ON p.doctor_name = d.d_id
-        WHERE 1=1
-      `;
+  excel += `<tr><th colspan="8">TOTAL</th><th>${totalAmount}</th><th></th></tr>`;
+  excel += `</table></body></html>`;
 
-      const params: any[] = [];
-
-      if (search) {
-        query += ' AND (p.patient_name LIKE ? OR p.contact_number LIKE ? OR p.cro LIKE ?)';
-        params.push(`%${search}%`, `%${search}%`, `%${search}%`);
-      }
-
-      if (category && category !== 'all') {
-        query += ' AND p.category = ?';
-        params.push(category);
-      }
-
-      query += ' ORDER BY p.patient_id DESC LIMIT 50';
-      const [rows] = await connection.execute(query, params);
-
-      return NextResponse.json({ success: true, patients: rows });
-    } else {
-      // CSV fallback
-      const patients = await csvService.getPatients(search, category);
-      return NextResponse.json({ 
-        success: true, 
-        patients: patients,
-        mode: 'csv',
-        message: 'Data loaded from CSV file'
-      });
-    }
-
-  } catch (error) {
-    console.error('Fetch patients error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch patients' },
-      { status: 500 }
-    );
-  }
+  return excel;
 }

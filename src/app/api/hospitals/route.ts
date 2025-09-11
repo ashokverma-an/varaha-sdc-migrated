@@ -1,30 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getConnection } from '@/lib/db';
+import { dbQuery } from '@/lib/db';
 
 export async function GET() {
   try {
-    const connection = await getConnection();
-    const [rows] = await connection.execute('SELECT * FROM hospital ORDER BY h_name');
-    return NextResponse.json({ success: true, hospitals: rows });
+    const hospitals = await dbQuery('SELECT * FROM hospital ORDER BY hospital_name');
+    return NextResponse.json(hospitals);
   } catch (error) {
-    console.error('Hospitals API error:', error);
-    return NextResponse.json({ success: false, error: 'Failed to fetch hospitals' }, { status: 500 });
+    console.error('Error fetching hospitals:', error);
+    return NextResponse.json({ error: 'Failed to fetch hospitals' }, { status: 500 });
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, address, contact } = await request.json();
-    const connection = await getConnection();
+    const { hospital_name, h_short, address, contact } = await request.json();
     
-    await connection.execute(
-      'INSERT INTO hospital (h_name, h_address, h_contact) VALUES (?, ?, ?)',
-      [name, address, contact]
+    const result = await dbQuery(
+      'INSERT INTO hospital (hospital_name, h_short, address, contact) VALUES (?, ?, ?, ?)',
+      [hospital_name, h_short, address || '', contact || '']
     );
     
-    return NextResponse.json({ success: true, message: 'Hospital added successfully' });
+    return NextResponse.json({ success: true, id: result.insertId });
   } catch (error) {
-    console.error('Hospital POST error:', error);
-    return NextResponse.json({ success: false, error: 'Failed to add hospital' }, { status: 500 });
+    console.error('Error creating hospital:', error);
+    return NextResponse.json({ error: 'Failed to create hospital' }, { status: 500 });
   }
 }

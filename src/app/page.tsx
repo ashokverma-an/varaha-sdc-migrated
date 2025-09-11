@@ -78,54 +78,6 @@ export default function Home() {
               </div>
             </div>
           </div>
-
-          {/* Features Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-20">
-            {features.map((feature, index) => {
-              const IconComponent = feature.icon;
-              return (
-                <div key={index} className="group bg-white/80 backdrop-blur-sm p-8 rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105 border border-white/20">
-                  <div className={`inline-flex p-4 bg-gradient-to-r ${feature.color} rounded-2xl mb-6 group-hover:scale-110 transition-transform duration-300`}>
-                    <IconComponent className="h-8 w-8 text-white" />
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">{feature.title}</h3>
-                  <p className="text-gray-600 leading-relaxed">{feature.desc}</p>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Stats Section */}
-          <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-12 border border-white/30">
-            <div className="text-center mb-12">
-              <h3 className="text-3xl font-bold text-gray-900 mb-4">Trusted by Healthcare Professionals</h3>
-              <p className="text-gray-600 text-lg">Delivering excellence in hospital management</p>
-            </div>
-            
-            <div className="grid md:grid-cols-3 gap-8">
-              <div className="text-center">
-                <div className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent mb-2">99.9%</div>
-                <div className="text-gray-600 font-medium">System Uptime</div>
-                <div className="w-full bg-blue-100 rounded-full h-2 mt-3">
-                  <div className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full" style={{width: '99.9%'}}></div>
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="text-4xl font-bold bg-gradient-to-r from-emerald-600 to-emerald-700 bg-clip-text text-transparent mb-2">24/7</div>
-                <div className="text-gray-600 font-medium">Support Available</div>
-                <div className="w-full bg-emerald-100 rounded-full h-2 mt-3">
-                  <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 h-2 rounded-full" style={{width: '100%'}}></div>
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="text-4xl font-bold bg-gradient-to-r from-violet-600 to-violet-700 bg-clip-text text-transparent mb-2">100%</div>
-                <div className="text-gray-600 font-medium">Secure Access</div>
-                <div className="w-full bg-violet-100 rounded-full h-2 mt-3">
-                  <div className="bg-gradient-to-r from-violet-500 to-violet-600 h-2 rounded-full" style={{width: '100%'}}></div>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     );
