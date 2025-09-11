@@ -45,7 +45,7 @@ export default function Home() {
                 <h1 className="text-6xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 bg-clip-text text-transparent">
                   Varaha SDC
                 </h1>
-                <p className="text-gray-600 text-2xl font-medium">Hospital Management System</p>
+                <p className="text-gray-600 text-2xl font-medium">CT Scan Management System</p>
               </div>
             </div>
             

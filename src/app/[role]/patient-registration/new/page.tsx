@@ -1,334 +1,283 @@
 'use client';
 
 import Layout from '@/components/layout/Layout';
-import { FormInput, FormSelect, FormButton } from '@/components/ui/FormComponents';
-import { useState } from 'react';
-import { Save, Printer } from 'lucide-react';
+import PatientRegistrationForm from '@/components/ui/PatientRegistrationForm';
+import { Toast, useToast } from '@/components/ui/Toast';
+import { useState, useEffect } from 'react';
+import { Search, Plus, UserPlus, Calendar, Clock, FileText, Printer, Eye } from 'lucide-react';
+import { useParams } from 'next/navigation';
 
 export default function PatientRegistrationNew() {
-  const [activeTab, setActiveTab] = useState(1);
-  const [errors, setErrors] = useState({});
+  const params = useParams();
+  const role = params.role as string;
+  const [patients, setPatients] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const { toast, showToast, hideToast } = useToast();
+  const itemsPerPage = 10;
 
-  const validateTab1 = () => {
-    const newErrors: any = {};
-    if (!formData.hospital) newErrors.hospital = 'Hospital is required';
-    if (!formData.doctor) newErrors.doctor = 'Doctor is required';
-    if (!formData.firstName) newErrors.firstName = 'First name is required';
-    if (!formData.age) newErrors.age = 'Age is required';
-    if (!formData.contact) newErrors.contact = 'Contact is required';
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  useEffect(() => {
+    fetchPatients();
+  }, []);
 
-  const nextTab = () => {
-    if (activeTab === 1 && validateTab1()) {
-      setActiveTab(2);
-    } else if (activeTab === 2) {
-      setActiveTab(3);
+  const fetchPatients = async () => {
+    try {
+      const response = await fetch('/api/patients');
+      const data = await response.json();
+      setPatients(data);
+    } catch (error) {
+      console.error('Error fetching patients:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const prevTab = () => {
-    if (activeTab > 1) setActiveTab(activeTab - 1);
+  const handlePatientSubmit = (patientData: any) => {
+    setPatients(prev => [patientData, ...prev]);
+    showToast('Patient registered successfully with receipt printed!', 'success');
   };
 
-  const handleSave = () => {
-    alert('Patient saved successfully!');
+  const filteredPatients = patients.filter((patient: any) =>
+    patient.patient_name?.toLowerCase().includes(search.toLowerCase()) ||
+    patient.cro?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filteredPatients.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedPatients = filteredPatients.slice(startIndex, startIndex + itemsPerPage);
+
+  const todayStats = {
+    totalRegistered: patients.length,
+    todayRegistered: patients.filter((p: any) => {
+      const today = new Date().toISOString().split('T')[0];
+      return p.date === today;
+    }).length,
+    pendingScans: patients.filter((p: any) => p.scan_status === 'Pending').length,
+    completedScans: patients.filter((p: any) => p.scan_status === 'Complete').length
   };
-
-  const handlePrint = () => {
-    window.print();
-  };
-  const [formData, setFormData] = useState({
-    date: '11-09-2025',
-    hospital: '',
-    doctor: '',
-    title: 'Mr.',
-    firstName: '',
-    age: '',
-    ageUnit: 'Year',
-    gender: 'Male',
-    category: 'GEN / Paid',
-    address: '',
-    city: '',
-    contact: '',
-    selectedScans: [],
-    appointDate: '11-09-2025',
-    timeIn: '',
-    timeOut: '',
-    amount: 0,
-    estimatedTime: ''
-  });
-
-  const scans = [
-    'NCCT Head Bone Cuts with 3D reconstruction',
-    'CT dynamic study Pituitary',
-    'NCCT Orbit',
-    'CECT Orbit (Both)',
-    'NCCT Face with 3D reconstruction'
-  ];
-
-  const titleOptions = [
-    { value: 'Mr.', label: 'Mr.' },
-    { value: 'Mrs.', label: 'Mrs.' },
-    { value: 'Ms.', label: 'Ms.' }
-  ];
-
-  const genderOptions = [
-    { value: 'Male', label: 'Male' },
-    { value: 'Female', label: 'Female' }
-  ];
-
-  const categoryOptions = [
-    { value: 'GEN / Paid', label: 'GEN / Paid' },
-    { value: 'VIP', label: 'VIP' },
-    { value: 'Emergency', label: 'Emergency' }
-  ];
-
-  const ageUnitOptions = [
-    { value: 'Year', label: 'Year' },
-    { value: 'Month', label: 'Month' },
-    { value: 'Days', label: 'Days' }
-  ];
 
   return (
     <Layout>
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-normal text-gray-700">Patient Registration (New)</h1>
-          <p className="text-sm font-normal text-gray-600">Last Entered Patient VDC/11-09-2025/3 SAHAN LAL</p>
+        <div className="bg-white rounded-xl shadow-lg p-6">
+          <div className="flex justify-between items-center">
+            <h1 className="text-2xl font-bold text-gray-900">New Patient Registration - {role}</h1>
+            <div className="text-sm text-gray-600">
+              <span className="font-medium">Today:</span> {new Date().toLocaleDateString('en-GB')}
+            </div>
+          </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <div className="flex space-x-4 mb-6 border-b">
-            <button
-              onClick={() => setActiveTab(1)}
-              className={`pb-2 px-4 ${activeTab === 1 ? 'border-b-2 border-sky-500 text-sky-600' : 'text-gray-600'}`}
-            >
-              1. Enrollment Detail
-            </button>
-            <button
-              onClick={() => setActiveTab(2)}
-              className={`pb-2 px-4 ${activeTab === 2 ? 'border-b-2 border-sky-500 text-sky-600' : 'text-gray-600'}`}
-            >
-              2. Scan Options
-            </button>
-            <button
-              onClick={() => setActiveTab(3)}
-              className={`pb-2 px-4 ${activeTab === 3 ? 'border-b-2 border-sky-500 text-sky-600' : 'text-gray-600'}`}
-            >
-              3. Payment Details
-            </button>
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Total Registered</p>
+                <p className="text-2xl font-bold text-gray-900">{todayStats.totalRegistered}</p>
+              </div>
+              <div className="p-3 bg-sky-100 rounded-full">
+                <UserPlus className="h-6 w-6 text-sky-500" />
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Today Registered</p>
+                <p className="text-2xl font-bold text-gray-900">{todayStats.todayRegistered}</p>
+              </div>
+              <div className="p-3 bg-green-100 rounded-full">
+                <Calendar className="h-6 w-6 text-green-500" />
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Pending Scans</p>
+                <p className="text-2xl font-bold text-gray-900">{todayStats.pendingScans}</p>
+              </div>
+              <div className="p-3 bg-yellow-100 rounded-full">
+                <Clock className="h-6 w-6 text-yellow-500" />
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Completed Scans</p>
+                <p className="text-2xl font-bold text-gray-900">{todayStats.completedScans}</p>
+              </div>
+              <div className="p-3 bg-blue-100 rounded-full">
+                <FileText className="h-6 w-6 text-blue-500" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-xl p-6">
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex items-center space-x-4">
+              <span className="text-sm text-gray-600">Show</span>
+              <select className="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-700">
+                <option>10</option>
+                <option>25</option>
+                <option>50</option>
+              </select>
+              <span className="text-sm text-gray-600">entries</span>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <input
+                  type="text"
+                  placeholder="Search:"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                />
+              </div>
+              <button
+                onClick={() => setIsFormOpen(true)}
+                className="px-4 py-2 bg-sky-500 text-white rounded-lg hover:bg-sky-600 transition-colors flex items-center space-x-2"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Register New Patient</span>
+              </button>
+            </div>
           </div>
 
-          {activeTab === 1 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormInput
-                label="Date"
-                type="date"
-                value={formData.date}
-                onChange={(e) => setFormData({...formData, date: e.target.value})}
-              />
-              <FormSelect
-                label="Hospital Name"
-                value={formData.hospital}
-                onChange={(e) => setFormData({...formData, hospital: e.target.value})}
-                options={[
-                  { value: '', label: 'Select Hospital' },
-                  { value: 'MGH', label: 'MAHATMA GANDHI HOSPITAL' },
-                  { value: 'AIIMS', label: 'All India Institute of Medical Sciences' }
-                ]}
-              />
-              <FormSelect
-                label="Doctor Name"
-                value={formData.doctor}
-                onChange={(e) => setFormData({...formData, doctor: e.target.value})}
-                options={[
-                  { value: '', label: 'Select Doctor' },
-                  { value: 'Dr. Smith', label: 'Dr. Smith' },
-                  { value: 'Dr. Johnson', label: 'Dr. Johnson' }
-                ]}
-              />
-              <div className="flex space-x-2">
-                <div className="w-1/3">
-                  <FormSelect
-                    label="Title"
-                    value={formData.title}
-                    onChange={(e) => setFormData({...formData, title: e.target.value})}
-                    options={titleOptions}
-                  />
-                </div>
-                <div className="w-2/3">
-                  <FormInput
-                    label="Patient Name"
-                    type="text"
-                    value={formData.firstName}
-                    onChange={(e) => setFormData({...formData, firstName: e.target.value})}
-                    placeholder="Please enter your First name"
-                  />
-                </div>
-              </div>
-              <div className="flex space-x-2">
-                <div className="w-2/3">
-                  <FormInput
-                    label="Age"
-                    type="number"
-                    value={formData.age}
-                    onChange={(e) => setFormData({...formData, age: e.target.value})}
-                    placeholder="In(Year/month/days)"
-                  />
-                </div>
-                <div className="w-1/3">
-                  <FormSelect
-                    label="Unit"
-                    value={formData.ageUnit}
-                    onChange={(e) => setFormData({...formData, ageUnit: e.target.value})}
-                    options={ageUnitOptions}
-                  />
-                </div>
-              </div>
-              <FormSelect
-                label="Gender"
-                value={formData.gender}
-                onChange={(e) => setFormData({...formData, gender: e.target.value})}
-                options={genderOptions}
-              />
-              <FormSelect
-                label="Category"
-                value={formData.category}
-                onChange={(e) => setFormData({...formData, category: e.target.value})}
-                options={categoryOptions}
-              />
-              <FormInput
-                label="Address"
-                type="text"
-                value={formData.address}
-                onChange={(e) => setFormData({...formData, address: e.target.value})}
-                placeholder="Please enter your Address"
-              />
-              <FormInput
-                label="City"
-                type="text"
-                value={formData.city}
-                onChange={(e) => setFormData({...formData, city: e.target.value})}
-                placeholder="Please enter your city"
-              />
-              <FormInput
-                label="Contact Number"
-                type="tel"
-                value={formData.contact}
-                onChange={(e) => setFormData({...formData, contact: e.target.value})}
-                placeholder="Please enter your contact Number"
-              />
+          {loading ? (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+              <p className="mt-4 text-gray-600">Loading patients...</p>
             </div>
-          )}
-
-          {activeTab === 2 && (
-            <div className="space-y-4">
-              <h3 className="text-lg font-normal text-gray-700 mb-4">Select Scan Type</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-96 overflow-y-auto">
-                {scans.map((scan, index) => (
-                  <label key={index} className="flex items-center space-x-2 p-2 border rounded-lg hover:bg-gray-50">
-                    <input
-                      type="checkbox"
-                      className="rounded border-gray-300 text-sky-500 focus:ring-sky-400"
-                    />
-                    <span className="text-sm font-normal text-gray-700">{scan}</span>
-                  </label>
-                ))}
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                <FormInput
-                  label="Appoint date"
-                  type="date"
-                  value={formData.appointDate}
-                  onChange={(e) => setFormData({...formData, appointDate: e.target.value})}
-                />
-                <FormInput
-                  label="Time In"
-                  type="time"
-                  value={formData.timeIn}
-                  onChange={(e) => setFormData({...formData, timeIn: e.target.value})}
-                />
-                <FormInput
-                  label="Time Out"
-                  type="time"
-                  value={formData.timeOut}
-                  onChange={(e) => setFormData({...formData, timeOut: e.target.value})}
-                />
-                <FormInput
-                  label="Amount"
-                  type="number"
-                  value={formData.amount}
-                  onChange={(e) => setFormData({...formData, amount: parseInt(e.target.value)})}
-                />
-                <FormInput
-                  label="Estimated Time"
-                  type="text"
-                  value={formData.estimatedTime}
-                  onChange={(e) => setFormData({...formData, estimatedTime: e.target.value})}
-                />
-              </div>
-            </div>
-          )}
-
-          {activeTab === 3 && (
-            <div className="space-y-6">
-              <div className="bg-gray-50 p-6 rounded-lg">
-                <h3 className="text-lg font-normal text-gray-700 mb-4">INVOICE</h3>
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <p className="text-sm font-normal text-gray-700">Age = {formData.age} {formData.ageUnit}</p>
-                  <p className="text-sm font-normal text-gray-700">Sex = {formData.gender}</p>
-                </div>
-                <table className="w-full border-collapse border border-gray-300">
+          ) : (
+            <>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
                   <thead>
-                    <tr className="bg-gray-100">
-                      <th className="border border-gray-300 px-4 py-2 text-left font-normal text-gray-700">Name Of Scan</th>
-                      <th className="border border-gray-300 px-4 py-2 text-left font-normal text-gray-700">Charges</th>
+                    <tr className="bg-gray-50">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 border-b">S.No.</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 border-b">CRO</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 border-b">Patient Name</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 border-b">Age</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 border-b">Gender</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 border-b">Category</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 border-b">Contact</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 border-b">Status</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 border-b">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td className="border border-gray-300 px-4 py-2 font-normal text-gray-700">1. (EXTRA FILM CHARGES 2)</td>
-                      <td className="border border-gray-300 px-4 py-2 font-normal text-gray-700">600</td>
-                    </tr>
+                    {paginatedPatients.map((patient: any, index) => (
+                      <tr key={patient.patient_id || `patient-${index}`} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-4 py-3 text-sm text-gray-700 border-b">{startIndex + index + 1}</td>
+                        <td className="px-4 py-3 text-sm text-gray-700 border-b font-medium">{patient.cro || 'N/A'}</td>
+                        <td className="px-4 py-3 text-sm text-gray-700 border-b font-medium">{patient.patientName || patient.patient_name || 'N/A'}</td>
+                        <td className="px-4 py-3 text-sm text-gray-700 border-b">{patient.age || 'N/A'}</td>
+                        <td className="px-4 py-3 text-sm text-gray-700 border-b">{patient.gender || 'N/A'}</td>
+                        <td className="px-4 py-3 text-sm text-gray-700 border-b">{patient.category || 'N/A'}</td>
+                        <td className="px-4 py-3 text-sm text-gray-700 border-b">{patient.contactNumber || patient.contact_number || 'N/A'}</td>
+                        <td className="px-4 py-3 text-sm border-b">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            patient.scan_status === 'Complete' 
+                              ? 'bg-green-100 text-green-800' 
+                              : patient.scan_status === 'Pending'
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : 'bg-gray-100 text-gray-800'
+                          }`}>
+                            {patient.scan_status || 'Registered'}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-sm border-b">
+                          <div className="flex space-x-2">
+                            <button 
+                              onClick={() => showToast('Patient details viewed', 'success')}
+                              className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                              title="View Details"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </button>
+                            <button 
+                              onClick={() => showToast('Receipt reprinted successfully', 'success')}
+                              className="p-1 text-green-600 hover:bg-green-50 rounded"
+                              title="Reprint Receipt"
+                            >
+                              <Printer className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
-                <div className="mt-4 space-y-2">
-                  <div className="flex justify-between">
-                    <span className="font-normal text-gray-700">Total Amount</span>
-                    <span className="font-normal text-gray-700">600</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="font-normal text-gray-700">Received Amount</span>
-                    <span className="font-normal text-gray-700">0</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="font-normal text-gray-700">Discount</span>
-                    <span className="font-normal text-gray-700">0</span>
-                  </div>
-                  <div className="flex justify-between font-semibold">
-                    <span className="font-normal text-gray-700">Due Amount</span>
-                    <span className="font-normal text-gray-700">600</span>
-                  </div>
+              </div>
+
+              <div className="flex justify-between items-center mt-6">
+                <p className="text-sm text-gray-600">
+                  Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredPatients.length)} of {filteredPatients.length}
+                </p>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    disabled={currentPage === 1}
+                    className="px-3 py-1 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                  >
+                    Previous
+                  </button>
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    const page = i + 1;
+                    return (
+                      <button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={`px-3 py-1 border rounded text-sm ${
+                          currentPage === page
+                            ? 'bg-sky-500 text-white border-sky-500'
+                            : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    );
+                  })}
+                  {totalPages > 5 && <span className="px-2 text-gray-500">...</span>}
+                  <button
+                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-1 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                  >
+                    Next
+                  </button>
                 </div>
               </div>
-              <div className="flex space-x-4">
-                <FormButton>
-                  <Save className="h-4 w-4" />
-                  <span>Save</span>
-                </FormButton>
-                <FormButton>
-                  <Printer className="h-4 w-4" />
-                  <span>Print</span>
-                </FormButton>
-                <FormButton variant="secondary">
-                  <span>Exit</span>
-                </FormButton>
-              </div>
+            </>
+          )}
+
+          {!loading && filteredPatients.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-gray-500 text-lg">No patients registered yet</p>
+              <p className="text-gray-400 text-sm mt-2">Click "Register New Patient" to start patient registration</p>
             </div>
           )}
         </div>
+
+        <PatientRegistrationForm
+          isOpen={isFormOpen}
+          onClose={() => setIsFormOpen(false)}
+          onSubmit={handlePatientSubmit}
+        />
+
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          isVisible={toast.isVisible}
+          onClose={hideToast}
+        />
       </div>
     </Layout>
   );

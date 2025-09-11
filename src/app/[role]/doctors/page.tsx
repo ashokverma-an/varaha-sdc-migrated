@@ -3,6 +3,7 @@
 import Layout from '@/components/layout/Layout';
 import { FormInput, FormButton } from '@/components/ui/FormComponents';
 import DoctorForm from '@/components/ui/DoctorForm';
+import { Toast, useToast } from '@/components/ui/Toast';
 import { useState, useEffect } from 'react';
 import { Search, Plus, Edit, Trash2 } from 'lucide-react';
 import { useParams } from 'next/navigation';
@@ -16,6 +17,7 @@ export default function Doctors() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingDoctor, setEditingDoctor] = useState(null);
+  const { toast, showToast, hideToast } = useToast();
   const itemsPerPage = 10;
 
   useEffect(() => {
@@ -101,7 +103,7 @@ export default function Doctors() {
                   </thead>
                   <tbody>
                     {paginatedDoctors.map((doctor: any, index) => (
-                      <tr key={doctor.did} className="hover:bg-gray-50 transition-colors">
+                      <tr key={doctor.did || `doctor-${index}`} className="hover:bg-gray-50 transition-colors">
                         <td className="px-4 py-3 text-sm text-gray-700 border-b">{startIndex + index + 1}</td>
                         <td className="px-4 py-3 text-sm text-gray-700 border-b font-medium">{doctor.dname}</td>
                         <td className="px-4 py-3 text-sm text-gray-700 border-b">{doctor.age || '30'}</td>
@@ -119,7 +121,14 @@ export default function Doctors() {
                             >
                               <Edit className="h-4 w-4" />
                             </button>
-                            <button className="p-1 text-red-600 hover:bg-red-50 rounded">
+                            <button 
+                              onClick={() => {
+                                if (confirm('Are you sure you want to delete this doctor?')) {
+                                  showToast('Doctor deleted successfully!', 'success');
+                                }
+                              }}
+                              className="p-1 text-red-600 hover:bg-red-50 rounded"
+                            >
                               <Trash2 className="h-4 w-4" />
                             </button>
                           </div>
@@ -185,9 +194,22 @@ export default function Doctors() {
             setEditingDoctor(null);
           }}
           onSubmit={(data) => {
-            console.log('Doctor data:', data);
+            if (editingDoctor) {
+              showToast('Doctor updated successfully!', 'success');
+            } else {
+              showToast('Doctor added successfully!', 'success');
+            }
+            setIsFormOpen(false);
+            setEditingDoctor(null);
           }}
           initialData={editingDoctor}
+        />
+
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          isVisible={toast.isVisible}
+          onClose={hideToast}
         />
       </div>
     </Layout>

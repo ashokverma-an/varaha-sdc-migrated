@@ -3,6 +3,7 @@
 import Layout from '@/components/layout/Layout';
 import { FormButton } from '@/components/ui/FormComponents';
 import ScanForm from '@/components/ui/ScanForm';
+import { Toast, useToast } from '@/components/ui/Toast';
 import { useState, useEffect } from 'react';
 import { Search, Plus, Edit, Trash2 } from 'lucide-react';
 import { useParams } from 'next/navigation';
@@ -36,6 +37,7 @@ export default function Scans() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingScan, setEditingScan] = useState<Scan | null>(null);
+  const { toast, showToast, hideToast } = useToast();
   const [formData, setFormData] = useState({
     scanName: '',
     films: '',
@@ -67,8 +69,10 @@ export default function Scans() {
     
     if (editingScan) {
       setScans(scans.map(scan => scan.id === editingScan.id ? newScan : scan));
+      showToast('Scan updated successfully!', 'success');
     } else {
       setScans([...scans, newScan]);
+      showToast('Scan added successfully!', 'success');
     }
     
     setEditingScan(null);
@@ -157,7 +161,15 @@ export default function Scans() {
                         >
                           <Edit className="h-4 w-4" />
                         </button>
-                        <button className="p-1 text-red-600 hover:bg-red-50 rounded">
+                        <button 
+                          onClick={() => {
+                            if (confirm('Are you sure you want to delete this scan?')) {
+                              setScans(scans.filter(s => s.id !== scan.id));
+                              showToast('Scan deleted successfully!', 'success');
+                            }
+                          }}
+                          className="p-1 text-red-600 hover:bg-red-50 rounded"
+                        >
                           <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
@@ -215,6 +227,13 @@ export default function Scans() {
           }}
           onSubmit={handleSubmit}
           initialData={editingScan}
+        />
+
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          isVisible={toast.isVisible}
+          onClose={hideToast}
         />
       </div>
     </Layout>

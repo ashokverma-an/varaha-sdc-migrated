@@ -40,7 +40,7 @@ body {
 
 /* Standardized font system */
 .font-system {
-  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  font-family: sans-serif;
 }
 
 /* Form input standardization */
@@ -137,7 +137,7 @@ th {
 /* Override any inline styles or framework defaults */
 .font-system,
 .font-system * {
-  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif !important;
+  font-family: sans-serif !important;
 }
 
 /* Specific overrides for common elements */
@@ -150,7 +150,7 @@ input[type="url"],
 input[type="search"],
 textarea,
 select {
-  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif !important;
+  font-family: sans-serif !important;
   font-weight: 400 !important;
   color: #374151 !important;
   font-size: 14px !important;
@@ -166,13 +166,13 @@ textarea::placeholder {
 
 /* Table cell text */
 td, th {
-  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif !important;
+  font-family: sans-serif !important;
   color: #374151 !important;
 }
 
 /* Button text */
 button, .btn {
-  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif !important;
+  font-family: sans-serif !important;
 }
 
 /* Ensure consistent text rendering */
@@ -189,8 +189,8 @@ button, .btn {
 
 /* Ensure form labels are consistent */
 label, .label {
-  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif !important;
-  font-weight: 500 !important;
+  font-family: sans-serif !important;
+  font-weight: 400 !important;
   color: #374151 !important;
 }
 

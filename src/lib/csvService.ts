@@ -11,7 +11,7 @@ class CSVService {
   private isLoaded = false;
 
   constructor() {
-    this.csvPath = path.join(process.cwd(), '../varaosrc_hospital_management.csv');
+    this.csvPath = path.join(process.cwd(), 'varaosrc_hospital_management.csv');
   }
 
   private async loadCSV(): Promise<void> {
