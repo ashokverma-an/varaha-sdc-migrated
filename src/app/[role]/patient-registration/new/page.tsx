@@ -10,7 +10,7 @@ import { useParams } from 'next/navigation';
 export default function PatientRegistrationNew() {
   const params = useParams();
   const role = params.role as string;
-  const [patients, setPatients] = useState([]);
+  const [patients, setPatients] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -26,16 +26,17 @@ export default function PatientRegistrationNew() {
     try {
       const response = await fetch('/api/patients');
       const data = await response.json();
-      setPatients(data);
+      setPatients(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching patients:', error);
+      setPatients([]);
     } finally {
       setLoading(false);
     }
   };
 
   const handlePatientSubmit = (patientData: any) => {
-    setPatients(prev => [patientData, ...prev]);
+    setPatients(prev => Array.isArray(prev) ? [patientData, ...prev] : [patientData]);
     showToast('Patient registered successfully with receipt printed!', 'success');
   };
 

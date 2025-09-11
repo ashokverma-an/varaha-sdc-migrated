@@ -20,7 +20,7 @@ export default function PatientCategory() {
   const [search, setSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingCategory, setEditingCategory] = useState(null);
+  const [editingCategory, setEditingCategory] = useState<any>(null);
   const [formData, setFormData] = useState({ name: '', description: '', status: 'Active' });
   const { toast, showToast, hideToast } = useToast();
   const itemsPerPage = 10;
@@ -38,7 +38,7 @@ export default function PatientCategory() {
     e.preventDefault();
     if (editingCategory) {
       setCategories(categories.map(cat => 
-        cat.id === editingCategory.id ? { ...editingCategory, ...formData } : cat
+        cat.id === editingCategory?.id ? { ...editingCategory, ...formData } : cat
       ));
       showToast('Category updated successfully!', 'success');
     } else {

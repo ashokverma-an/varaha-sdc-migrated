@@ -11,7 +11,7 @@ import { useParams } from 'next/navigation';
 export default function Doctors() {
   const params = useParams();
   const role = params.role as string;
-  const [doctors, setDoctors] = useState([]);
+  const [doctors, setDoctors] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -28,9 +28,10 @@ export default function Doctors() {
     try {
       const response = await fetch('/api/doctors');
       const data = await response.json();
-      setDoctors(data);
+      setDoctors(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching doctors:', error);
+      setDoctors([]);
     } finally {
       setLoading(false);
     }
