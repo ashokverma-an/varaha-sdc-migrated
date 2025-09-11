@@ -1,0 +1,268 @@
+'use client';
+
+import { useState } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { 
+  Shield, Stethoscope, UserCheck, Monitor, 
+  Users, Calendar, FileText, BarChart3, 
+  Hospital, Settings, ChevronDown, ChevronRight,
+  Activity, ClipboardList, UserPlus, Search, Camera,
+  Clock, Edit, Tag, RotateCcw, TrendingUp
+} from 'lucide-react';
+
+interface SidebarProps {
+  userRole: string;
+}
+
+export default function RoleBasedSidebar({ userRole }: SidebarProps) {
+  const pathname = usePathname();
+  const [expandedMenus, setExpandedMenus] = useState<string[]>([]);
+
+  const toggleMenu = (menuId: string) => {
+    setExpandedMenus(prev => 
+      prev.includes(menuId) 
+        ? []
+        : [menuId]
+    );
+  };
+
+  const roleConfigs = {
+    super_admin: {
+      icon: Shield,
+      color: 'from-red-600 to-red-700',
+      bgColor: 'bg-red-50',
+      menus: [
+        { id: 'dashboard', label: 'Dashboard', icon: BarChart3, href: '/dashboard' },
+        { id: 'hospitals', label: 'CT Centers', icon: Hospital, href: '/admin/hospitals' },
+        { id: 'doctors', label: 'Doctors', icon: Stethoscope, href: '/super_admin/doctors' },
+        { id: 'scans', label: 'Scans', icon: Camera, href: '/super_admin/scans' },
+        { 
+          id: 'patients', 
+          label: 'Patients', 
+          icon: Users, 
+          submenu: [
+            { label: 'New Patient', href: '/patients/new', icon: UserPlus },
+            { label: 'Patient List', href: '/patients', icon: ClipboardList }
+          ]
+        },
+        { 
+          id: 'nursing', 
+          label: 'Nursing', 
+          icon: Activity, 
+          submenu: [
+            { label: 'Patient Queue', href: '/nursing', icon: Users },
+            { label: 'Patient Care', href: '/nursing/care', icon: Activity }
+          ]
+        },
+        { id: 'console', label: 'Console', icon: Monitor, href: '/console' },
+        { id: 'reports', label: 'Reports', icon: FileText, href: '/reports' },
+        { id: 'settings', label: 'Settings', icon: Settings, href: '/settings' }
+      ]
+    },
+    admin: {
+      icon: Shield,
+      color: 'from-sky-500 to-sky-600',
+      bgColor: 'bg-sky-50',
+      menus: [
+        { id: 'dashboard', label: 'Dashboard', icon: BarChart3, href: '/dashboard' },
+        { id: 'hospitals', label: 'Hospital', icon: Hospital, href: '/hospitals' },
+        { id: 'category', label: 'Category', icon: ClipboardList, href: '/category' },
+        { id: 'patient-edit', label: 'Patient Edit', icon: Users, href: '/patient-edit' },
+        { id: 'patient-reprint', label: 'Patient Reprint', icon: FileText, href: '/patient-reprint' },
+        { 
+          id: 'reports', 
+          label: 'Reports', 
+          icon: FileText, 
+          submenu: [
+            { label: 'Daily Report', href: '/reports/daily', icon: Calendar },
+            { label: 'Appointment Report', href: '/reports/appointment', icon: ClipboardList },
+            { label: 'Console Report', href: '/reports/console', icon: Monitor }
+          ]
+        },
+        { 
+          id: 'add', 
+          label: 'Add', 
+          icon: UserPlus, 
+          submenu: [
+            { label: 'Patient Registration (New)', href: '/patients/new', icon: UserPlus },
+            { label: 'Patient Registration (List)', href: '/patients', icon: ClipboardList }
+          ]
+        }
+      ]
+    },
+    reception: {
+      icon: UserCheck,
+      color: 'from-sky-500 to-sky-600',
+      bgColor: 'bg-sky-50',
+      menus: [
+        { id: 'dashboard', label: 'Dashboard', icon: BarChart3, href: '/dashboard' },
+        { id: 'hospital', label: 'Hospital', icon: Hospital, href: '/reception/hospitals' },
+        { id: 'doctor', label: 'Doctor', icon: Stethoscope, href: '/reception/doctors' },
+        { id: 'scans', label: 'Scans', icon: Camera, href: '/reception/scans' },
+        { id: 'patient-reprint-old', label: 'Patient Reprint OLD', icon: FileText, href: '/reception/patient-reprint-old' },
+        { id: 'pending-patient', label: 'Pending Patient', icon: Clock, href: '/reception/pending-patient' },
+        { id: 'patient-category', label: 'Patient Category', icon: Tag, href: '/reception/patient-category' },
+        { 
+          id: 'patient-registration', 
+          label: 'Patient Registration', 
+          icon: UserPlus, 
+          submenu: [
+            { label: 'Patient Registration (New)', href: '/reception/patient-registration/new', icon: UserPlus },
+            { label: 'Patient Edit (New)', href: '/reception/patient-registration/edit', icon: Edit },
+            { label: 'Patient Registration (Back-Entry)', href: '/reception/patient-registration/back-entry', icon: RotateCcw },
+            { label: 'Patient Registration (List)', href: '/reception/patient-registration/list', icon: ClipboardList }
+          ]
+        },
+        { 
+          id: 'voucher', 
+          label: 'Voucher', 
+          icon: FileText, 
+          submenu: [
+            { label: 'Vouchers', href: '/reception/voucher', icon: FileText },
+            { label: 'Vouchers List', href: '/reception/voucher/list', icon: ClipboardList }
+          ]
+        },
+        { 
+          id: 'reports', 
+          label: 'Reports', 
+          icon: BarChart3, 
+          submenu: [
+            { label: 'Daily Reports', href: '/reception/reports/daily', icon: Calendar },
+            { label: 'Revenue Reports', href: '/reception/reports/revenue', icon: TrendingUp },
+            { label: 'Appointment Reports', href: '/reception/reports/appointment', icon: ClipboardList }
+          ]
+        },
+        { 
+          id: 'doctor-report-section', 
+          label: 'Doctor Report Section', 
+          icon: Stethoscope, 
+          submenu: [
+            { label: 'Daily Reports', href: '/reception/doctor-report/daily', icon: Calendar }
+          ]
+        },
+        { id: 'patient-modify', label: 'Patient Modify', icon: Edit, href: '/reception/patient-modify' }
+      ]
+    },
+    doctor: {
+      icon: Stethoscope,
+      color: 'from-emerald-600 to-emerald-700',
+      bgColor: 'bg-emerald-50',
+      menus: [
+        { id: 'dashboard', label: 'Dashboard', icon: BarChart3, href: '/dashboard' },
+        { id: 'doctor', label: 'Doctor', icon: Stethoscope, href: '/doctor/doctors' },
+        { id: 'scans', label: 'Scans', icon: Camera, href: '/doctor/scans' },
+        { 
+          id: 'patient-report', 
+          label: 'Patient Report', 
+          icon: FileText, 
+          submenu: [
+            { label: 'Pending Reports', href: '/patient-report/pending', icon: Clock },
+            { label: 'View Reports', href: '/patient-report/view', icon: FileText }
+          ]
+        }
+      ]
+    },
+    console: {
+      icon: Monitor,
+      color: 'from-violet-600 to-violet-700',
+      bgColor: 'bg-violet-50',
+      menus: [
+        { id: 'dashboard', label: 'Dashboard', icon: BarChart3, href: '/dashboard' },
+        { id: 'console-report', label: 'Console Report', icon: FileText, href: '/reports/console' }
+      ]
+    }
+  };
+
+  const config = roleConfigs[userRole as keyof typeof roleConfigs] || roleConfigs.super_admin;
+  const RoleIcon = config.icon;
+
+  return (
+    <div className="w-64 bg-white/95 backdrop-blur-xl shadow-2xl border-r border-white/20 h-screen flex flex-col">
+      {/* Header */}
+      <div className={`p-6 bg-gradient-to-r ${config.color} text-white sticky top-0 z-10`}>
+        <div className="flex items-center space-x-3">
+          <div className="p-2 bg-white/20 rounded-xl">
+            <RoleIcon className="h-8 w-8" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold capitalize">{userRole}</h2>
+            <p className="text-white/80 text-sm">Panel</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Navigation */}
+      <nav className="p-4 space-y-2 flex-1 overflow-y-auto">
+        {config.menus.map((menu) => {
+          const MenuIcon = menu.icon;
+          const isActive = pathname === menu.href;
+          const isExpanded = expandedMenus.includes(menu.id);
+          const hasSubmenu = 'submenu' in menu && menu.submenu && menu.submenu.length > 0;
+
+          return (
+            <div key={menu.id}>
+              {hasSubmenu ? (
+                <button
+                  onClick={() => toggleMenu(menu.id)}
+                  className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 ${
+                    isActive || isExpanded
+                      ? `bg-gradient-to-r ${config.color} text-white shadow-lg`
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  <div className="flex items-center space-x-3">
+                    <MenuIcon className="h-5 w-5" />
+                    <span className="font-medium">{menu.label}</span>
+                  </div>
+                  {isExpanded ? (
+                    <ChevronDown className="h-4 w-4" />
+                  ) : (
+                    <ChevronRight className="h-4 w-4" />
+                  )}
+                </button>
+              ) : (
+                <Link
+                  href={menu.href || '#'}
+                  className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+                    isActive
+                      ? `bg-gradient-to-r ${config.color} text-white shadow-lg`
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  <MenuIcon className="h-5 w-5" />
+                  <span className="font-medium">{menu.label}</span>
+                </Link>
+              )}
+
+              {/* Submenu */}
+              {hasSubmenu && isExpanded && 'submenu' in menu && (
+                <div className="ml-4 mt-2 space-y-1">
+                  {menu.submenu?.map((submenuItem) => {
+                    const SubmenuIcon = submenuItem.icon;
+                    const isSubmenuActive = pathname === submenuItem.href;
+                    
+                    return (
+                      <Link
+                        key={submenuItem.href}
+                        href={submenuItem.href}
+                        className={`flex items-center space-x-3 px-4 py-2 rounded-lg transition-all duration-200 ${
+                          isSubmenuActive
+                            ? `bg-gradient-to-r ${config.color} text-white shadow-md`
+                            : 'text-gray-600 hover:bg-gray-50'
+                        }`}
+                      >
+                        <SubmenuIcon className="h-4 w-4" />
+                        <span className="text-sm font-medium">{submenuItem.label}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </nav>
+    </div>
+  );
+}
