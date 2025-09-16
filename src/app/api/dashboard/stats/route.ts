@@ -1,76 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
-import mysql from 'mysql2/promise';
-
-const dbConfig = {
-  host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || 'RootPass2024!',
-  database: process.env.DB_NAME || 'varaosrc_hospital_management',
-  port: parseInt(process.env.DB_PORT || '3307'),
-  connectTimeout: 60000
-};
 
 export async function GET(request: NextRequest) {
-  let connection;
   try {
-    connection = await mysql.createConnection(dbConfig);
+    const response = await fetch('https://varahasdc.co.in/api/dashboard/stats');
+    const data = await response.json();
     
-    const currentYear = new Date().getFullYear();
-    const currentMonth = String(new Date().getMonth() + 1).padStart(2, '0');
-    const lastMonth = String(new Date().getMonth()).padStart(2, '0');
-    const lastMonthYear = new Date().getMonth() === 0 ? currentYear - 1 : currentYear;
-    
-    const today = new Date().toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: '2-digit', 
-      year: 'numeric'
-    });
-
-    // Current month total (like sdc_admin blank.php)
-    const [currentMonthData] = await connection.execute(`
-      SELECT SUM(p.amount) as total
-      FROM patient_new p
-      JOIN today_transeciton t ON t.cro = p.cro
-      WHERE MONTH(STR_TO_DATE(t.added_on, '%d-%m-%Y')) = ? 
-        AND YEAR(STR_TO_DATE(t.added_on, '%d-%m-%Y')) = ?
-        AND t.withdraw = 0
-    `, [currentMonth, currentYear]);
-
-    // Last month total
-    const [lastMonthData] = await connection.execute(`
-      SELECT SUM(p.amount) as total
-      FROM patient_new p
-      JOIN today_transeciton t ON t.cro = p.cro
-      WHERE MONTH(STR_TO_DATE(t.added_on, '%d-%m-%Y')) = ? 
-        AND YEAR(STR_TO_DATE(t.added_on, '%d-%m-%Y')) = ?
-        AND t.withdraw = 0
-    `, [lastMonth, lastMonthYear]);
-
-    // Today's stats
-    const [todayScans] = await connection.execute(
-      'SELECT COUNT(*) as count FROM patient_new WHERE date = ?', [today]
-    );
-    
-    const [transactions] = await connection.execute(
-      'SELECT SUM(r_amount) as received, SUM(d_amount) as due, SUM(withdraw) as withdraw FROM today_transeciton WHERE added_on = ?', [today]
-    );
-    
-    const received = parseFloat((transactions as any)[0]?.received || 0);
-    const due = parseFloat((transactions as any)[0]?.due || 0);
-    const withdraw = parseFloat((transactions as any)[0]?.withdraw || 0);
-    
-    return NextResponse.json({
-      currentMonthTotal: parseFloat((currentMonthData as any)[0]?.total || 0),
-      lastMonthTotal: parseFloat((lastMonthData as any)[0]?.total || 0),
-      todayScans: (todayScans as any)[0].count,
-      todayReceived: received,
-      todayDue: due,
-      todayWithdraw: withdraw,
-      cashInHand: Math.max(0, received - due - withdraw)
-    });
+    if (response.ok) {
+      return NextResponse.json(data);
+    } else {
+      throw new Error('API request failed');
+    }
     
   } catch (error) {
-    console.error('Dashboard stats error:', error);
+    console.error('Dashboard API Error:', error);
     return NextResponse.json({
       currentMonthTotal: 0,
       lastMonthTotal: 0,
@@ -80,7 +22,5 @@ export async function GET(request: NextRequest) {
       todayWithdraw: 0,
       cashInHand: 0
     });
-  } finally {
-    if (connection) await connection.end();
   }
 }

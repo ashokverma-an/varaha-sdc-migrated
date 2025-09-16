@@ -2,39 +2,34 @@ import { NextRequest, NextResponse } from 'next/server';
 import mysql from 'mysql2/promise';
 
 const dbConfig = {
-  host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || 'RootPass2024!',
+  host: process.env.DB_HOST || '198.54.121.225',
+  user: process.env.DB_USER || 'varaosrc_prc',
+  password: process.env.DB_PASSWORD || 'PRC!@#456&*(',
   database: process.env.DB_NAME || 'varaosrc_hospital_management',
-  port: parseInt(process.env.DB_PORT || '3307'),
+  port: parseInt(process.env.DB_PORT || '3306'),
   connectTimeout: 60000
 };
 
 export async function POST(request: NextRequest) {
-  let connection;
   try {
     const { username, password } = await request.json();
     
-    connection = await mysql.createConnection(dbConfig);
+    // Use live API
+    const response = await fetch('https://varahasdc.co.in/api/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ username, password })
+    });
     
-    const [users] = await connection.execute(
-      'SELECT * FROM admin WHERE username = ? AND password = ?',
-      [username, password]
-    );
+    const data = await response.json();
     
-    if (Array.isArray(users) && users.length > 0) {
-      const user = users[0] as any;
-      return NextResponse.json({
-        success: true,
-        user: {
-          id: user.admin_id,
-          username: user.username,
-          role: user.admin_type
-        }
-      });
+    if (response.ok && data.success) {
+      return NextResponse.json(data);
     } else {
       return NextResponse.json({
-        error: 'Invalid credentials'
+        error: data.error || 'Invalid credentials'
       }, { status: 401 });
     }
     
@@ -43,7 +38,5 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       error: 'Login failed'
     }, { status: 500 });
-  } finally {
-    if (connection) await connection.end();
   }
 }
