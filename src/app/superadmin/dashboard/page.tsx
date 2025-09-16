@@ -40,9 +40,9 @@ export default function SuperAdminDashboard() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="bg-gradient-to-r from-red-600 to-red-700 text-white p-6 rounded-xl shadow-lg">
-        <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
-        <p className="text-red-100 text-lg">Welcome Super Administrator</p>
+      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 rounded-xl shadow-lg">
+        <h1 className="text-3xl font-bold mb-2">Super Admin Dashboard</h1>
+        <p className="text-blue-100 text-lg">Welcome Super Administrator</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

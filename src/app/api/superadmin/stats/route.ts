@@ -15,39 +15,17 @@ export async function GET(request: NextRequest) {
   try {
     connection = await mysql.createConnection(dbConfig);
     
-    const currentYear = new Date().getFullYear();
-    const currentMonth = String(new Date().getMonth() + 1).padStart(2, '0');
-    const lastMonth = String(new Date().getMonth()).padStart(2, '0');
-    const lastMonthYear = new Date().getMonth() === 0 ? currentYear - 1 : currentYear;
-    
     const today = new Date().toLocaleDateString('en-GB', {
       day: '2-digit',
       month: '2-digit', 
       year: 'numeric'
     });
 
-    // Current month total (like sdc_admin blank.php)
-    const [currentMonthData] = await connection.execute(`
-      SELECT SUM(p.amount) as total
-      FROM patient_new p
-      JOIN today_transeciton t ON t.cro = p.cro
-      WHERE MONTH(STR_TO_DATE(t.added_on, '%d-%m-%Y')) = ? 
-        AND YEAR(STR_TO_DATE(t.added_on, '%d-%m-%Y')) = ?
-        AND t.withdraw = 0
-    `, [currentMonth, currentYear]);
-
-    // Last month total
-    const [lastMonthData] = await connection.execute(`
-      SELECT SUM(p.amount) as total
-      FROM patient_new p
-      JOIN today_transeciton t ON t.cro = p.cro
-      WHERE MONTH(STR_TO_DATE(t.added_on, '%d-%m-%Y')) = ? 
-        AND YEAR(STR_TO_DATE(t.added_on, '%d-%m-%Y')) = ?
-        AND t.withdraw = 0
-    `, [lastMonth, lastMonthYear]);
-
-    // Today's stats
-    const [todayScans] = await connection.execute(
+    const [totalAmount] = await connection.execute(
+      'SELECT SUM(amount) as total FROM patient_new WHERE date = ?', [today]
+    );
+    
+    const [scans] = await connection.execute(
       'SELECT COUNT(*) as count FROM patient_new WHERE date = ?', [today]
     );
     
@@ -60,25 +38,23 @@ export async function GET(request: NextRequest) {
     const withdraw = parseFloat((transactions as any)[0]?.withdraw || 0);
     
     return NextResponse.json({
-      currentMonthTotal: parseFloat((currentMonthData as any)[0]?.total || 0),
-      lastMonthTotal: parseFloat((lastMonthData as any)[0]?.total || 0),
-      todayScans: (todayScans as any)[0].count,
+      todayScans: (scans as any)[0].count,
       todayReceived: received,
       todayDue: due,
       todayWithdraw: withdraw,
-      cashInHand: Math.max(0, received - due - withdraw)
+      cashInHand: Math.max(0, received - due - withdraw),
+      totalAmount: parseFloat((totalAmount as any)[0]?.total || 0)
     });
     
   } catch (error) {
-    console.error('Dashboard stats error:', error);
+    console.error('DB Error:', error);
     return NextResponse.json({
-      currentMonthTotal: 0,
-      lastMonthTotal: 0,
       todayScans: 0,
       todayReceived: 0,
       todayDue: 0,
       todayWithdraw: 0,
-      cashInHand: 0
+      cashInHand: 0,
+      totalAmount: 0
     });
   } finally {
     if (connection) await connection.end();

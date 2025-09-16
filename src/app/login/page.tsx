@@ -46,13 +46,13 @@ export default function Login() {
       if (response.ok) {
         localStorage.setItem('user', JSON.stringify(data.user));
         
-        // Redirect based on user role
-        if (data.user.admin_type === 'super_admin') {
-          router.push('/superadmin/dashboard');
-        } else if (data.user.admin_type === 'admin') {
-          router.push('/admin/dashboard');
-        } else {
-          router.push('/dashboard');
+        // Route all users to dashboard like sdc_admin
+        switch(data.user.role) {
+          case 'superadmin':
+            router.push('/superadmin/dashboard');
+            break;
+          default:
+            router.push('/dashboard');
         }
       } else {
         setError(data.error || 'Login failed');
