@@ -10,7 +10,7 @@ import { useParams } from 'next/navigation';
 export default function PendingPatient() {
   const params = useParams();
   const role = params.role as string;
-  const [patients, setPatients] = useState([]);
+  const [patients, setPatients] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);

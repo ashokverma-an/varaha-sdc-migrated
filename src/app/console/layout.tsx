@@ -6,7 +6,7 @@ export default function ConsoleLayout({
   children: React.ReactNode;
 }) {
   return (
-    <Layout userRole="console">
+    <Layout>
       {children}
     </Layout>
   );

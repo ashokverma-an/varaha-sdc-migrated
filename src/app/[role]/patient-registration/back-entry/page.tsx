@@ -12,10 +12,10 @@ export default function PatientRegistrationBackEntry() {
   const role = params.role as string;
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [hospitals, setHospitals] = useState([]);
-  const [doctors, setDoctors] = useState([]);
-  const [scans, setScans] = useState([]);
-  const [lastPatient, setLastPatient] = useState(null);
+  const [hospitals, setHospitals] = useState<any[]>([]);
+  const [doctors, setDoctors] = useState<any[]>([]);
+  const [scans, setScans] = useState<any[]>([]);
+  const [lastPatient, setLastPatient] = useState<{cro: string, patient_name: string} | null>(null);
   const { toast, showToast, hideToast } = useToast();
 
   const [formData, setFormData] = useState({

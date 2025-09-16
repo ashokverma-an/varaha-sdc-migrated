@@ -35,10 +35,10 @@ export default function PatientRegistrationEdit() {
   const [patientData, setPatientData] = useState<PatientData | null>(null);
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
-  const [hospitals, setHospitals] = useState([]);
-  const [doctors, setDoctors] = useState([]);
-  const [scans, setScans] = useState([]);
-  const [timeSlots, setTimeSlots] = useState([]);
+  const [hospitals, setHospitals] = useState<any[]>([]);
+  const [doctors, setDoctors] = useState<any[]>([]);
+  const [scans, setScans] = useState<any[]>([]);
+  const [timeSlots, setTimeSlots] = useState<{time_id: number, time_slot: string}[]>([]);
   const { toast, showToast, hideToast } = useToast();
 
   useEffect(() => {

@@ -6,7 +6,7 @@ export default function SuperAdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <Layout userRole="superadmin">
+    <Layout>
       {children}
     </Layout>
   );

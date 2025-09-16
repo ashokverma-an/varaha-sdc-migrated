@@ -6,7 +6,7 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <Layout userRole="admin">
+    <Layout>
       {children}
     </Layout>
   );
