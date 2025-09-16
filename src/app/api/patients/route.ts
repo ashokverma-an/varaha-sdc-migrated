@@ -1,31 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { dbQuery } from '@/lib/db';
+import { dbQuery, secure } from '@/lib/db';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const { searchParams } = new URL(request.url);
-    const format = searchParams.get('format');
-
-    const query = `
-      SELECT p.*, h.hospital_name, d.dname as doctor_name 
-      FROM patient_new p 
-      LEFT JOIN hospital h ON p.hospital_name = h.h_id 
-      LEFT JOIN doctor d ON p.doctor_name = d.d_id 
-      ORDER BY p.patient_id DESC
-    `;
-
-    const patients = await dbQuery(query);
-
-    if (format === 'excel') {
-      const excelData = generatePatientsExcel(patients);
-      return new NextResponse(excelData, {
-        headers: {
-          'Content-Type': 'application/vnd.ms-excel',
-          'Content-Disposition': `attachment; filename="PATIENTS_LIST_${new Date().toISOString().split('T')[0]}.xls"`
-        }
-      });
-    }
-
+    const patients = await dbQuery('SELECT * FROM patient_new ORDER BY date DESC LIMIT 100');
     return NextResponse.json(patients);
   } catch (error) {
     console.error('Error fetching patients:', error);
@@ -38,57 +16,55 @@ export async function POST(request: NextRequest) {
     const data = await request.json();
     
     // Generate CRO number
-    const croResult = await dbQuery('SELECT MAX(patient_id) as max_id FROM patient_new');
-    const nextId = (croResult[0]?.max_id || 0) + 1;
-    const cro = `CRO${nextId.toString().padStart(6, '0')}`;
+    const today = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
+    const countResult = await dbQuery('SELECT COUNT(*) as count FROM patient_new WHERE date = ?', [today]);
+    const count = countResult[0]?.count || 0;
+    const cro = `VDC/${today}/${count + 1}`;
     
-    const result = await dbQuery(`
+    // Sanitize inputs
+    const patientData = {
+      pre: secure(data.pre || ''),
+      patient_name: secure(data.patient_name || ''),
+      hospital_id: parseInt(data.hospital_id) || 0,
+      doctor_name: parseInt(data.doctor_name) || 0,
+      cro: cro,
+      age: secure(data.age || ''),
+      gender: secure(data.gender || ''),
+      category: secure(data.category || ''),
+      p_uni_id_submit: secure(data.p_uni_id_submit || ''),
+      p_uni_id_name: secure(data.p_uni_id_name || ''),
+      date: today,
+      contact_number: secure(data.contact_number || ''),
+      address: secure(data.address || ''),
+      city: secure(data.city || ''),
+      scan_type: secure(data.scan_type || ''),
+      total_scan: parseInt(data.total_scan) || 0,
+      amount: parseFloat(data.amount) || 0,
+      discount: parseFloat(data.discount) || 0,
+      amount_reci: parseFloat(data.amount_reci) || 0,
+      amount_due: parseFloat(data.amount_due) || 0,
+      allot_date: secure(data.allot_date || ''),
+      allot_time: secure(data.allot_time || ''),
+      scan_date: secure(data.scan_date || ''),
+      admin_id: parseInt(data.admin_id) || 0,
+      scan_status: 0
+    };
+
+    const query = `
       INSERT INTO patient_new (
-        cro, patient_name, age, gender, contact_number, address,
-        hospital_name, doctor_name, category, amount, date,
-        allot_date, allot_time, scan_type, remark, scan_status
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
-    `, [
-      cro, data.patient_name, data.age, data.gender, data.contact_number,
-      data.address, data.hospital_name, data.doctor_name, data.category,
-      data.amount, data.date, data.allot_date, data.allot_time,
-      data.scan_type, data.remark
-    ]);
-    
-    return NextResponse.json({ success: true, id: result.insertId, cro });
+        pre, patient_name, hospital_id, doctor_name, cro, age, gender, category,
+        p_uni_id_submit, p_uni_id_name, date, contact_number, address, city,
+        scan_type, total_scan, amount, discount, amount_reci, amount_due,
+        allot_date, allot_time, scan_date, admin_id, scan_status
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    const values = Object.values(patientData);
+    await dbQuery(query, values);
+
+    return NextResponse.json({ success: true, cro, message: 'Patient registered successfully' });
   } catch (error) {
     console.error('Error creating patient:', error);
     return NextResponse.json({ error: 'Failed to create patient' }, { status: 500 });
   }
-}
-
-function generatePatientsExcel(patients: any[]): string {
-  let excel = `<html><body><table border="1">`;
-  excel += `<tr><th colspan="10">VARAHA SDC - PATIENTS LIST</th></tr>`;
-  excel += `<tr><th>S.No</th><th>CRO</th><th>Patient Name</th><th>Age/Gender</th><th>Contact</th><th>Hospital</th><th>Doctor</th><th>Category</th><th>Amount</th><th>Date</th></tr>`;
-
-  let totalAmount = 0;
-  patients.forEach((patient, index) => {
-    totalAmount += parseFloat(patient.amount || 0);
-    excel += `<tr>`;
-    excel += `<td>${index + 1}</td>`;
-    excel += `<td>${patient.cro || ''}</td>`;
-    excel += `<td>${patient.patient_name || ''}</td>`;
-    excel += `<td>${patient.age || ''}/${patient.gender || ''}</td>`;
-    excel += `<td>${patient.contact_number || ''}</td>`;
-    excel += `<td>${patient.hospital_name || ''}</td>`;
-    excel += `<td>${patient.doctor_name || ''}</td>`;
-    excel += `<td>${patient.category || ''}</td>`;
-    excel += `<td>${patient.amount || 0}</td>`;
-    const date = new Date(patient.date);
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const formattedDate = patient.date ? `${date.getDate()}-${months[date.getMonth()]}-${date.getFullYear()}` : '';
-    excel += `<td>${formattedDate}</td>`;
-    excel += `</tr>`;
-  });
-
-  excel += `<tr><th colspan="8">TOTAL</th><th>${totalAmount}</th><th></th></tr>`;
-  excel += `</table></body></html>`;
-
-  return excel;
 }
