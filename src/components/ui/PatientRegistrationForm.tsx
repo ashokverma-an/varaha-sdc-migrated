@@ -14,7 +14,7 @@ interface PatientRegistrationFormProps {
 export default function PatientRegistrationForm({ isOpen, onClose, onSubmit }: PatientRegistrationFormProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [showReceipt, setShowReceipt] = useState(false);
-  const [receiptData, setReceiptData] = useState(null);
+  const [receiptData, setReceiptData] = useState<any>(null);
   const [formData, setFormData] = useState({
     // Patient Details
     prefix: 'Mr.',
@@ -32,7 +32,7 @@ export default function PatientRegistrationForm({ isOpen, onClose, onSubmit }: P
     doctorId: '',
     
     // Scan Details
-    selectedScans: [],
+    selectedScans: [] as number[],
     appointmentDate: new Date().toISOString().split('T')[0],
     timeSlot: '',
     

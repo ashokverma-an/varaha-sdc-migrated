@@ -158,7 +158,7 @@ export default function Sidebar() {
           <li>
             <ul role="list" className="space-y-1">
               {navigation.map((item) => {
-                if (item.submenu) {
+                if ('submenu' in item && item.submenu) {
                   const isOpen = openMenus.includes(item.name);
                   return (
                     <li key={item.name}>

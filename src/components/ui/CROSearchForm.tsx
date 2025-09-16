@@ -13,10 +13,10 @@ interface CROSearchFormProps {
 export default function CROSearchForm({ onPatientFound }: CROSearchFormProps) {
   const [cro, setCro] = useState('');
   const [loading, setLoading] = useState(false);
-  const [patientData, setPatientData] = useState(null);
+  const [patientData, setPatientData] = useState<any>(null);
   const [showReceipt, setShowReceipt] = useState(false);
   const [showPaymentForm, setShowPaymentForm] = useState(false);
-  const [paymentData, setPaymentData] = useState({
+  const [paymentData, setPaymentData] = useState<{receivedAmount: number, dueAmount: number}>({
     receivedAmount: 0,
     dueAmount: 0
   });
@@ -71,7 +71,7 @@ export default function CROSearchForm({ onPatientFound }: CROSearchFormProps) {
         showToast('Payment processed successfully!', 'success');
         setShowPaymentForm(false);
         // Update patient data with new payment info
-        setPatientData(prev => ({
+        setPatientData((prev: any) => ({
           ...prev,
           amount_reci: paymentData.receivedAmount,
           amount_due: paymentData.dueAmount

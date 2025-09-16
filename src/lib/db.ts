@@ -14,7 +14,7 @@ const primaryDbConfig = {
   acquireTimeout: 60000,
   timeout: 60000,
   reconnect: true,
-  ssl: false
+  ssl: undefined
 };
 
 // Fallback database configuration (Local)
