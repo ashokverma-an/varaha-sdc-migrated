@@ -15,12 +15,13 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [selectedRole, setSelectedRole] = useState('');
 
+  // Updated credentials from database: varaosrc_hospital_management/admin
   const roles = [
-    { id: 'super_admin', name: 'Super Admin', icon: Shield, color: 'from-red-500 to-red-600', bgColor: 'bg-red-50', textColor: 'text-red-700', username: 'super_admin', password: 'Super@Admin123' },
+    { id: 'superadmin', name: 'Super Admin', icon: Shield, color: 'from-red-500 to-red-600', bgColor: 'bg-red-50', textColor: 'text-red-700', username: 'superadmin', password: 'Super@321' },
     { id: 'admin', name: 'Admin', icon: Shield, color: 'from-blue-500 to-blue-600', bgColor: 'bg-blue-50', textColor: 'text-blue-700', username: 'admin', password: 'Admin@Varaha' },
     { id: 'reception', name: 'Reception', icon: UserCheck, color: 'from-rose-500 to-rose-600', bgColor: 'bg-rose-50', textColor: 'text-rose-700', username: 'reception', password: 'Admin@321' },
     { id: 'doctor', name: 'Doctor', icon: Stethoscope, color: 'from-emerald-500 to-emerald-600', bgColor: 'bg-emerald-50', textColor: 'text-emerald-700', username: 'doctor', password: 'Admin@321' },
-    { id: 'accounts', name: 'Accounts', icon: UserCheck, color: 'from-teal-500 to-teal-600', bgColor: 'bg-teal-50', textColor: 'text-teal-700', username: 'nurse', password: 'Admin@321' },
+    { id: 'accounts', name: 'Accounts', icon: UserCheck, color: 'from-teal-500 to-teal-600', bgColor: 'bg-teal-50', textColor: 'text-teal-700', username: 'accounts', password: 'Admin@321' },
     { id: 'console', name: 'Console', icon: Monitor, color: 'from-violet-500 to-violet-600', bgColor: 'bg-violet-50', textColor: 'text-violet-700', username: 'console', password: 'Admin@321' },
   ];
 
@@ -46,10 +47,25 @@ export default function Login() {
       if (response.ok) {
         localStorage.setItem('user', JSON.stringify(data.user));
         
-        // Route all users to dashboard like sdc_admin
+        // Route users based on their role from database
         switch(data.user.role) {
           case 'superadmin':
             router.push('/superadmin/dashboard');
+            break;
+          case 'admin':
+            router.push('/admin/dashboard');
+            break;
+          case 'doctor':
+            router.push('/dashboard');
+            break;
+          case 'reception':
+            router.push('/dashboard');
+            break;
+          case 'console':
+            router.push('/console/dashboard');
+            break;
+          case 'accounts':
+            router.push('/dashboard');
             break;
           default:
             router.push('/dashboard');

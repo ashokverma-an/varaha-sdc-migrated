@@ -1,5 +1,15 @@
-// API Configuration
+// API Configuration - Using external Varaha API
 const API_BASE = 'https://varahasdc.co.in/api';
+
+// User credentials from database
+export const USER_CREDENTIALS = {
+  reception: { username: 'reception', password: 'Admin@321', role: 'reception' },
+  doctor: { username: 'doctor', password: 'Admin@321', role: 'doctor' },
+  console: { username: 'console', password: 'Admin@321', role: 'console' },
+  admin: { username: 'admin', password: 'Admin@Varaha', role: 'admin' },
+  accounts: { username: 'accounts', password: 'Admin@321', role: 'accounts' },
+  superadmin: { username: 'superadmin', password: 'Super@321', role: 'superadmin' }
+};
 
 // API Client
 class ApiClient {
@@ -243,6 +253,104 @@ class ApiClient {
   async getScans() {
     return this.request('/patients/scans');
   }
+
+  // Patient Registration
+  async registerPatient(patientData: {
+    patient_name: string;
+    age: number;
+    gender: string;
+    mobile: string;
+    doctor_name: number;
+    hospital_id: number;
+    scan_type: number;
+    amount: number;
+    appointment_date?: string;
+    appointment_time?: string;
+    notes?: string;
+  }) {
+    return this.request('/patients/register', {
+      method: 'POST',
+      body: JSON.stringify(patientData),
+    });
+  }
+
+  // Slot Management
+  async getAvailableSlots(date: string, doctorId?: number) {
+    const params = new URLSearchParams();
+    params.append('date', date);
+    if (doctorId) params.append('doctor_id', doctorId.toString());
+    
+    return this.request(`/patients/slots/available?${params}`);
+  }
+
+  // Patient Status Updates
+  async updatePatientStatus(patientId: number, status: string, notes?: string) {
+    return this.request(`/patients/${patientId}/update-status`, {
+      method: 'PUT',
+      body: JSON.stringify({ status, notes }),
+    });
+  }
+
+  // Patient Search
+  async searchPatients(params: {
+    q?: string;
+    date_from?: string;
+    date_to?: string;
+    status?: string;
+    doctor_id?: number;
+    limit?: number;
+  }) {
+    const searchParams = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined) {
+        searchParams.append(key, value.toString());
+      }
+    });
+    
+    return this.request(`/patients/search?${searchParams}`);
+  }
+
+  // Dashboard APIs
+  async getRecentPatients(limit: number = 10) {
+    return this.request(`/dashboard/recent-patients?limit=${limit}`);
+  }
+
+  async getQuickStats() {
+    return this.request('/dashboard/quick-stats');
+  }
+
+  async getTodayAppointments() {
+    return this.request('/dashboard/appointments-today');
+  }
+
+  // Reports APIs
+  async getFinancialSummary(fromDate?: string, toDate?: string) {
+    const params = new URLSearchParams();
+    if (fromDate) params.append('from_date', fromDate);
+    if (toDate) params.append('to_date', toDate);
+    
+    return this.request(`/reports/financial-summary?${params}`);
+  }
+
+  async getMonthlyAnalytics(year?: number) {
+    const params = new URLSearchParams();
+    if (year) params.append('year', year.toString());
+    
+    return this.request(`/reports/monthly-analytics?${params}`);
+  }
+
+  async getPatientStatusReport(fromDate?: string, toDate?: string) {
+    const params = new URLSearchParams();
+    if (fromDate) params.append('from_date', fromDate);
+    if (toDate) params.append('to_date', toDate);
+    
+    return this.request(`/reports/patient-status-report?${params}`);
+  }
+
+  // Health Check
+  async healthCheck() {
+    return this.request('/health');
+  }
 }
 
 // Create API client instance
@@ -280,6 +388,33 @@ export interface Patient {
   doctor_name?: string;
   hospital_name?: string;
   scan_name?: string;
+  status?: string;
+  appointment_date?: string;
+  appointment_time?: string;
+  notes?: string;
+}
+
+export interface Doctor {
+  d_id: number;
+  doctor_name: string;
+  specialization?: string;
+  phone?: string;
+  email?: string;
+}
+
+export interface Hospital {
+  h_id: number;
+  hospital_name: string;
+  address?: string;
+  phone?: string;
+  email?: string;
+}
+
+export interface Scan {
+  scan_id: number;
+  scan_name: string;
+  price?: number;
+  description?: string;
 }
 
 export interface DashboardStats {
