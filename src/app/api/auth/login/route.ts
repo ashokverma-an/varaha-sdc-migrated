@@ -14,8 +14,9 @@ export async function POST(request: NextRequest) {
   try {
     const { username, password } = await request.json();
     
-    // Use live API
-    const response = await fetch('https://varahasdc.co.in/api/auth/login', {
+    // Use dynamic API URL
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.API_BASE_URL || 'https://varahasdc.co.in/api';
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

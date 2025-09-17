@@ -36,7 +36,8 @@ export default function Login() {
     setError('');
 
     try {
-      const response = await fetch('/api/auth/login', {
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://varahasdc.co.in/api';
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),

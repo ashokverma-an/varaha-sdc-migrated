@@ -12,25 +12,43 @@ const dbConfig = {
 
 export async function GET(request: NextRequest) {
   try {
-    // Use live API
-    const response = await fetch('https://varahasdc.co.in/api/superadmin/stats');
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.API_BASE_URL || 'https://varahasdc.co.in/api';
+    const apiUrl = `${API_BASE_URL}/superadmin/stats`;
+    
+    console.log('Calling external API:', apiUrl);
+    
+    const response = await fetch(apiUrl, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      cache: 'no-store' // Ensure fresh data
+    });
+    
+    console.log('External API response status:', response.status);
+    
     const data = await response.json();
+    console.log('External API response data:', data);
     
     if (response.ok) {
       return NextResponse.json(data);
     } else {
-      throw new Error('API request failed');
+      console.error('External API error:', data);
+      throw new Error(data.error || 'API request failed');
     }
     
   } catch (error) {
-    console.error('API Error:', error);
+    console.error('Superadmin stats API Error:', error);
+    
+    // Return fallback data
     return NextResponse.json({
       todayScans: 0,
       todayReceived: 0,
       todayDue: 0,
       todayWithdraw: 0,
       cashInHand: 0,
-      totalAmount: 0
+      totalAmount: 0,
+      error: 'Failed to fetch stats from external API'
     });
   }
 }
