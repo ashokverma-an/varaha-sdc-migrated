@@ -84,7 +84,7 @@ export default function RoleBasedSidebar({ userRole }: SidebarProps) {
       color: 'from-sky-500 to-sky-600',
       bgColor: 'bg-sky-50',
       menus: [
-        { id: 'dashboard', label: 'Dashboard', icon: BarChart3, href: '/dashboard' },
+        { id: 'dashboard', label: 'Dashboard', icon: BarChart3, href: '/reception/dashboard' },
         { id: 'hospital', label: 'Hospital', icon: Hospital, href: '/reception/hospitals' },
         { id: 'doctor', label: 'Doctor', icon: Stethoscope, href: '/reception/doctors' },
         { id: 'scans', label: 'Scans', icon: Camera, href: '/reception/scans' },
@@ -137,16 +137,15 @@ export default function RoleBasedSidebar({ userRole }: SidebarProps) {
       color: 'from-emerald-600 to-emerald-700',
       bgColor: 'bg-emerald-50',
       menus: [
-        { id: 'dashboard', label: 'Dashboard', icon: BarChart3, href: '/dashboard' },
-        { id: 'doctor', label: 'Doctor', icon: Stethoscope, href: '/doctor/doctors' },
-        { id: 'scans', label: 'Scans', icon: Camera, href: '/doctor/scans' },
+        { id: 'dashboard', label: 'Dashboard', icon: BarChart3, href: '/doctor/dashboard' },
+        { id: 'doctor', label: 'Doctor', icon: Stethoscope, href: '/doctor/ct-scan-doctor-list' },
         { 
           id: 'patient-report', 
           label: 'Patient Report', 
           icon: FileText, 
           submenu: [
-            { label: 'Pending Reports', href: '/patient-report/pending', icon: Clock },
-            { label: 'View Reports', href: '/patient-report/view', icon: FileText }
+            { label: 'Pending Reports', href: '/doctor/report-pending-list', icon: Clock },
+            { label: 'View Reports', href: '/doctor/view-report', icon: FileText }
           ]
         }
       ]

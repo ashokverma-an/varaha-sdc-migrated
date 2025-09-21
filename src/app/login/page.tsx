@@ -57,10 +57,10 @@ export default function Login() {
             router.push('/admin/dashboard');
             break;
           case 'doctor':
-            router.push('/dashboard');
+            router.push('/doctor/dashboard');
             break;
           case 'reception':
-            router.push('/dashboard');
+            router.push('/reception/dashboard');
             break;
           case 'console':
             router.push('/console/dashboard');
