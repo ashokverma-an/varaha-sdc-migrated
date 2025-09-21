@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Download, Calendar, TrendingUp, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Download, Calendar, TrendingUp, ChevronLeft, ChevronRight, Search, Filter } from 'lucide-react';
+import SuperAdminLayout, { Card, Table, TableHeader, TableHeaderCell, TableBody, TableRow, TableCell, Button, Pagination } from '@/components/SuperAdminLayout';
 
 interface RevenueData {
   cro: string;
@@ -26,9 +27,13 @@ const formatDateForDisplay = (dateStr: string) => {
 
 export default function RevenueReport() {
   const [revenueData, setRevenueData] = useState<RevenueData[]>([]);
+  const [filteredData, setFilteredData] = useState<RevenueData[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('');
+  
   // Set default dates: from one year ago to today
   const today = new Date();
   const oneYearAgo = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
@@ -53,6 +58,7 @@ export default function RevenueReport() {
       if (response.ok) {
         const data = await response.json();
         setRevenueData(data.data || []);
+        setFilteredData(data.data || []);
       }
     } catch (error) {
       console.error('Error fetching revenue data:', error);
@@ -61,9 +67,34 @@ export default function RevenueReport() {
     }
   };
 
-  const totalPages = Math.ceil(revenueData.length / itemsPerPage);
+  // Filter and search logic
+  useEffect(() => {
+    let filtered = revenueData;
+    
+    if (searchTerm) {
+      filtered = filtered.filter(item => 
+        item.cro.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.patient_name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    
+    if (categoryFilter) {
+      filtered = filtered.filter(item => item.category === categoryFilter);
+    }
+    
+    setFilteredData(filtered);
+    setCurrentPage(1);
+  }, [revenueData, searchTerm, categoryFilter]);
+
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedRevenue = revenueData.slice(startIndex, startIndex + itemsPerPage);
+  const paginatedRevenue = filteredData.slice(startIndex, startIndex + itemsPerPage);
+  
+  const uniqueCategories = [...new Set(revenueData.map(item => item.category))].filter(Boolean);
+
+  const handleSearch = () => {
+    fetchRevenueData();
+  };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -79,142 +110,144 @@ export default function RevenueReport() {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900">Revenue Report</h1>
-        <button
-          onClick={handleDownloadExcel}
-          className="flex items-center space-x-2 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-        >
-          <Download className="h-5 w-5" />
-          <span>Download Excel</span>
-        </button>
-      </div>
+    <SuperAdminLayout 
+      title="Revenue Report" 
+      subtitle="Console Revenue Analysis"
+      actions={
+        <Button onClick={handleDownloadExcel} variant="success">
+          <Download className="h-4 w-4 mr-2" />
+          Download Excel
+        </Button>
+      }
+    >
+      <div className="space-y-4">
 
-      <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+      <Card className="p-4">
         <div className="flex items-center space-x-2 mb-4">
-          <TrendingUp className="h-6 w-6 text-blue-600" />
-          <h2 className="text-xl font-semibold text-gray-900">Revenue Report Filter</h2>
+          <Filter className="h-5 w-5 text-gray-600" />
+          <h2 className="text-lg font-semibold text-gray-900">Filters & Search</h2>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">From Date</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">From Date</label>
             <input
               type="date"
               value={dateFilter.from_date}
               onChange={(e) => setDateFilter(prev => ({ ...prev, from_date: e.target.value }))}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">To Date</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">To Date</label>
             <input
               type="date"
               value={dateFilter.to_date}
               onChange={(e) => setDateFilter(prev => ({ ...prev, to_date: e.target.value }))}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
-        </div>
-      </div>
-
-      {/* Revenue Table */}
-      <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">Revenue Data</h2>
-        </div>
-        
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">S. No.</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CRO</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Age</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Scan Type</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Films</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Scans</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {loading ? (
-                <tr>
-                  <td colSpan={9} className="px-6 py-4 text-center text-gray-500">Loading...</td>
-                </tr>
-              ) : revenueData.length === 0 ? (
-                <tr>
-                  <td colSpan={9} className="px-6 py-4 text-center text-gray-500">No revenue data found for selected date range</td>
-                </tr>
-              ) : (
-                paginatedRevenue.map((revenue, index) => (
-                  <tr key={revenue.cro} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{startIndex + index + 1}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">{revenue.cro}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{revenue.patient_name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{revenue.age}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{revenue.category}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{revenue.scan_type}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{revenue.number_films}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{revenue.number_scan}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">₹{revenue.amount}</td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-        
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="px-6 py-4 border-t border-gray-200">
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-700">
-                Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, revenueData.length)} of {revenueData.length} results
-              </div>
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  className="flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <ChevronLeft className="h-4 w-4 mr-1" />
-                  Previous
-                </button>
-                
-                <div className="flex items-center space-x-1">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                    <button
-                      key={page}
-                      onClick={() => handlePageChange(page)}
-                      className={`px-3 py-2 text-sm font-medium rounded-lg ${
-                        currentPage === page
-                          ? 'bg-red-600 text-white'
-                          : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
-                      }`}
-                    >
-                      {page}
-                    </button>
-                  ))}
-                </div>
-                
-                <button
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  className="flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Next
-                  <ChevronRight className="h-4 w-4 ml-1" />
-                </button>
-              </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
+            <div className="relative">
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search CRO or Patient..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
             </div>
           </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+            <select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="">All Categories</option>
+              {uniqueCategories.map(category => (
+                <option key={category} value={category}>{category}</option>
+              ))}
+            </select>
+          </div>
+          
+          <div className="flex items-end">
+            <Button onClick={handleSearch} className="w-full">
+              <Search className="h-4 w-4 mr-2" />
+              Search
+            </Button>
+          </div>
+        </div>
+      </Card>
+
+      <Card>
+        <div className="px-4 py-3 border-b border-gray-200">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-gray-900">Revenue Data</h2>
+            <span className="text-sm text-gray-500">{filteredData.length} records</span>
+          </div>
+        </div>
+        
+        <Table>
+          <TableHeader>
+            <TableHeaderCell>S. No.</TableHeaderCell>
+            <TableHeaderCell>CRO</TableHeaderCell>
+            <TableHeaderCell>Patient Name</TableHeaderCell>
+            <TableHeaderCell>Age</TableHeaderCell>
+            <TableHeaderCell>Category</TableHeaderCell>
+            <TableHeaderCell>Scan Type</TableHeaderCell>
+            <TableHeaderCell>Films</TableHeaderCell>
+            <TableHeaderCell>Scans</TableHeaderCell>
+            <TableHeaderCell>Amount</TableHeaderCell>
+          </TableHeader>
+          <TableBody>
+            {loading ? (
+              <TableRow>
+                <TableCell className="text-center" colSpan={9}>Loading...</TableCell>
+              </TableRow>
+            ) : filteredData.length === 0 ? (
+              <TableRow>
+                <TableCell className="text-center" colSpan={9}>No revenue data found</TableCell>
+              </TableRow>
+            ) : (
+              paginatedRevenue.map((revenue, index) => (
+                <TableRow key={revenue.cro}>
+                  <TableCell>{startIndex + index + 1}</TableCell>
+                  <TableCell className="font-medium text-blue-600">{revenue.cro}</TableCell>
+                  <TableCell>{revenue.patient_name}</TableCell>
+                  <TableCell>{revenue.age}</TableCell>
+                  <TableCell>
+                    <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">
+                      {revenue.category}
+                    </span>
+                  </TableCell>
+                  <TableCell className="max-w-xs truncate">{revenue.scan_type}</TableCell>
+                  <TableCell>{revenue.number_films}</TableCell>
+                  <TableCell>{revenue.number_scan}</TableCell>
+                  <TableCell className="font-medium text-green-600">₹{revenue.amount}</TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+        
+        {totalPages > 1 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            totalItems={filteredData.length}
+            itemsPerPage={itemsPerPage}
+          />
         )}
+      </Card>
       </div>
-    </div>
+    </SuperAdminLayout>
   );
 }

@@ -67,7 +67,7 @@ export function TableHeader({ children }: { children: ReactNode }) {
 // Table Header Cell
 export function TableHeaderCell({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
-    <th className={`px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${className}`}>
+    <th className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${className}`}>
       {children}
     </th>
   );
@@ -94,7 +94,7 @@ export function TableRow({ children, className = '' }: { children: ReactNode; cl
 // Table Cell
 export function TableCell({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
-    <td className={`px-4 py-3 text-sm text-gray-900 ${className}`}>
+    <td className={`px-6 py-4 whitespace-nowrap text-sm text-gray-900 ${className}`}>
       {children}
     </td>
   );

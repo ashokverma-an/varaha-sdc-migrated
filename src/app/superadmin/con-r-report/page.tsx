@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Download, Monitor, Calendar } from 'lucide-react';
+import { Download, Monitor, Calendar, Search, Filter } from 'lucide-react';
+import SuperAdminLayout, { Card, Table, TableHeader, TableHeaderCell, TableBody, TableRow, TableCell, Button, Pagination } from '@/components/SuperAdminLayout';
 
 interface ConsoleData {
   cro: string;
@@ -24,9 +25,11 @@ interface ConsoleData {
 
 export default function ConsoleReport() {
   const [consoleData, setConsoleData] = useState<ConsoleData[]>([]);
+  const [filteredData, setFilteredData] = useState<ConsoleData[]>([]);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
+  const [searchTerm, setSearchTerm] = useState('');
   
   // Set default dates: from one year ago to today
   const today = new Date();
@@ -52,6 +55,7 @@ export default function ConsoleReport() {
       if (response.ok) {
         const data = await response.json();
         setConsoleData(data.data || []);
+        setFilteredData(data.data || []);
       }
     } catch (error) {
       console.error('Error fetching console data:', error);
@@ -69,9 +73,24 @@ export default function ConsoleReport() {
     window.open(`https://varahasdc.co.in/api/superadmin/console-report?${params}`, '_blank');
   };
 
-  const totalPages = Math.ceil(consoleData.length / itemsPerPage);
+  // Filter data based on search
+  useEffect(() => {
+    let filtered = consoleData;
+    
+    if (searchTerm) {
+      filtered = filtered.filter(item => 
+        item.cro.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.patient_name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    
+    setFilteredData(filtered);
+    setCurrentPage(1);
+  }, [consoleData, searchTerm]);
+
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedData = consoleData.slice(startIndex, startIndex + itemsPerPage);
+  const paginatedData = filteredData.slice(startIndex, startIndex + itemsPerPage);
 
   return (
     <div className="p-6 space-y-6">
