@@ -29,7 +29,7 @@ export default function ReceptionDashboard() {
   const fetchReceptionStats = async () => {
     try {
       const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://varahasdc.co.in/api';
-      const response = await fetch(`${API_BASE_URL}/reception/stats`);
+      const response = await fetch(`${API_BASE_URL}/admin/stats`);
       if (response.ok) {
         const data = await response.json();
         setStats(data);
