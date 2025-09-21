@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { UserEdit, Save, RotateCcw, ArrowLeft, ArrowRight, Search } from 'lucide-react';
+import { User, Save, RotateCcw, ArrowLeft, ArrowRight, Search } from 'lucide-react';
 
 interface HospitalData {
   h_id: number;
