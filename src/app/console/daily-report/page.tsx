@@ -1,40 +1,41 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Calendar, Download, Monitor } from 'lucide-react';
+import { FileText, Download, Calendar } from 'lucide-react';
 
-interface ConsoleReport {
-  id: number;
-  c_p_cro: string;
-  examination_id: string;
-  number_films: number;
-  number_contrast: number;
-  number_scan: number;
-  start_time: string;
-  stop_time: string;
-  technician_name: string;
+interface ReportData {
+  date: string;
+  cro_number: string;
+  patient_name: string;
+  age: number;
+  gender: string;
+  category: string;
+  scan_type: string;
   status: string;
-  added_on: string;
+  start_time: string;
+  end_time: string;
+  duration: string;
 }
 
 export default function ConsoleDailyReport() {
-  const [reports, setReports] = useState<ConsoleReport[]>([]);
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-  const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const [reports, setReports] = useState<ReportData[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [dateRange, setDateRange] = useState({
+    from: new Date().toISOString().split('T')[0],
+    to: new Date().toISOString().split('T')[0]
+  });
 
   useEffect(() => {
     fetchReports();
-  }, [selectedDate]);
+  }, []);
 
   const fetchReports = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/console/daily-report?date=${selectedDate}`);
+      const response = await fetch(`/api/console/daily-report?from=${dateRange.from}&to=${dateRange.to}`);
       if (response.ok) {
         const data = await response.json();
-        setReports(data);
+        setReports(data.data || []);
       }
     } catch (error) {
       console.error('Error fetching reports:', error);
@@ -43,176 +44,139 @@ export default function ConsoleDailyReport() {
     }
   };
 
-  const handleDownload = () => {
-    window.open(`/api/console/daily-report?date=${selectedDate}&format=excel`, '_blank');
+  const exportToExcel = () => {
+    const csvContent = [
+      ['Date', 'CRO Number', 'Patient Name', 'Age', 'Gender', 'Category', 'Scan Type', 'Status', 'Start Time', 'End Time', 'Duration'],
+      ...reports.map(report => [
+        report.date,
+        report.cro_number,
+        report.patient_name,
+        report.age,
+        report.gender,
+        report.category,
+        report.scan_type,
+        report.status,
+        report.start_time,
+        report.end_time,
+        report.duration
+      ])
+    ].map(row => row.join(',')).join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `console-daily-report-${dateRange.from}-to-${dateRange.to}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
   };
 
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-gray-900">Console Daily Report</h1>
-        <button
-          onClick={handleDownload}
-          className="flex items-center space-x-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <Download className="h-5 w-5" />
-          <span>Download Excel</span>
-        </button>
+        <div className="flex items-center space-x-2">
+          <FileText className="h-6 w-6 text-red-600" />
+          <span className="text-lg font-medium text-gray-700">Daily Report</span>
+        </div>
       </div>
 
       <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            <Calendar className="h-4 w-4 inline mr-2" />
-            Select Date
-          </label>
-          <input
-            type="date"
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
-        </div>
-
-        {/* Pagination Info */}
-        {reports.length > 0 && (
-          <div className="flex justify-between items-center mb-4">
-            <div className="text-sm text-gray-600">
-              Total: {reports.length} records
-            </div>
-            <div className="flex space-x-2">
-              <button
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-                className="px-3 py-1 border rounded disabled:opacity-50 hover:bg-gray-50"
-              >
-                Previous
-              </button>
-              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded">
-                Page {currentPage} of {Math.ceil(reports.length / itemsPerPage)}
-              </span>
-              <button
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(reports.length / itemsPerPage)))}
-                disabled={currentPage >= Math.ceil(reports.length / itemsPerPage)}
-                className="px-3 py-1 border rounded disabled:opacity-50 hover:bg-gray-50"
-              >
-                Next
-              </button>
-            </div>
+        <div className="flex items-center space-x-4 mb-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">From Date</label>
+            <input
+              type="date"
+              value={dateRange.from}
+              onChange={(e) => setDateRange(prev => ({ ...prev, from: e.target.value }))}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+            />
           </div>
-        )}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">To Date</label>
+            <input
+              type="date"
+              value={dateRange.to}
+              onChange={(e) => setDateRange(prev => ({ ...prev, to: e.target.value }))}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+            />
+          </div>
+          <div className="flex space-x-2 mt-6">
+            <button
+              onClick={fetchReports}
+              disabled={loading}
+              className="flex items-center space-x-2 px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+            >
+              <Calendar className="h-5 w-5" />
+              <span>{loading ? 'Loading...' : 'Generate Report'}</span>
+            </button>
+            <button
+              onClick={exportToExcel}
+              disabled={reports.length === 0}
+              className="flex items-center space-x-2 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+            >
+              <Download className="h-5 w-5" />
+              <span>Export Excel</span>
+            </button>
+          </div>
+        </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">S.No</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CRO</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Exam ID</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Films</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contrast</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Scans</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start Time</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stop Time</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Technician</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+          <table className="w-full border-collapse border border-gray-300">
+            <thead>
+              <tr className="bg-red-50">
+                <th className="border border-gray-300 px-4 py-2 text-left">S.No</th>
+                <th className="border border-gray-300 px-4 py-2 text-left">Date</th>
+                <th className="border border-gray-300 px-4 py-2 text-left">CRO Number</th>
+                <th className="border border-gray-300 px-4 py-2 text-left">Patient Name</th>
+                <th className="border border-gray-300 px-4 py-2 text-left">Age/Gender</th>
+                <th className="border border-gray-300 px-4 py-2 text-left">Category</th>
+                <th className="border border-gray-300 px-4 py-2 text-left">Scan Type</th>
+                <th className="border border-gray-300 px-4 py-2 text-left">Status</th>
+                <th className="border border-gray-300 px-4 py-2 text-left">Duration</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {loading ? (
-                <tr>
-                  <td colSpan={10} className="px-6 py-4 text-center text-gray-500">Loading...</td>
+            <tbody>
+              {reports.map((report, index) => (
+                <tr key={index} className="hover:bg-gray-50">
+                  <td className="border border-gray-300 px-4 py-2">{index + 1}</td>
+                  <td className="border border-gray-300 px-4 py-2">{report.date}</td>
+                  <td className="border border-gray-300 px-4 py-2 font-medium text-blue-600">
+                    {report.cro_number}
+                  </td>
+                  <td className="border border-gray-300 px-4 py-2">{report.patient_name}</td>
+                  <td className="border border-gray-300 px-4 py-2">{report.age}/{report.gender}</td>
+                  <td className="border border-gray-300 px-4 py-2">
+                    <span className={`px-2 py-1 rounded text-xs ${
+                      report.category === 'OPD FREE' || report.category === 'IPD FREE' 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-blue-100 text-blue-800'
+                    }`}>
+                      {report.category}
+                    </span>
+                  </td>
+                  <td className="border border-gray-300 px-4 py-2">{report.scan_type}</td>
+                  <td className="border border-gray-300 px-4 py-2">
+                    <span className={`px-2 py-1 rounded text-xs ${
+                      report.status === 'Completed' 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {report.status}
+                    </span>
+                  </td>
+                  <td className="border border-gray-300 px-4 py-2">{report.duration || '--'}</td>
                 </tr>
-              ) : reports.length === 0 ? (
-                <tr>
-                  <td colSpan={10} className="px-6 py-4 text-center text-gray-500">No reports found</td>
-                </tr>
-              ) : (
-                reports
-                  .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-                  .map((report, index) => (
-                  <tr key={report.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{((currentPage - 1) * itemsPerPage) + index + 1}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{report.c_p_cro}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{report.examination_id}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{report.number_films}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{report.number_contrast}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{report.number_scan}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{report.start_time}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{report.stop_time}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{report.technician_name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 text-xs rounded-full ${
-                        report.status === 'Complete' ? 'bg-green-100 text-green-800' :
-                        report.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-red-100 text-red-800'
-                      }`}>
-                        {report.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))
-              )}
+              ))}
             </tbody>
           </table>
-        </div>
-        
-        {/* Bottom Pagination */}
-        {reports.length > itemsPerPage && (
-          <div className="flex justify-center mt-6">
-            <div className="flex space-x-2">
-              <button
-                onClick={() => setCurrentPage(1)}
-                disabled={currentPage === 1}
-                className="px-3 py-2 border rounded disabled:opacity-50 hover:bg-gray-50"
-              >
-                First
-              </button>
-              <button
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-                className="px-3 py-2 border rounded disabled:opacity-50 hover:bg-gray-50"
-              >
-                Previous
-              </button>
-              
-              {Array.from({ length: Math.min(5, Math.ceil(reports.length / itemsPerPage)) }, (_, i) => {
-                const pageNum = Math.max(1, currentPage - 2) + i;
-                if (pageNum <= Math.ceil(reports.length / itemsPerPage)) {
-                  return (
-                    <button
-                      key={pageNum}
-                      onClick={() => setCurrentPage(pageNum)}
-                      className={`px-3 py-2 border rounded ${
-                        currentPage === pageNum 
-                          ? 'bg-blue-600 text-white' 
-                          : 'hover:bg-gray-50'
-                      }`}
-                    >
-                      {pageNum}
-                    </button>
-                  );
-                }
-                return null;
-              })}
-              
-              <button
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(reports.length / itemsPerPage)))}
-                disabled={currentPage >= Math.ceil(reports.length / itemsPerPage)}
-                className="px-3 py-2 border rounded disabled:opacity-50 hover:bg-gray-50"
-              >
-                Next
-              </button>
-              <button
-                onClick={() => setCurrentPage(Math.ceil(reports.length / itemsPerPage))}
-                disabled={currentPage >= Math.ceil(reports.length / itemsPerPage)}
-                className="px-3 py-2 border rounded disabled:opacity-50 hover:bg-gray-50"
-              >
-                Last
-              </button>
+          
+          {reports.length === 0 && (
+            <div className="text-center py-8 text-gray-500">
+              {loading ? 'Loading reports...' : 'No reports found for selected date range'}
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
