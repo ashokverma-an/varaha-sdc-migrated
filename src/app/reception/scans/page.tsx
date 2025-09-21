@@ -26,8 +26,7 @@ export default function ReceptionScans() {
 
   const fetchScans = async () => {
     try {
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://varahasdc.co.in/api';
-      const response = await fetch(`${API_BASE_URL}/admin/scans`);
+      const response = await fetch('/api/reception/scans');
       if (response.ok) {
         const data = await response.json();
         setScans(data.data || []);

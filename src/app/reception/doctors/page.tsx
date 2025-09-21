@@ -25,8 +25,7 @@ export default function ReceptionDoctors() {
 
   const fetchDoctors = async () => {
     try {
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://varahasdc.co.in/api';
-      const response = await fetch(`${API_BASE_URL}/admin/doctors`);
+      const response = await fetch('/api/reception/doctors');
       if (response.ok) {
         const data = await response.json();
         setDoctors(data || []);
