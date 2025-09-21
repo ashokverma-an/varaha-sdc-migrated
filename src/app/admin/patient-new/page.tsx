@@ -49,7 +49,7 @@ export default function PatientRegistration() {
     try {
       const [hospitalsRes, doctorsRes, categoriesRes] = await Promise.all([
         fetch('https://varahasdc.co.in/api/admin/hospitals'),
-        fetch('https://varahasdc.co.in/api/superadmin/doctors'),
+        fetch('https://varahasdc.co.in/api/admin/doctors'),
         fetch('https://varahasdc.co.in/api/admin/categories')
       ]);
 
@@ -59,7 +59,7 @@ export default function PatientRegistration() {
       }
       if (doctorsRes.ok) {
         const data = await doctorsRes.json();
-        setDoctors(data.data || data || []);
+        setDoctors(data || []);
       }
       if (categoriesRes.ok) {
         const data = await categoriesRes.json();
@@ -128,7 +128,7 @@ export default function PatientRegistration() {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-gray-900">Patient Registration</h1>
         <div className="flex items-center space-x-2">
-          <UserPlus className="h-6 w-6 text-blue-600" />
+          <UserPlus className="h-6 w-6 text-red-600" />
           <span className="text-lg font-medium text-gray-700">New Patient</span>
         </div>
       </div>

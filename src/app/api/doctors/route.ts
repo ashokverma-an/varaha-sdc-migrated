@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
   try {
-    const response = await fetch('https://varahasdc.co.in/api/superadmin/doctors');
+    const response = await fetch('https://varahasdc.co.in/api/admin/doctors');
     
     if (!response.ok) {
       throw new Error(`API responded with status: ${response.status}`);

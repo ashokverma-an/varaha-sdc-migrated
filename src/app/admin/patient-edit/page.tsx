@@ -80,7 +80,7 @@ export default function PatientEdit() {
     try {
       const [hospitalsRes, doctorsRes, categoriesRes] = await Promise.all([
         fetch('https://varahasdc.co.in/api/admin/hospitals'),
-        fetch('https://varahasdc.co.in/api/superadmin/doctors'),
+        fetch('https://varahasdc.co.in/api/admin/doctors'),
         fetch('https://varahasdc.co.in/api/admin/categories')
       ]);
 
@@ -90,7 +90,7 @@ export default function PatientEdit() {
       }
       if (doctorsRes.ok) {
         const data = await doctorsRes.json();
-        setDoctors(data.data || data || []);
+        setDoctors(data || []);
       }
       if (categoriesRes.ok) {
         const data = await categoriesRes.json();
