@@ -81,14 +81,14 @@ export default function DailyRevenueReport() {
           <meta charset="utf-8">
           <style>
             table { border-collapse: collapse; width: 100%; font-family: Arial, sans-serif; }
-            th { background-color: #4472C4; color: white; font-weight: bold; padding: 8px; border: 1px solid #ccc; text-align: center; }
+            th { background-color: #dc2626; color: white; font-weight: bold; padding: 8px; border: 1px solid #ccc; text-align: center; }
             td { padding: 6px; border: 1px solid #ccc; text-align: left; }
             .number { text-align: right; }
             .center { text-align: center; }
           </style>
         </head>
         <body>
-          <h2 style="text-align: center; color: #4472C4;">Daily Revenue Report (${dateFilter.from_date} to ${dateFilter.to_date})</h2>
+          <h2 style="text-align: center; color: #dc2626;">Daily Revenue Report (${dateFilter.from_date} to ${dateFilter.to_date})</h2>
           <table>
             <thead>
               <tr>
@@ -148,7 +148,7 @@ export default function DailyRevenueReport() {
                 type="date"
                 value={dateFilter.from_date}
                 onChange={(e) => setDateFilter(prev => ({ ...prev, from_date: e.target.value }))}
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-transparent"
               />
             </div>
             <div>
@@ -157,7 +157,7 @@ export default function DailyRevenueReport() {
                 type="date"
                 value={dateFilter.to_date}
                 onChange={(e) => setDateFilter(prev => ({ ...prev, to_date: e.target.value }))}
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-transparent"
               />
             </div>
             <div>
@@ -169,7 +169,7 @@ export default function DailyRevenueReport() {
                   placeholder="Search CRO or Patient..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-10 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 />
               </div>
             </div>
@@ -215,7 +215,7 @@ export default function DailyRevenueReport() {
                   <TableRow key={item.cro}>
                     <TableCell>{startIndex + index + 1}</TableCell>
                     <TableCell>{item.date}</TableCell>
-                    <TableCell className="font-medium text-blue-600">{item.cro}</TableCell>
+                    <TableCell className="font-medium text-red-600">{item.cro}</TableCell>
                     <TableCell>{item.patient_name}</TableCell>
                     <TableCell>
                       <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">

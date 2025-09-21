@@ -120,13 +120,13 @@ export default function HospitalManagement() {
           <meta charset="utf-8">
           <style>
             table { border-collapse: collapse; width: 100%; font-family: Arial, sans-serif; }
-            th { background-color: #4472C4; color: white; font-weight: bold; padding: 8px; border: 1px solid #ccc; text-align: center; }
+            th { background-color: #dc2626; color: white; font-weight: bold; padding: 8px; border: 1px solid #ccc; text-align: center; }
             td { padding: 6px; border: 1px solid #ccc; text-align: left; }
             .center { text-align: center; }
           </style>
         </head>
         <body>
-          <h2 style="text-align: center; color: #4472C4;">Hospital List</h2>
+          <h2 style="text-align: center; color: #dc2626;">Hospital List</h2>
           <table>
             <thead>
               <tr>
