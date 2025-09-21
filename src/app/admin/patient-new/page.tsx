@@ -5,7 +5,7 @@ import { UserPlus, Save, RotateCcw } from 'lucide-react';
 
 interface HospitalData {
   h_id: number;
-  hospital_name: string;
+  h_name: string;
 }
 
 interface DoctorData {
@@ -14,9 +14,9 @@ interface DoctorData {
 }
 
 interface CategoryData {
-  c_id: number;
-  category_name: string;
-  amount: number;
+  cat_id: number;
+  cat_name: string;
+  cat_type: number;
 }
 
 export default function PatientRegistration() {
@@ -48,25 +48,34 @@ export default function PatientRegistration() {
   const fetchData = async () => {
     try {
       const [hospitalsRes, doctorsRes, categoriesRes] = await Promise.all([
-        fetch('/api/hospitals'),
-        fetch('/api/doctors'),
-        fetch('/api/categories')
+        fetch('https://varahasdc.co.in/api/admin/hospitals'),
+        fetch('https://varahasdc.co.in/api/superadmin/doctors'),
+        fetch('https://varahasdc.co.in/api/admin/categories')
       ]);
 
-      if (hospitalsRes.ok) setHospitals(await hospitalsRes.json());
-      if (doctorsRes.ok) setDoctors(await doctorsRes.json());
-      if (categoriesRes.ok) setCategories(await categoriesRes.json());
+      if (hospitalsRes.ok) {
+        const data = await hospitalsRes.json();
+        setHospitals(data.data || []);
+      }
+      if (doctorsRes.ok) {
+        const data = await doctorsRes.json();
+        setDoctors(data.data || data || []);
+      }
+      if (categoriesRes.ok) {
+        const data = await categoriesRes.json();
+        setCategories(data.data || []);
+      }
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   };
 
   const handleCategoryChange = (categoryId: string) => {
-    const category = categories.find(c => c.c_id.toString() === categoryId);
+    const category = categories.find(c => c.cat_id.toString() === categoryId);
     setFormData(prev => ({
       ...prev,
       category: categoryId,
-      amount: category ? category.amount.toString() : ''
+      amount: category && category.cat_type === 1 ? '500' : '0'
     }));
   };
 
@@ -75,7 +84,7 @@ export default function PatientRegistration() {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/patients', {
+      const response = await fetch('https://varahasdc.co.in/api/admin/patients', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
@@ -183,7 +192,7 @@ export default function PatientRegistration() {
               >
                 <option value="">Select Hospital</option>
                 {hospitals.map(hospital => (
-                  <option key={hospital.h_id} value={hospital.h_id}>{hospital.hospital_name}</option>
+                  <option key={hospital.h_id} value={hospital.h_id}>{hospital.h_name}</option>
                 ))}
               </select>
             </div>
@@ -213,7 +222,7 @@ export default function PatientRegistration() {
               >
                 <option value="">Select Category</option>
                 {categories.map(category => (
-                  <option key={category.c_id} value={category.c_id}>{category.category_name}</option>
+                  <option key={category.cat_id} value={category.cat_id}>{category.cat_name}</option>
                 ))}
               </select>
             </div>

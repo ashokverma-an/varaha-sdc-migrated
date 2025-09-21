@@ -31,10 +31,21 @@ export default function AdminConsoleReport() {
     setLoading(true);
     try {
       const dateFormatted = selectedDate.split('-').reverse().join('-'); // Convert to dd-mm-yyyy
-      const response = await fetch(`https://varahasdc.co.in/api/superadmin/console-reports?s_date=${dateFormatted}`);
+      const response = await fetch(`https://varahasdc.co.in/api/admin/patient-list?from_date=${selectedDate}&to_date=${selectedDate}`);
       if (response.ok) {
         const data = await response.json();
-        setConsoleData(data.data || []);
+        // Transform patient data to console format
+        const consoleFormatted = (data.data || []).map((patient: any, index: number) => ({
+          id: patient.p_id,
+          console_name: 'MRI Console',
+          patient_name: patient.patient_name,
+          cro: patient.cro_number,
+          amount: patient.amount,
+          date: patient.date,
+          hospital_name: patient.h_name,
+          doctor_name: patient.dname
+        }));
+        setConsoleData(consoleFormatted);
       }
     } catch (error) {
       console.error('Error fetching console data:', error);

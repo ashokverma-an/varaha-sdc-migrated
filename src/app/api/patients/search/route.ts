@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Query parameter required' }, { status: 400 });
     }
 
-    const response = await fetch(`https://varahasdc.co.in/api/patients/search?q=${encodeURIComponent(query)}`);
+    const response = await fetch(`https://varahasdc.co.in/api/admin/patients/search?q=${encodeURIComponent(query)}`);
     
     if (!response.ok) {
       throw new Error(`API responded with status: ${response.status}`);
@@ -20,6 +20,10 @@ export async function GET(request: NextRequest) {
     
   } catch (error) {
     console.error('Patient search error:', error);
-    return NextResponse.json({ error: 'Failed to search patients' }, { status: 500 });
+    return NextResponse.json({ 
+      error: 'Failed to search patients', 
+      details: error.message,
+      query: query 
+    }, { status: 500 });
   }
 }

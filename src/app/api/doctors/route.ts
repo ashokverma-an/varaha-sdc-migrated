@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
   try {
-    const response = await fetch('https://varahasdc.co.in/api/doctor');
+    const response = await fetch('https://varahasdc.co.in/api/superadmin/doctors');
     
     if (!response.ok) {
       throw new Error(`API responded with status: ${response.status}`);
@@ -13,6 +13,9 @@ export async function GET() {
     
   } catch (error) {
     console.error('Doctors API error:', error);
-    return NextResponse.json({ error: 'Failed to fetch doctors' }, { status: 500 });
+    return NextResponse.json({ 
+      error: 'Failed to fetch doctors', 
+      details: error.message 
+    }, { status: 500 });
   }
 }
