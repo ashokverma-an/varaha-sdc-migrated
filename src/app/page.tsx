@@ -9,9 +9,37 @@ export default function Home() {
   const [showLanding, setShowLanding] = useState(true);
 
   useEffect(() => {
-    const user = localStorage.getItem('user');
-    if (user) {
-      router.push('/dashboard');
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      try {
+        const user = JSON.parse(userData);
+        // Route users based on their role
+        switch(user.role || user.admin_type) {
+          case 'superadmin':
+            router.push('/superadmin/dashboard');
+            break;
+          case 'admin':
+            router.push('/admin/dashboard');
+            break;
+          case 'doctor':
+            router.push('/doctor/dashboard');
+            break;
+          case 'reception':
+            router.push('/reception/dashboard');
+            break;
+          case 'console':
+            router.push('/console/dashboard');
+            break;
+          case 'accounts':
+            router.push('/dashboard');
+            break;
+          default:
+            router.push('/dashboard');
+        }
+      } catch (error) {
+        // If user data is corrupted, clear it and stay on landing page
+        localStorage.removeItem('user');
+      }
     }
   }, [router]);
 
