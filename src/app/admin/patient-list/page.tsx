@@ -5,24 +5,21 @@ import { Users, Search, Download, Eye, ChevronLeft, ChevronRight, Filter } from 
 import SuperAdminLayout, { Card, Table, TableHeader, TableHeaderCell, TableBody, TableRow, TableCell, Button, Pagination } from '@/components/SuperAdminLayout';
 
 interface PatientData {
-  patient_id: number;
-  cro: string;
+  p_id: number;
+  cro_number: string;
   patient_name: string;
-  age: string;
+  age: number;
   gender: string;
-  contact_number: string;
-  hospital_name: string;
-  doctor_name: string;
-  category: string;
+  mobile: string;
+  h_name: string;
+  dname: string;
+  category?: string;
   amount: number;
   date: string;
+  remark?: string;
 }
 
-const formatDateForDisplay = (dateStr: string) => {
-  const date = new Date(dateStr);
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  return `${date.getDate()}-${months[date.getMonth()]}-${date.getFullYear()}`;
-};
+
 
 export default function PatientList() {
   const [patients, setPatients] = useState<PatientData[]>([]);
@@ -31,6 +28,8 @@ export default function PatientList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedPatient, setSelectedPatient] = useState<PatientData | null>(null);
+  const [showViewDialog, setShowViewDialog] = useState(false);
   
   // Set default dates: from one year ago to today
   const today = new Date();
@@ -65,8 +64,61 @@ export default function PatientList() {
     }
   };
 
-  const handleDownloadExcel = () => {
-    window.open('/api/patients?format=excel', '_blank');
+  const handleViewPatient = (patient: PatientData) => {
+    setSelectedPatient(patient);
+    setShowViewDialog(true);
+  };
+
+  const exportToExcel = () => {
+    const headers = ['S.No', 'CRO Number', 'Patient Name', 'Age', 'Gender', 'Mobile', 'Hospital', 'Doctor', 'Amount', 'Date'];
+    
+    const htmlContent = `
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            table { border-collapse: collapse; width: 100%; font-family: Arial, sans-serif; }
+            th { background-color: #dc2626; color: white; font-weight: bold; padding: 8px; border: 1px solid #ccc; text-align: center; }
+            td { padding: 6px; border: 1px solid #ccc; text-align: left; }
+            .center { text-align: center; }
+          </style>
+        </head>
+        <body>
+          <h2 style="text-align: center; color: #dc2626;">Patient List (${dateFilter.from_date} to ${dateFilter.to_date})</h2>
+          <table>
+            <thead>
+              <tr>
+                ${headers.map(header => `<th>${header}</th>`).join('')}
+              </tr>
+            </thead>
+            <tbody>
+              ${filteredPatients.map((patient, index) => `
+                <tr>
+                  <td class="center">${index + 1}</td>
+                  <td>${patient.cro_number}</td>
+                  <td>${patient.patient_name}</td>
+                  <td class="center">${patient.age}</td>
+                  <td class="center">${patient.gender}</td>
+                  <td>${patient.mobile}</td>
+                  <td>${patient.h_name || '-'}</td>
+                  <td>${patient.dname || '-'}</td>
+                  <td class="center">₹${patient.amount}</td>
+                  <td class="center">${patient.date}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </body>
+      </html>
+    `;
+
+    const blob = new Blob([htmlContent], { type: 'application/vnd.ms-excel' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Patient-List-${dateFilter.from_date}-to-${dateFilter.to_date}.xls`;
+    a.click();
+    window.URL.revokeObjectURL(url);
   };
 
   // Filter patients based on search
@@ -76,7 +128,8 @@ export default function PatientList() {
     if (searchTerm) {
       filtered = filtered.filter(patient => 
         patient.patient_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        patient.cro.toLowerCase().includes(searchTerm.toLowerCase())
+        patient.cro_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        patient.mobile.includes(searchTerm)
       );
     }
     
@@ -97,11 +150,12 @@ export default function PatientList() {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-gray-900">Patient List</h1>
         <button
-          onClick={handleDownloadExcel}
-          className="flex items-center space-x-2 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+          onClick={exportToExcel}
+          disabled={filteredPatients.length === 0}
+          className="flex items-center space-x-2 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
         >
           <Download className="h-5 w-5" />
-          <span>Download Excel</span>
+          <span>Export Excel</span>
         </button>
       </div>
 
@@ -113,7 +167,7 @@ export default function PatientList() {
             placeholder="Search by patient name or CRO..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
           />
         </div>
       </div>
@@ -121,7 +175,7 @@ export default function PatientList() {
       <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200">
           <div className="flex items-center space-x-2">
-            <Users className="h-6 w-6 text-blue-600" />
+            <Users className="h-6 w-6 text-red-600" />
             <h2 className="text-xl font-semibold text-gray-900">All Patients</h2>
           </div>
         </div>
@@ -153,18 +207,21 @@ export default function PatientList() {
                 </tr>
               ) : (
                 paginatedPatients.map((patient, index) => (
-                  <tr key={patient.patient_id} className="hover:bg-gray-50">
+                  <tr key={patient.p_id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{startIndex + index + 1}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{patient.cro}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{patient.cro_number}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{patient.patient_name}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{patient.age}/{patient.gender}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{patient.contact_number}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{patient.hospital_name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{patient.doctor_name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{patient.mobile}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{patient.h_name || '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{patient.dname || '-'}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">₹{patient.amount}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatDateForDisplay(patient.date)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{patient.date}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <button className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors">
+                      <button 
+                        onClick={() => handleViewPatient(patient)}
+                        className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
+                      >
                         <Eye className="h-4 w-4" />
                       </button>
                     </td>
@@ -221,6 +278,79 @@ export default function PatientList() {
           </div>
         )}
       </div>
+
+      {/* View Patient Dialog */}
+      {showViewDialog && selectedPatient && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-semibold text-gray-900">Patient Details</h3>
+                <button
+                  onClick={() => setShowViewDialog(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+            <div className="px-6 py-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">CRO Number</label>
+                  <p className="mt-1 text-sm text-gray-900">{selectedPatient.cro_number}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Patient Name</label>
+                  <p className="mt-1 text-sm text-gray-900">{selectedPatient.patient_name}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Age</label>
+                  <p className="mt-1 text-sm text-gray-900">{selectedPatient.age}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Gender</label>
+                  <p className="mt-1 text-sm text-gray-900">{selectedPatient.gender}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Mobile</label>
+                  <p className="mt-1 text-sm text-gray-900">{selectedPatient.mobile}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Hospital</label>
+                  <p className="mt-1 text-sm text-gray-900">{selectedPatient.h_name || '-'}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Doctor</label>
+                  <p className="mt-1 text-sm text-gray-900">{selectedPatient.dname || '-'}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Amount</label>
+                  <p className="mt-1 text-sm text-gray-900">₹{selectedPatient.amount}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Date</label>
+                  <p className="mt-1 text-sm text-gray-900">{selectedPatient.date}</p>
+                </div>
+                {selectedPatient.remark && (
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700">Remark</label>
+                    <p className="mt-1 text-sm text-gray-900">{selectedPatient.remark}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="px-6 py-4 border-t border-gray-200">
+              <button
+                onClick={() => setShowViewDialog(false)}
+                className="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
