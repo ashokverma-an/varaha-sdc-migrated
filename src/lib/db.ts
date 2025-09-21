@@ -61,7 +61,7 @@ export const testConnection = async () => {
     if (!primaryPool) {
       primaryPool = mysql.createPool(primaryDbConfig);
     }
-    const [rows] = await primaryPool.execute('SELECT 1 as test');
+    await primaryPool.execute('SELECT 1 as test');
     console.log('✅ Primary database (Namecheap) connected successfully');
     isPrimaryDbAvailable = true;
     return true;
@@ -73,7 +73,7 @@ export const testConnection = async () => {
       if (!fallbackPool) {
         fallbackPool = mysql.createPool(fallbackDbConfig);
       }
-      const [rows] = await fallbackPool.execute('SELECT 1 as test');
+      await fallbackPool.execute('SELECT 1 as test');
       console.log('✅ Fallback database connected successfully');
       isFallbackDbAvailable = true;
       return true;

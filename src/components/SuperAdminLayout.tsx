@@ -92,9 +92,9 @@ export function TableRow({ children, className = '' }: { children: ReactNode; cl
 }
 
 // Table Cell
-export function TableCell({ children, className = '' }: { children: ReactNode; className?: string }) {
+export function TableCell({ children, className = '', ...props }: { children: ReactNode; className?: string; [key: string]: any }) {
   return (
-    <td className={`px-6 py-4 whitespace-nowrap text-sm text-gray-900 ${className}`}>
+    <td className={`px-6 py-4 whitespace-nowrap text-sm text-gray-900 ${className}`} {...props}>
       {children}
     </td>
   );
