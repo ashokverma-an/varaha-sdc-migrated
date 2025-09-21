@@ -50,21 +50,27 @@ export default function HospitalManagement() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const url = editingHospital ? `/api/hospitals/${editingHospital.h_id}` : '/api/hospitals';
+      const url = editingHospital 
+        ? `https://varahasdc.co.in/api/admin/hospitals/${editingHospital.h_id}` 
+        : 'https://varahasdc.co.in/api/admin/hospitals';
       const method = editingHospital ? 'PUT' : 'POST';
       
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({ ...formData, h_type: 'General' })
       });
 
       if (response.ok) {
+        alert(editingHospital ? 'Hospital updated successfully!' : 'Hospital created successfully!');
         fetchHospitals();
         resetForm();
+      } else {
+        alert('Failed to save hospital');
       }
     } catch (error) {
       console.error('Error saving hospital:', error);
+      alert('Error saving hospital');
     }
   };
 
@@ -82,12 +88,18 @@ export default function HospitalManagement() {
   const handleDelete = async (id: number) => {
     if (confirm('Are you sure you want to delete this hospital?')) {
       try {
-        const response = await fetch(`/api/hospitals/${id}`, { method: 'DELETE' });
+        const response = await fetch(`https://varahasdc.co.in/api/admin/hospitals/${id}`, { 
+          method: 'DELETE' 
+        });
         if (response.ok) {
+          alert('Hospital deleted successfully!');
           fetchHospitals();
+        } else {
+          alert('Failed to delete hospital');
         }
       } catch (error) {
         console.error('Error deleting hospital:', error);
+        alert('Error deleting hospital');
       }
     }
   };

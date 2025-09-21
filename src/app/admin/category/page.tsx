@@ -45,24 +45,30 @@ export default function CategoryManagement() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const url = editingCategory ? `/api/categories/${editingCategory.cat_id}` : '/api/categories';
+      const url = editingCategory 
+        ? `https://varahasdc.co.in/api/admin/categories/${editingCategory.cat_id}` 
+        : 'https://varahasdc.co.in/api/admin/categories';
       const method = editingCategory ? 'PUT' : 'POST';
       
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...formData,
-          amount: parseFloat(formData.amount)
+          cat_name: formData.category_name,
+          cat_type: parseInt(formData.amount)
         })
       });
 
       if (response.ok) {
+        alert(editingCategory ? 'Category updated successfully!' : 'Category created successfully!');
         fetchCategories();
         resetForm();
+      } else {
+        alert('Failed to save category');
       }
     } catch (error) {
       console.error('Error saving category:', error);
+      alert('Error saving category');
     }
   };
 
@@ -79,12 +85,18 @@ export default function CategoryManagement() {
   const handleDelete = async (id: number) => {
     if (confirm('Are you sure you want to delete this category?')) {
       try {
-        const response = await fetch(`/api/categories/${id}`, { method: 'DELETE' });
+        const response = await fetch(`https://varahasdc.co.in/api/admin/categories/${id}`, { 
+          method: 'DELETE' 
+        });
         if (response.ok) {
+          alert('Category deleted successfully!');
           fetchCategories();
+        } else {
+          alert('Failed to delete category');
         }
       } catch (error) {
         console.error('Error deleting category:', error);
+        alert('Error deleting category');
       }
     }
   };
