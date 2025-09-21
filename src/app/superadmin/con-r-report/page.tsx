@@ -17,7 +17,7 @@ export default function ConsoleReport() {
   const [consoleData, setConsoleData] = useState<ConsoleData[]>([]);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(50);
+  const [itemsPerPage] = useState(10);
   
   // Set default dates: from one year ago to today
   const today = new Date();

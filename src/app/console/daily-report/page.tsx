@@ -22,7 +22,7 @@ export default function ConsoleDailyReport() {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(50);
+  const [itemsPerPage] = useState(10);
 
   useEffect(() => {
     fetchReports();

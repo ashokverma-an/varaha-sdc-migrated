@@ -18,7 +18,7 @@ export default function PendingReports() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(50);
+  const [itemsPerPage] = useState(10);
 
   useEffect(() => {
     fetchPendingReports();
