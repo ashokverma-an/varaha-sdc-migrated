@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Hospital, Plus, Edit, Trash2, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Hospital, Plus, Edit, Trash2, Search, ChevronLeft, ChevronRight, Filter, Download } from 'lucide-react';
+import SuperAdminLayout, { Card, Table, TableHeader, TableHeaderCell, TableBody, TableRow, TableCell, Button, Pagination } from '@/components/SuperAdminLayout';
 
 interface HospitalData {
   h_id: number;
@@ -33,10 +34,10 @@ export default function HospitalManagement() {
   const fetchHospitals = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/hospitals');
+      const response = await fetch('https://varahasdc.co.in/api/admin/hospitals');
       if (response.ok) {
         const data = await response.json();
-        setHospitals(data);
+        setHospitals(data.data || []);
       }
     } catch (error) {
       console.error('Error fetching hospitals:', error);
@@ -109,8 +110,72 @@ export default function HospitalManagement() {
     setCurrentPage(page);
   };
 
+  const exportToExcel = () => {
+    const headers = ['S.No', 'Hospital Name', 'Short Name', 'Type', 'Address', 'Contact'];
+    
+    const htmlContent = `
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            table { border-collapse: collapse; width: 100%; font-family: Arial, sans-serif; }
+            th { background-color: #4472C4; color: white; font-weight: bold; padding: 8px; border: 1px solid #ccc; text-align: center; }
+            td { padding: 6px; border: 1px solid #ccc; text-align: left; }
+            .center { text-align: center; }
+          </style>
+        </head>
+        <body>
+          <h2 style="text-align: center; color: #4472C4;">Hospital List</h2>
+          <table>
+            <thead>
+              <tr>
+                ${headers.map(header => `<th>${header}</th>`).join('')}
+              </tr>
+            </thead>
+            <tbody>
+              ${filteredHospitals.map((hospital, index) => `
+                <tr>
+                  <td class="center">${index + 1}</td>
+                  <td>${hospital.h_name}</td>
+                  <td>${hospital.h_short}</td>
+                  <td class="center">${hospital.h_type}</td>
+                  <td>${hospital.h_address}</td>
+                  <td>${hospital.h_contact}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </body>
+      </html>
+    `;
+
+    const blob = new Blob([htmlContent], { type: 'application/vnd.ms-excel' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Hospital-List-${new Date().toISOString().split('T')[0]}.xls`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
   return (
-    <div className="p-6 space-y-6">
+    <SuperAdminLayout 
+      title="Hospital Management" 
+      subtitle="Manage Hospital Information"
+      actions={
+        <div className="flex space-x-3">
+          <Button onClick={exportToExcel} variant="success" disabled={filteredHospitals.length === 0}>
+            <Download className="h-4 w-4 mr-2" />
+            Export Excel
+          </Button>
+          <Button onClick={() => setShowAddForm(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Hospital
+          </Button>
+        </div>
+      }
+    >
+      <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-gray-900">Hospital Management</h1>
         <button
