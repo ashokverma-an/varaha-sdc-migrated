@@ -55,7 +55,56 @@ export default function ViewReports() {
   };
 
   const handleDownloadExcel = () => {
-    window.open('https://varahasdc.co.in/api/superadmin/view-reports?format=excel', '_blank');
+    const headers = ['S.No', 'CRO', 'Patient Name', 'Doctor Name', 'Hospital', 'Date', 'Amount', 'Status', 'Remark'];
+    
+    // Create HTML table with styling
+    const htmlContent = `
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            table { border-collapse: collapse; width: 100%; font-family: Arial, sans-serif; }
+            th { background-color: #4472C4; color: white; font-weight: bold; padding: 8px; border: 1px solid #ccc; text-align: center; }
+            td { padding: 6px; border: 1px solid #ccc; text-align: left; }
+            .number { text-align: right; }
+            .center { text-align: center; }
+          </style>
+        </head>
+        <body>
+          <h2 style="text-align: center; color: #4472C4;">Completed Reports (${dateFilter.from_date} to ${dateFilter.to_date})</h2>
+          <table>
+            <thead>
+              <tr>
+                ${headers.map(header => `<th>${header}</th>`).join('')}
+              </tr>
+            </thead>
+            <tbody>
+              ${paginatedReports.map((report, index) => `
+                <tr>
+                  <td class="center">${index + 1}</td>
+                  <td class="center">${report.cro}</td>
+                  <td>${report.patient_name}</td>
+                  <td>${report.doctor_name}</td>
+                  <td>${report.hospital_name}</td>
+                  <td class="center">${report.date}</td>
+                  <td class="number">₹${report.amount}</td>
+                  <td class="center">Completed</td>
+                  <td>${report.remark || '-'}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </body>
+      </html>
+    `;
+
+    const blob = new Blob([htmlContent], { type: 'application/vnd.ms-excel' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Completed-Reports-${dateFilter.from_date}-to-${dateFilter.to_date}.xls`;
+    a.click();
+    window.URL.revokeObjectURL(url);
   };
 
   const filteredReports = reports.filter(report =>

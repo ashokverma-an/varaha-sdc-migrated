@@ -68,31 +68,58 @@ export default function SuperAdminPatientReport() {
     setCurrentPage(1);
   }, [patients, searchTerm]);
 
-  const exportToCSV = () => {
+  const exportToExcel = () => {
     const headers = ['S.No', 'CRO', 'Patient Name', 'Doctor Name', 'Hospital Name', 'Amount', 'Remark', 'Date', 'Age', 'Gender', 'Mobile'];
-    const csvContent = [
-      headers.join(','),
-      ...filteredPatients.map((p, index) => [
-        index + 1,
-        p.cro_number,
-        `"${p.patient_name}"`,
-        `"${p.dname}"`,
-        `"${p.h_name}"`,
-        p.amount,
-        `"${p.remark || ''}"`,
-        p.date,
-        p.age,
-        p.gender,
-        p.mobile
-      ].join(','))
-    ].join('\n');
+    
+    // Create HTML table with styling
+    const htmlContent = `
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            table { border-collapse: collapse; width: 100%; font-family: Arial, sans-serif; }
+            th { background-color: #4472C4; color: white; font-weight: bold; padding: 8px; border: 1px solid #ccc; text-align: center; }
+            td { padding: 6px; border: 1px solid #ccc; text-align: left; }
+            .number { text-align: right; }
+            .center { text-align: center; }
+          </style>
+        </head>
+        <body>
+          <table>
+            <thead>
+              <tr>
+                ${headers.map(header => `<th>${header}</th>`).join('')}
+              </tr>
+            </thead>
+            <tbody>
+              ${filteredPatients.map((p, index) => `
+                <tr>
+                  <td class="center">${index + 1}</td>
+                  <td class="center">${p.cro_number}</td>
+                  <td>${p.patient_name}</td>
+                  <td>${p.dname}</td>
+                  <td>${p.h_name}</td>
+                  <td class="number">₹${p.amount}</td>
+                  <td>${p.remark || '-'}</td>
+                  <td class="center">${p.date}</td>
+                  <td class="center">${p.age}</td>
+                  <td class="center">${p.gender}</td>
+                  <td>${p.mobile}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </body>
+      </html>
+    `;
 
-    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const blob = new Blob([htmlContent], { type: 'application/vnd.ms-excel' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `patient-report-${fromDate}-to-${toDate}.csv`;
+    a.download = `Patient-Report-${fromDate}-to-${toDate}.xls`;
     a.click();
+    window.URL.revokeObjectURL(url);
   };
 
   return (
@@ -100,9 +127,9 @@ export default function SuperAdminPatientReport() {
       title="Patient Report" 
       subtitle="Patient Queue Management"
       actions={
-        <Button onClick={exportToCSV} variant="success" disabled={filteredPatients.length === 0}>
+        <Button onClick={exportToExcel} variant="success" disabled={filteredPatients.length === 0}>
           <Download className="h-4 w-4 mr-2" />
-          Export CSV
+          Export Excel
         </Button>
       }
     >
