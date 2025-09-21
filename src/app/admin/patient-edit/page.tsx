@@ -518,7 +518,7 @@ export default function PatientEdit() {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-gray-900">Patient Edit</h1>
         <div className="flex items-center space-x-2">
-          <UserEdit className="h-6 w-6 text-red-600" />
+          <User className="h-6 w-6 text-red-600" />
           <span className="text-lg font-medium text-gray-700">Edit Patient</span>
         </div>
       </div>

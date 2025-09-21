@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest, { params }: { params: { cro: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ cro: string }> }) {
   try {
-    const { cro } = params;
+    const { cro } = await params;
     
     const response = await fetch(`https://varahasdc.co.in/api/console/patient/${cro}`, {
       method: 'GET',
