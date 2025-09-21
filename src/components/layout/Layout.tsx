@@ -53,7 +53,7 @@ export default function Layout({ children }: LayoutProps) {
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      <RoleBasedSidebar userRole={user.admin_type} />
+      <RoleBasedSidebar userRole={user.role || user.admin_type} />
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header user={user} />
         <main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6">
