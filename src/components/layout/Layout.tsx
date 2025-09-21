@@ -23,8 +23,11 @@ export default function Layout({ children }: LayoutProps) {
     
     try {
       const parsedUser = JSON.parse(userData);
+      console.log('Layout - User data:', parsedUser);
+      console.log('Layout - User role:', parsedUser.role || parsedUser.admin_type);
       setUser(parsedUser);
     } catch (error) {
+      console.error('Layout - Error parsing user data:', error);
       router.push('/login');
     } finally {
       setLoading(false);
