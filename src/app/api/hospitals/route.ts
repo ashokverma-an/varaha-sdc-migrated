@@ -13,6 +13,9 @@ export async function GET() {
     
   } catch (error) {
     console.error('Hospitals API error:', error);
-    return NextResponse.json({ error: 'Failed to fetch hospitals' }, { status: 500 });
+    return NextResponse.json({ 
+      error: 'Failed to fetch hospitals',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
   }
 }

@@ -15,7 +15,7 @@ export async function GET() {
     console.error('Doctors API error:', error);
     return NextResponse.json({ 
       error: 'Failed to fetch doctors', 
-      details: error.message 
+      details: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 });
   }
 }

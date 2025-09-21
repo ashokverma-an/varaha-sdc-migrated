@@ -22,8 +22,7 @@ export async function GET(request: NextRequest) {
     console.error('Patient search error:', error);
     return NextResponse.json({ 
       error: 'Failed to search patients', 
-      details: error.message,
-      query: query 
+      details: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 });
   }
 }
