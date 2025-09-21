@@ -25,7 +25,8 @@ export default function ReceptionHospitals() {
 
   const fetchHospitals = async () => {
     try {
-      const response = await fetch('/api/reception/hospitals');
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://varahasdc.co.in/api';
+      const response = await fetch(`${API_BASE_URL}/reception/hospitals`);
       if (response.ok) {
         const data = await response.json();
         setHospitals(data.data || []);
