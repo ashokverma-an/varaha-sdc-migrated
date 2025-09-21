@@ -34,12 +34,12 @@ export default function SuperAdminPatientReport() {
 
   useEffect(() => {
     fetchPatients();
-  }, []);
+  }, [fromDate, toDate]);
 
   const fetchPatients = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/superadmin/patient-report?from_date=${fromDate}&to_date=${toDate}`);
+      const response = await fetch(`https://varahasdc.co.in/api/superadmin/patient-report?from_date=${fromDate}&to_date=${toDate}`);
       const data = await response.json();
       
       if (data.success) {
