@@ -22,10 +22,10 @@ export default function HospitalManagement() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingHospital, setEditingHospital] = useState<HospitalData | null>(null);
   const [formData, setFormData] = useState({
-    hospital_name: '',
+    h_name: '',
     h_short: '',
-    address: '',
-    contact: ''
+    h_address: '',
+    h_contact: ''
   });
 
   useEffect(() => {
@@ -71,10 +71,10 @@ export default function HospitalManagement() {
   const handleEdit = (hospital: HospitalData) => {
     setEditingHospital(hospital);
     setFormData({
-      hospital_name: hospital.hospital_name,
+      hospital_name: hospital.h_name,
       h_short: hospital.h_short,
-      address: hospital.address,
-      contact: hospital.contact
+      address: hospital.h_address,
+      contact: hospital.h_contact
     });
     setShowAddForm(true);
   };
@@ -93,7 +93,7 @@ export default function HospitalManagement() {
   };
 
   const resetForm = () => {
-    setFormData({ hospital_name: '', h_short: '', address: '', contact: '' });
+    setFormData({ h_name: '', h_short: '', h_address: '', h_contact: '' });
     setEditingHospital(null);
     setShowAddForm(false);
   };
@@ -189,8 +189,8 @@ export default function HospitalManagement() {
               <input
                 type="text"
                 required
-                value={formData.hospital_name}
-                onChange={(e) => setFormData(prev => ({ ...prev, hospital_name: e.target.value }))}
+                value={formData.h_name}
+                onChange={(e) => setFormData(prev => ({ ...prev, h_name: e.target.value }))}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
@@ -208,8 +208,8 @@ export default function HospitalManagement() {
               <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
               <input
                 type="text"
-                value={formData.address}
-                onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
+                value={formData.h_address}
+                onChange={(e) => setFormData(prev => ({ ...prev, h_address: e.target.value }))}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
@@ -217,8 +217,8 @@ export default function HospitalManagement() {
               <label className="block text-sm font-medium text-gray-700 mb-2">Contact</label>
               <input
                 type="text"
-                value={formData.contact}
-                onChange={(e) => setFormData(prev => ({ ...prev, contact: e.target.value }))}
+                value={formData.h_contact}
+                onChange={(e) => setFormData(prev => ({ ...prev, h_contact: e.target.value }))}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>

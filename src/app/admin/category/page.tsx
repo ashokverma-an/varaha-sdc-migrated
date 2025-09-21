@@ -90,7 +90,7 @@ export default function CategoryManagement() {
   };
 
   const resetForm = () => {
-    setFormData({ category_name: '', amount: '', description: '' });
+    setFormData({ category_name: '', amount: '0', description: '' });
     setEditingCategory(null);
     setShowAddForm(false);
   };
