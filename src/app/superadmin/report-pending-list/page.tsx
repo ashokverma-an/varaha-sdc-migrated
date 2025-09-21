@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Clock, Download, Search } from 'lucide-react';
+import { Clock, Download, Search, Filter } from 'lucide-react';
+import SuperAdminLayout, { Card, Button } from '@/components/SuperAdminLayout';
 
 interface PendingReport {
   patient_id: number;
@@ -19,15 +20,28 @@ export default function PendingReports() {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
+  
+  // Set default dates: from one year ago to today
+  const today = new Date();
+  const oneYearAgo = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
+  const [dateFilter, setDateFilter] = useState({
+    from_date: oneYearAgo.toISOString().split('T')[0],
+    to_date: today.toISOString().split('T')[0]
+  });
 
   useEffect(() => {
     fetchPendingReports();
-  }, []);
+  }, [dateFilter]);
 
   const fetchPendingReports = async () => {
     setLoading(true);
     try {
-      const response = await fetch('https://varahasdc.co.in/api/superadmin/pending-reports');
+      const params = new URLSearchParams({
+        from_date: dateFilter.from_date,
+        to_date: dateFilter.to_date
+      });
+      
+      const response = await fetch(`https://varahasdc.co.in/api/superadmin/pending-reports?${params}`);
       if (response.ok) {
         const data = await response.json();
         setReports(data.data || []);
@@ -117,18 +131,52 @@ export default function PendingReports() {
         </button>
       </div>
 
-      <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+      <Card className="p-4">
         <div className="flex items-center space-x-2 mb-4">
-          <Search className="h-5 w-5 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search by patient name or CRO..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
+          <Filter className="h-5 w-5 text-gray-600" />
+          <h2 className="text-lg font-semibold text-gray-900">Filters & Search</h2>
         </div>
-      </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">From Date</label>
+            <input
+              type="date"
+              value={dateFilter.from_date}
+              onChange={(e) => setDateFilter(prev => ({ ...prev, from_date: e.target.value }))}
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">To Date</label>
+            <input
+              type="date"
+              value={dateFilter.to_date}
+              onChange={(e) => setDateFilter(prev => ({ ...prev, to_date: e.target.value }))}
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
+            <div className="relative">
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search CRO or Patient..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+          </div>
+          <div className="flex items-end">
+            <Button onClick={fetchPendingReports} disabled={loading} className="w-full">
+              <Search className="h-4 w-4 mr-2" />
+              {loading ? 'Loading...' : 'Search'}
+            </Button>
+          </div>
+        </div>
+      </Card>
 
       <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200">

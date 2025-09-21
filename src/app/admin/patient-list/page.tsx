@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Users, Search, Download, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Users, Search, Download, Eye, ChevronLeft, ChevronRight, Filter } from 'lucide-react';
+import SuperAdminLayout, { Card, Table, TableHeader, TableHeaderCell, TableBody, TableRow, TableCell, Button, Pagination } from '@/components/SuperAdminLayout';
 
 interface PatientData {
   patient_id: number;
@@ -25,22 +26,37 @@ const formatDateForDisplay = (dateStr: string) => {
 
 export default function PatientList() {
   const [patients, setPatients] = useState<PatientData[]>([]);
+  const [filteredPatients, setFilteredPatients] = useState<PatientData[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // Set default dates: from one year ago to today
+  const today = new Date();
+  const oneYearAgo = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
+  const [dateFilter, setDateFilter] = useState({
+    from_date: oneYearAgo.toISOString().split('T')[0],
+    to_date: today.toISOString().split('T')[0]
+  });
 
   useEffect(() => {
     fetchPatients();
-  }, []);
+  }, [dateFilter]);
 
   const fetchPatients = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/patients');
+      const params = new URLSearchParams({
+        from_date: dateFilter.from_date,
+        to_date: dateFilter.to_date
+      });
+      
+      const response = await fetch(`https://varahasdc.co.in/api/admin/patient-list?${params}`);
       if (response.ok) {
         const data = await response.json();
-        setPatients(data);
+        setPatients(data.data || []);
+        setFilteredPatients(data.data || []);
       }
     } catch (error) {
       console.error('Error fetching patients:', error);
@@ -53,10 +69,20 @@ export default function PatientList() {
     window.open('/api/patients?format=excel', '_blank');
   };
 
-  const filteredPatients = patients.filter(patient =>
-    patient.patient_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    patient.cro.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Filter patients based on search
+  useEffect(() => {
+    let filtered = patients;
+    
+    if (searchTerm) {
+      filtered = filtered.filter(patient => 
+        patient.patient_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        patient.cro.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    
+    setFilteredPatients(filtered);
+    setCurrentPage(1);
+  }, [patients, searchTerm]);
 
   const totalPages = Math.ceil(filteredPatients.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;

@@ -79,7 +79,7 @@ export default function ViewReports() {
               </tr>
             </thead>
             <tbody>
-              ${paginatedReports.map((report, index) => `
+              ${filteredReports.map((report, index) => `
                 <tr>
                   <td class="center">${index + 1}</td>
                   <td class="center">${report.cro}</td>

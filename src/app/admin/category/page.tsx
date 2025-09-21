@@ -4,10 +4,9 @@ import { useState, useEffect } from 'react';
 import { Tag, Plus, Edit, Trash2, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface CategoryData {
-  c_id: number;
-  category_name: string;
-  amount: number;
-  description?: string;
+  cat_id: number;
+  cat_name: string;
+  cat_type: number;
 }
 
 export default function CategoryManagement() {
@@ -31,10 +30,10 @@ export default function CategoryManagement() {
   const fetchCategories = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/categories');
+      const response = await fetch('https://varahasdc.co.in/api/admin/categories');
       if (response.ok) {
         const data = await response.json();
-        setCategories(data);
+        setCategories(data.data || []);
       }
     } catch (error) {
       console.error('Error fetching categories:', error);
@@ -97,7 +96,7 @@ export default function CategoryManagement() {
   };
 
   const filteredCategories = categories.filter(category =>
-    category.category_name.toLowerCase().includes(searchTerm.toLowerCase())
+    category.cat_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredCategories.length / itemsPerPage);
@@ -203,7 +202,7 @@ export default function CategoryManagement() {
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">S. No.</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
@@ -221,9 +220,15 @@ export default function CategoryManagement() {
                 paginatedCategories.map((category, index) => (
                   <tr key={category.c_id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{startIndex + index + 1}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{category.category_name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">₹{category.amount}</td>
-                    <td className="px-6 py-4 text-sm text-gray-900">{category.description || '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{category.cat_name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <span className={`px-2 py-1 text-xs rounded-full ${
+                        category.cat_type === 0 ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
+                      }`}>
+                        {category.cat_type === 0 ? 'FREE' : 'PAID'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-900">-</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       <div className="flex space-x-2">
                         <button
@@ -233,7 +238,7 @@ export default function CategoryManagement() {
                           <Edit className="h-4 w-4" />
                         </button>
                         <button
-                          onClick={() => handleDelete(category.c_id)}
+                          onClick={() => handleDelete(category.cat_id)}
                           className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
                         >
                           <Trash2 className="h-4 w-4" />

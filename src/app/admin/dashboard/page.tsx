@@ -88,7 +88,7 @@ export default function AdminDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-              <p className="text-3xl font-bold text-gray-900">₹{stats.totalRevenue.toLocaleString()}</p>
+              <p className="text-3xl font-bold text-gray-900">₹{(stats.totalRevenue || 0).toLocaleString()}</p>
             </div>
             <div className="p-3 bg-purple-100 rounded-full">
               <TrendingUp className="h-6 w-6 text-purple-600" />
@@ -124,7 +124,7 @@ export default function AdminDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Today's Revenue</p>
-              <p className="text-3xl font-bold text-gray-900">₹{stats.todayRevenue.toLocaleString()}</p>
+              <p className="text-3xl font-bold text-gray-900">₹{(stats.todayRevenue || 0).toLocaleString()}</p>
             </div>
             <div className="p-3 bg-indigo-100 rounded-full">
               <TrendingUp className="h-6 w-6 text-indigo-600" />
