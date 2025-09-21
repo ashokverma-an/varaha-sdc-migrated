@@ -4,13 +4,22 @@ import { useState, useEffect } from 'react';
 import { Download, Monitor, Calendar } from 'lucide-react';
 
 interface ConsoleData {
-  id: number;
-  date: string;
-  patient_name: string;
   cro: string;
+  patient_name: string;
+  age: string;
+  category: string;
+  scan_type: string;
   amount: number;
+  date: string;
+  doctor_name: string;
+  number_films: number;
+  number_contrast: number;
+  number_scan: number;
+  issue_cd: string;
+  start_time: string;
+  stop_time: string;
   status: string;
-  time: string;
+  added_on: string;
 }
 
 export default function ConsoleReport() {
@@ -39,7 +48,7 @@ export default function ConsoleReport() {
         to_date: dateFilter.to_date
       });
       
-      const response = await fetch(`/api/reports/console?${params}`);
+      const response = await fetch(`https://varahasdc.co.in/api/superadmin/console-report?${params}`);
       if (response.ok) {
         const data = await response.json();
         setConsoleData(data.data || []);
@@ -57,7 +66,7 @@ export default function ConsoleReport() {
       to_date: dateFilter.to_date,
       format: 'excel'
     });
-    window.open(`/api/reports/console?${params}`, '_blank');
+    window.open(`https://varahasdc.co.in/api/superadmin/console-report?${params}`, '_blank');
   };
 
   const totalPages = Math.ceil(consoleData.length / itemsPerPage);
@@ -117,10 +126,13 @@ export default function ConsoleReport() {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">S.No</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Time</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Patient Name</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">CRO</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Patient Name</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Doctor</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Age</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Films</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Scans</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
               </tr>
@@ -128,24 +140,27 @@ export default function ConsoleReport() {
             <tbody className="bg-white divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-4 text-center text-gray-500">Loading...</td>
+                  <td colSpan={10} className="px-6 py-4 text-center text-gray-500">Loading...</td>
                 </tr>
               ) : consoleData.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-4 text-center text-gray-500">No console data found for selected date range</td>
+                  <td colSpan={10} className="px-6 py-4 text-center text-gray-500">No console data found for selected date range</td>
                 </tr>
               ) : (
                 paginatedData.map((item, index) => (
-                  <tr key={item.id} className="hover:bg-gray-50">
+                  <tr key={item.cro} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{startIndex + index + 1}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.date}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.time}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.patient_name}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">{item.cro}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.patient_name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.doctor_name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.age}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.category}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.number_films}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.number_scan}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">₹{item.amount}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       <span className={`px-2 py-1 rounded-full text-xs ${
-                        item.status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                        item.status === 'Complete' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
                       }`}>
                         {item.status}
                       </span>

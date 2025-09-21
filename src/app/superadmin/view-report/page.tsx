@@ -42,7 +42,7 @@ export default function ViewReports() {
         to_date: dateFilter.to_date
       });
       
-      const response = await fetch(`/api/reports/completed?${params}`);
+      const response = await fetch(`https://varahasdc.co.in/api/superadmin/view-reports?${params}`);
       if (response.ok) {
         const data = await response.json();
         setReports(data.data || []);
@@ -55,7 +55,7 @@ export default function ViewReports() {
   };
 
   const handleDownloadExcel = () => {
-    window.open('/api/reports/completed?format=excel', '_blank');
+    window.open('https://varahasdc.co.in/api/superadmin/view-reports?format=excel', '_blank');
   };
 
   const filteredReports = reports.filter(report =>

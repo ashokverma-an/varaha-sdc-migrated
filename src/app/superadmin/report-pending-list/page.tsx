@@ -27,10 +27,10 @@ export default function PendingReports() {
   const fetchPendingReports = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/reports/pending');
+      const response = await fetch('https://varahasdc.co.in/api/superadmin/pending-reports');
       if (response.ok) {
         const data = await response.json();
-        setReports(data);
+        setReports(data.data || []);
       }
     } catch (error) {
       console.error('Error fetching pending reports:', error);
@@ -40,7 +40,7 @@ export default function PendingReports() {
   };
 
   const handleDownloadExcel = () => {
-    window.open('/api/reports/pending?format=excel', '_blank');
+    window.open('https://varahasdc.co.in/api/superadmin/pending-reports?format=excel', '_blank');
   };
 
   const filteredReports = reports.filter(report =>
