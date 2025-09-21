@@ -4,14 +4,18 @@ import { useState, useEffect } from 'react';
 import { Download, Calendar, TrendingUp, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface RevenueData {
-  id: number;
-  date: string;
-  hospital_name: string;
-  doctor_name: string;
+  cro: string;
   patient_name: string;
-  amount: number;
+  age: string;
   category: string;
-  payment_mode: string;
+  scan_type: string;
+  amount: number;
+  date: string;
+  number_films: number;
+  number_contrast: number;
+  number_scan: number;
+  issue_cd: string;
+  added_on: string;
 }
 
 const formatDateForDisplay = (dateStr: string) => {
@@ -48,7 +52,7 @@ export default function RevenueReport() {
       const response = await fetch(`https://varahasdc.co.in/api/superadmin/revenue-report?${params}`);
       if (response.ok) {
         const data = await response.json();
-        setRevenueData(data);
+        setRevenueData(data.data || []);
       }
     } catch (error) {
       console.error('Error fetching revenue data:', error);
@@ -127,35 +131,37 @@ export default function RevenueReport() {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">S. No.</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hospital</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Doctor</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CRO</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient Name</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Age</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Mode</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Scan Type</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Films</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Scans</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-4 text-center text-gray-500">Loading...</td>
+                  <td colSpan={9} className="px-6 py-4 text-center text-gray-500">Loading...</td>
                 </tr>
               ) : revenueData.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-4 text-center text-gray-500">No revenue data found for selected date range</td>
+                  <td colSpan={9} className="px-6 py-4 text-center text-gray-500">No revenue data found for selected date range</td>
                 </tr>
               ) : (
                 paginatedRevenue.map((revenue, index) => (
-                  <tr key={revenue.id} className="hover:bg-gray-50">
+                  <tr key={revenue.cro} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{startIndex + index + 1}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatDateForDisplay(revenue.date)}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{revenue.hospital_name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{revenue.doctor_name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">{revenue.cro}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{revenue.patient_name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">₹{revenue.amount}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{revenue.age}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{revenue.category}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{revenue.payment_mode}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{revenue.scan_type}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{revenue.number_films}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{revenue.number_scan}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">₹{revenue.amount}</td>
                   </tr>
                 ))
               )}
