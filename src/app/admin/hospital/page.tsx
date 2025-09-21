@@ -6,10 +6,11 @@ import SuperAdminLayout, { Card, Table, TableHeader, TableHeaderCell, TableBody,
 
 interface HospitalData {
   h_id: number;
-  hospital_name: string;
+  h_name: string;
   h_short: string;
-  address: string;
-  contact: string;
+  h_type: string;
+  h_address: string;
+  h_contact: string;
 }
 
 export default function HospitalManagement() {
@@ -98,7 +99,7 @@ export default function HospitalManagement() {
   };
 
   const filteredHospitals = hospitals.filter(hospital =>
-    hospital.hospital_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    hospital.h_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     hospital.h_short.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -176,16 +177,6 @@ export default function HospitalManagement() {
       }
     >
       <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900">Hospital Management</h1>
-        <button
-          onClick={() => setShowAddForm(true)}
-          className="flex items-center space-x-2 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-        >
-          <Plus className="h-5 w-5" />
-          <span>Add Hospital</span>
-        </button>
-      </div>
 
       {showAddForm && (
         <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
@@ -296,10 +287,10 @@ export default function HospitalManagement() {
                 paginatedHospitals.map((hospital, index) => (
                   <tr key={hospital.h_id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{startIndex + index + 1}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{hospital.hospital_name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{hospital.h_name}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{hospital.h_short}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{hospital.address}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{hospital.contact}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{hospital.h_address}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{hospital.h_contact}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       <div className="flex space-x-2">
                         <button
