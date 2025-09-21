@@ -24,10 +24,13 @@ export default function RevenueReport() {
   const [revenueData, setRevenueData] = useState<RevenueData[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const [itemsPerPage] = useState(50);
+  // Set default dates: from one year ago to today
+  const today = new Date();
+  const oneYearAgo = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
   const [dateFilter, setDateFilter] = useState({
-    from_date: new Date().toISOString().split('T')[0],
-    to_date: new Date().toISOString().split('T')[0]
+    from_date: oneYearAgo.toISOString().split('T')[0],
+    to_date: today.toISOString().split('T')[0]
   });
 
   useEffect(() => {

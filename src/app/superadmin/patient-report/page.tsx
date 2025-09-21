@@ -20,8 +20,14 @@ interface PatientReport {
 export default function SuperAdminPatientReport() {
   const [patients, setPatients] = useState<PatientReport[]>([]);
   const [loading, setLoading] = useState(false);
-  const [fromDate, setFromDate] = useState(new Date().toISOString().split('T')[0]);
-  const [toDate, setToDate] = useState(new Date().toISOString().split('T')[0]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(50);
+  
+  // Set default dates: from one year ago to today
+  const today = new Date();
+  const oneYearAgo = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
+  const [fromDate, setFromDate] = useState(oneYearAgo.toISOString().split('T')[0]);
+  const [toDate, setToDate] = useState(today.toISOString().split('T')[0]);
 
   useEffect(() => {
     fetchPatients();
@@ -130,6 +136,34 @@ export default function SuperAdminPatientReport() {
           </div>
         </div>
 
+        {/* Pagination Info */}
+        {patients.length > 0 && (
+          <div className="flex justify-between items-center mb-4">
+            <div className="text-sm text-gray-600">
+              Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, patients.length)} of {patients.length} entries
+            </div>
+            <div className="flex space-x-2">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-1 border rounded disabled:opacity-50 hover:bg-gray-50"
+              >
+                Previous
+              </button>
+              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded">
+                Page {currentPage} of {Math.ceil(patients.length / itemsPerPage)}
+              </span>
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(patients.length / itemsPerPage)))}
+                disabled={currentPage >= Math.ceil(patients.length / itemsPerPage)}
+                className="px-3 py-1 border rounded disabled:opacity-50 hover:bg-gray-50"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Table */}
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
@@ -165,9 +199,11 @@ export default function SuperAdminPatientReport() {
                   </td>
                 </tr>
               ) : (
-                patients.map((patient, index) => (
+                patients
+                  .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                  .map((patient, index) => (
                   <tr key={patient.p_id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{index + 1}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{((currentPage - 1) * itemsPerPage) + index + 1}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">{patient.cro_number}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{patient.patient_name}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{patient.dname}</td>
@@ -184,6 +220,64 @@ export default function SuperAdminPatientReport() {
             </tbody>
           </table>
         </div>
+
+        {/* Bottom Pagination */}
+        {patients.length > itemsPerPage && (
+          <div className="flex justify-center mt-6">
+            <div className="flex space-x-2">
+              <button
+                onClick={() => setCurrentPage(1)}
+                disabled={currentPage === 1}
+                className="px-3 py-2 border rounded disabled:opacity-50 hover:bg-gray-50"
+              >
+                First
+              </button>
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-2 border rounded disabled:opacity-50 hover:bg-gray-50"
+              >
+                Previous
+              </button>
+              
+              {/* Page numbers */}
+              {Array.from({ length: Math.min(5, Math.ceil(patients.length / itemsPerPage)) }, (_, i) => {
+                const pageNum = Math.max(1, currentPage - 2) + i;
+                if (pageNum <= Math.ceil(patients.length / itemsPerPage)) {
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`px-3 py-2 border rounded ${
+                        currentPage === pageNum 
+                          ? 'bg-blue-600 text-white' 
+                          : 'hover:bg-gray-50'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                }
+                return null;
+              })}
+              
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(patients.length / itemsPerPage)))}
+                disabled={currentPage >= Math.ceil(patients.length / itemsPerPage)}
+                className="px-3 py-2 border rounded disabled:opacity-50 hover:bg-gray-50"
+              >
+                Next
+              </button>
+              <button
+                onClick={() => setCurrentPage(Math.ceil(patients.length / itemsPerPage))}
+                disabled={currentPage >= Math.ceil(patients.length / itemsPerPage)}
+                className="px-3 py-2 border rounded disabled:opacity-50 hover:bg-gray-50"
+              >
+                Last
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

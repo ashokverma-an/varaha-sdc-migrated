@@ -27,7 +27,7 @@ export default function PatientList() {
   const [patients, setPatients] = useState<PatientData[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const [itemsPerPage] = useState(50);
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {

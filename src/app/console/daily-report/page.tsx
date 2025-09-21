@@ -21,6 +21,8 @@ export default function ConsoleDailyReport() {
   const [reports, setReports] = useState<ConsoleReport[]>([]);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(50);
 
   useEffect(() => {
     fetchReports();
@@ -72,6 +74,34 @@ export default function ConsoleDailyReport() {
           />
         </div>
 
+        {/* Pagination Info */}
+        {reports.length > 0 && (
+          <div className="flex justify-between items-center mb-4">
+            <div className="text-sm text-gray-600">
+              Total: {reports.length} records
+            </div>
+            <div className="flex space-x-2">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-1 border rounded disabled:opacity-50 hover:bg-gray-50"
+              >
+                Previous
+              </button>
+              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded">
+                Page {currentPage} of {Math.ceil(reports.length / itemsPerPage)}
+              </span>
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(reports.length / itemsPerPage)))}
+                disabled={currentPage >= Math.ceil(reports.length / itemsPerPage)}
+                className="px-3 py-1 border rounded disabled:opacity-50 hover:bg-gray-50"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50">
@@ -98,9 +128,11 @@ export default function ConsoleDailyReport() {
                   <td colSpan={10} className="px-6 py-4 text-center text-gray-500">No reports found</td>
                 </tr>
               ) : (
-                reports.map((report, index) => (
+                reports
+                  .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                  .map((report, index) => (
                   <tr key={report.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{index + 1}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{((currentPage - 1) * itemsPerPage) + index + 1}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{report.c_p_cro}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{report.examination_id}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{report.number_films}</td>
@@ -124,6 +156,63 @@ export default function ConsoleDailyReport() {
             </tbody>
           </table>
         </div>
+        
+        {/* Bottom Pagination */}
+        {reports.length > itemsPerPage && (
+          <div className="flex justify-center mt-6">
+            <div className="flex space-x-2">
+              <button
+                onClick={() => setCurrentPage(1)}
+                disabled={currentPage === 1}
+                className="px-3 py-2 border rounded disabled:opacity-50 hover:bg-gray-50"
+              >
+                First
+              </button>
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-2 border rounded disabled:opacity-50 hover:bg-gray-50"
+              >
+                Previous
+              </button>
+              
+              {Array.from({ length: Math.min(5, Math.ceil(reports.length / itemsPerPage)) }, (_, i) => {
+                const pageNum = Math.max(1, currentPage - 2) + i;
+                if (pageNum <= Math.ceil(reports.length / itemsPerPage)) {
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`px-3 py-2 border rounded ${
+                        currentPage === pageNum 
+                          ? 'bg-blue-600 text-white' 
+                          : 'hover:bg-gray-50'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                }
+                return null;
+              })}
+              
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(reports.length / itemsPerPage)))}
+                disabled={currentPage >= Math.ceil(reports.length / itemsPerPage)}
+                className="px-3 py-2 border rounded disabled:opacity-50 hover:bg-gray-50"
+              >
+                Next
+              </button>
+              <button
+                onClick={() => setCurrentPage(Math.ceil(reports.length / itemsPerPage))}
+                disabled={currentPage >= Math.ceil(reports.length / itemsPerPage)}
+                className="px-3 py-2 border rounded disabled:opacity-50 hover:bg-gray-50"
+              >
+                Last
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
