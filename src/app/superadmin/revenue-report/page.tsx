@@ -45,7 +45,7 @@ export default function RevenueReport() {
         to_date: dateFilter.to_date
       });
       
-      const response = await fetch(`/api/reports/revenue?${params}`);
+      const response = await fetch(`https://varahasdc.co.in/api/superadmin/revenue-report?${params}`);
       if (response.ok) {
         const data = await response.json();
         setRevenueData(data);
@@ -71,7 +71,7 @@ export default function RevenueReport() {
       to_date: dateFilter.to_date,
       format: 'excel'
     });
-    window.open(`/api/reports/revenue?${params}`, '_blank');
+    window.open(`https://varahasdc.co.in/api/superadmin/revenue-report?${params}`, '_blank');
   };
 
   return (
