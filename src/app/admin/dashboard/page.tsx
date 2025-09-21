@@ -4,12 +4,12 @@ import { useState, useEffect } from 'react';
 import { Users, Activity, TrendingUp, FileText, Hospital, Calendar } from 'lucide-react';
 
 interface DashboardStats {
-  totalPatients: number;
-  todayPatients: number;
-  totalRevenue: number;
-  todayRevenue: number;
-  totalHospitals: number;
-  totalCategories: number;
+  totalPatients: number; // Patient Registered (total scans)
+  todayPatients: number; // Total MRI (patient count)
+  totalRevenue: number; // Received Amount
+  todayRevenue: number; // Due Amount
+  todayWithdraw: number; // Withdraw
+  cashInHand: number; // Cash In Hand
 }
 
 export default function AdminDashboard() {
@@ -18,8 +18,8 @@ export default function AdminDashboard() {
     todayPatients: 0,
     totalRevenue: 0,
     todayRevenue: 0,
-    totalHospitals: 0,
-    totalCategories: 0
+    todayWithdraw: 0,
+    cashInHand: 0
   });
 
   useEffect(() => {
@@ -28,14 +28,10 @@ export default function AdminDashboard() {
 
   const fetchDashboardStats = async () => {
     try {
-      const response = await fetch('/api/dashboard/stats');
+      const response = await fetch('https://varahasdc.co.in/api/admin/stats');
       if (response.ok) {
         const data = await response.json();
-        setStats({
-          ...data,
-          totalHospitals: 5, // Mock data
-          totalCategories: 8  // Mock data
-        });
+        setStats(data);
       }
     } catch (error) {
       console.error('Error fetching dashboard stats:', error);
@@ -63,8 +59,9 @@ export default function AdminDashboard() {
         <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total Patients</p>
-              <p className="text-3xl font-bold text-gray-900">{stats.totalPatients}</p>
+              <p className="text-sm font-medium text-gray-600">Patient Registered</p>
+              <p className="text-xs text-gray-500 mb-1">Today</p>
+              <p className="text-3xl font-bold text-blue-600">{stats.totalPatients}</p>
             </div>
             <div className="p-3 bg-blue-100 rounded-full">
               <Users className="h-6 w-6 text-blue-600" />
@@ -75,8 +72,9 @@ export default function AdminDashboard() {
         <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Today's Patients</p>
-              <p className="text-3xl font-bold text-gray-900">{stats.todayPatients}</p>
+              <p className="text-sm font-medium text-gray-600">Total MRI</p>
+              <p className="text-xs text-gray-500 mb-1">Today</p>
+              <p className="text-3xl font-bold text-green-600">{stats.todayPatients}</p>
             </div>
             <div className="p-3 bg-green-100 rounded-full">
               <Activity className="h-6 w-6 text-green-600" />
@@ -87,8 +85,9 @@ export default function AdminDashboard() {
         <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-              <p className="text-3xl font-bold text-gray-900">₹{(stats.totalRevenue || 0).toLocaleString()}</p>
+              <p className="text-sm font-medium text-gray-600">Received Amount</p>
+              <p className="text-xs text-gray-500 mb-1">Today</p>
+              <p className="text-3xl font-bold text-purple-600">₹{(stats.totalRevenue || 0).toLocaleString()}</p>
             </div>
             <div className="p-3 bg-purple-100 rounded-full">
               <TrendingUp className="h-6 w-6 text-purple-600" />
@@ -99,11 +98,12 @@ export default function AdminDashboard() {
         <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Hospitals</p>
-              <p className="text-3xl font-bold text-gray-900">{stats.totalHospitals}</p>
+              <p className="text-sm font-medium text-gray-600">Due Amount</p>
+              <p className="text-xs text-gray-500 mb-1">Today</p>
+              <p className="text-3xl font-bold text-orange-600">₹{(stats.todayRevenue || 0).toLocaleString()}</p>
             </div>
             <div className="p-3 bg-orange-100 rounded-full">
-              <Hospital className="h-6 w-6 text-orange-600" />
+              <FileText className="h-6 w-6 text-orange-600" />
             </div>
           </div>
         </div>
@@ -111,11 +111,12 @@ export default function AdminDashboard() {
         <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Categories</p>
-              <p className="text-3xl font-bold text-gray-900">{stats.totalCategories}</p>
+              <p className="text-sm font-medium text-gray-600">Withdraw</p>
+              <p className="text-xs text-gray-500 mb-1">Today</p>
+              <p className="text-3xl font-bold text-red-600">₹{(stats.todayWithdraw || 0).toLocaleString()}</p>
             </div>
-            <div className="p-3 bg-teal-100 rounded-full">
-              <FileText className="h-6 w-6 text-teal-600" />
+            <div className="p-3 bg-red-100 rounded-full">
+              <Hospital className="h-6 w-6 text-red-600" />
             </div>
           </div>
         </div>
@@ -123,8 +124,9 @@ export default function AdminDashboard() {
         <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Today's Revenue</p>
-              <p className="text-3xl font-bold text-gray-900">₹{(stats.todayRevenue || 0).toLocaleString()}</p>
+              <p className="text-sm font-medium text-gray-600">Cash In Hand</p>
+              <p className="text-xs text-gray-500 mb-1">Today</p>
+              <p className="text-3xl font-bold text-indigo-600">₹{(stats.cashInHand || 0).toLocaleString()}</p>
             </div>
             <div className="p-3 bg-indigo-100 rounded-full">
               <TrendingUp className="h-6 w-6 text-indigo-600" />
