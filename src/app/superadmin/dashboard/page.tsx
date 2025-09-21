@@ -168,6 +168,7 @@ export default function SuperAdminDashboard() {
           </a>
         </div>
       </Card>
+      </div>
     </SuperAdminLayout>
   );
 }
