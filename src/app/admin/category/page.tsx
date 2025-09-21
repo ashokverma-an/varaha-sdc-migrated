@@ -19,7 +19,7 @@ export default function CategoryManagement() {
   const [editingCategory, setEditingCategory] = useState<CategoryData | null>(null);
   const [formData, setFormData] = useState({
     category_name: '',
-    amount: '',
+    amount: '0',
     description: ''
   });
 
@@ -45,7 +45,7 @@ export default function CategoryManagement() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const url = editingCategory ? `/api/categories/${editingCategory.c_id}` : '/api/categories';
+      const url = editingCategory ? `/api/categories/${editingCategory.cat_id}` : '/api/categories';
       const method = editingCategory ? 'PUT' : 'POST';
       
       const response = await fetch(url, {
@@ -69,9 +69,9 @@ export default function CategoryManagement() {
   const handleEdit = (category: CategoryData) => {
     setEditingCategory(category);
     setFormData({
-      category_name: category.category_name,
-      amount: category.amount.toString(),
-      description: category.description || ''
+      category_name: category.cat_name,
+      amount: category.cat_type.toString(),
+      description: ''
     });
     setShowAddForm(true);
   };
@@ -137,15 +137,16 @@ export default function CategoryManagement() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Amount</label>
-              <input
-                type="number"
+              <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
+              <select
                 required
-                step="0.01"
                 value={formData.amount}
                 onChange={(e) => setFormData(prev => ({ ...prev, amount: e.target.value }))}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
+              >
+                <option value="0">FREE</option>
+                <option value="1">PAID</option>
+              </select>
             </div>
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
@@ -218,7 +219,7 @@ export default function CategoryManagement() {
                 </tr>
               ) : (
                 paginatedCategories.map((category, index) => (
-                  <tr key={category.c_id} className="hover:bg-gray-50">
+                  <tr key={category.cat_id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{startIndex + index + 1}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{category.cat_name}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
