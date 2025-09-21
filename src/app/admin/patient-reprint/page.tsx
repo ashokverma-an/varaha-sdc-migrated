@@ -15,6 +15,10 @@ interface PatientData {
   amount: number;
   date: string;
   category: string;
+  address: string;
+  scan_type: string;
+  allot_date: string;
+  allot_time: string;
 }
 
 export default function PatientReprint() {
@@ -47,165 +51,272 @@ export default function PatientReprint() {
     }
   };
 
+  const convertNumberToWords = (num: number): string => {
+    const ones = ['', 'ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN', 'EIGHT', 'NINE'];
+    const teens = ['TEN', 'ELEVEN', 'TWELVE', 'THIRTEEN', 'FOURTEEN', 'FIFTEEN', 'SIXTEEN', 'SEVENTEEN', 'EIGHTEEN', 'NINETEEN'];
+    const tens = ['', '', 'TWENTY', 'THIRTY', 'FORTY', 'FIFTY', 'SIXTY', 'SEVENTY', 'EIGHTY', 'NINETY'];
+    const thousands = ['', 'THOUSAND', 'MILLION', 'BILLION'];
+
+    if (num === 0) return 'ZERO';
+
+    let result = '';
+    let thousandIndex = 0;
+
+    while (num > 0) {
+      const chunk = num % 1000;
+      if (chunk !== 0) {
+        let chunkStr = '';
+        
+        if (chunk >= 100) {
+          chunkStr += ones[Math.floor(chunk / 100)] + ' HUNDRED ';
+        }
+        
+        const remainder = chunk % 100;
+        if (remainder >= 10 && remainder < 20) {
+          chunkStr += teens[remainder - 10] + ' ';
+        } else {
+          if (remainder >= 20) {
+            chunkStr += tens[Math.floor(remainder / 10)] + ' ';
+          }
+          if (remainder % 10 !== 0) {
+            chunkStr += ones[remainder % 10] + ' ';
+          }
+        }
+        
+        chunkStr += thousands[thousandIndex] + ' ';
+        result = chunkStr + result;
+      }
+      
+      num = Math.floor(num / 1000);
+      thousandIndex++;
+    }
+
+    return result.trim();
+  };
+
   const handleReprint = () => {
     if (!selectedPatient) return;
 
-    // Generate professional medical slip like PHP version
+    const amountInWords = convertNumberToWords(selectedPatient.amount);
+    
+    // Generate exact receipt format matching PHP SDK
     const printContent = `
       <html>
         <head>
-          <title>Patient Registration Slip - ${selectedPatient.cro_number}</title>
+          <title>Receipt - ${selectedPatient.cro_number}</title>
           <style>
             body { 
-              font-family: 'Courier New', monospace; 
+              font-family: Arial, sans-serif; 
               margin: 0; 
-              padding: 20px; 
-              font-size: 12px;
-              line-height: 1.4;
+              padding: 0; 
+              font-size: 10px;
+              line-height: 1.2;
             }
-            .slip {
-              width: 300px;
-              margin: 0 auto;
-              border: 2px solid #000;
-              padding: 15px;
+            .receipt {
+              width: 93%;
+              margin: 18px auto 0;
+              border: 1px solid #000;
+              padding: 2px 8px;
             }
             .header {
               text-align: center;
-              border-bottom: 2px solid #000;
-              padding-bottom: 10px;
-              margin-bottom: 15px;
+              margin-top: 2px;
             }
-            .logo {
-              font-size: 18px;
+            .header b {
               font-weight: bold;
-              margin-bottom: 5px;
             }
-            .subtitle {
+            table {
+              width: 98%;
+              margin: -5px 8px;
               font-size: 10px;
-              margin-bottom: 5px;
             }
-            .details {
-              margin: 10px 0;
+            .form_input_box {
+              border-bottom: 0px dotted #000;
+              padding: 0px 0px 2px 0px;
+              width: 100%;
+              display: inline-block;
             }
-            .row {
-              display: flex;
-              justify-content: space-between;
-              margin: 8px 0;
-              border-bottom: 1px dotted #ccc;
-              padding-bottom: 3px;
-            }
-            .label {
+            .form_input {
+              padding: 2px 1%;
+              font-size: 10px;
+              border: none;
               font-weight: bold;
-              width: 120px;
+              font-style: italic;
+              width: 99%;
+              border-bottom: 1px dotted #000;
             }
-            .value {
-              flex: 1;
+            .cash-receipt {
+              margin-left: 30%;
+              border: 1px solid #02C;
+              border-radius: 11px;
+              padding: 3px 15px;
+            }
+            .amount-box {
+              border: 1px solid #5E60AE;
+            }
+            .footer-text {
               text-align: right;
-            }
-            .amount-section {
-              border: 1px solid #000;
-              padding: 10px;
-              margin: 15px 0;
-              text-align: center;
-            }
-            .amount {
-              font-size: 16px;
-              font-weight: bold;
-            }
-            .footer {
-              text-align: center;
-              margin-top: 15px;
-              border-top: 1px solid #000;
-              padding-top: 10px;
-              font-size: 10px;
-            }
-            .barcode {
-              text-align: center;
-              font-family: 'Courier New', monospace;
-              font-size: 8px;
-              margin: 10px 0;
+              margin-right: 50px;
             }
             @media print {
-              body { margin: 0; padding: 10px; }
-              .slip { width: 100%; border: 1px solid #000; }
+              body { margin: 0; padding: 0; }
+              .receipt { width: 100%; margin: 0; }
             }
           </style>
         </head>
-        <body>
-          <div class="slip">
-            <div class="header">
-              <div class="logo">VARAHA SDC</div>
-              <div class="subtitle">Scan & Diagnostic Centre</div>
-              <div class="subtitle">Patient Registration Slip</div>
-            </div>
-            
-            <div class="details">
-              <div class="row">
-                <span class="label">CRO No:</span>
-                <span class="value">${selectedPatient.cro_number}</span>
-              </div>
-              <div class="row">
-                <span class="label">Name:</span>
-                <span class="value">${selectedPatient.patient_name}</span>
-              </div>
-              <div class="row">
-                <span class="label">Age/Sex:</span>
-                <span class="value">${selectedPatient.age}Y/${selectedPatient.gender}</span>
-              </div>
-              <div class="row">
-                <span class="label">Mobile:</span>
-                <span class="value">${selectedPatient.mobile}</span>
-              </div>
-              <div class="row">
-                <span class="label">Hospital:</span>
-                <span class="value">${selectedPatient.h_name || 'N/A'}</span>
-              </div>
-              <div class="row">
-                <span class="label">Doctor:</span>
-                <span class="value">${selectedPatient.dname || 'N/A'}</span>
-              </div>
-              <div class="row">
-                <span class="label">Date:</span>
-                <span class="value">${selectedPatient.date}</span>
-              </div>
-              <div class="row">
-                <span class="label">Category:</span>
-                <span class="value">${selectedPatient.category || 'General'}</span>
-              </div>
-            </div>
-            
-            <div class="amount-section">
-              <div>AMOUNT PAYABLE</div>
-              <div class="amount">₹ ${selectedPatient.amount}</div>
-            </div>
-            
-            <div class="barcode">
-              <div>||||| |||| | |||| ||||| | ||||</div>
-              <div>${selectedPatient.cro_number}</div>
-            </div>
-            
-            <div class="footer">
-              <div>Please carry this slip during scan</div>
-              <div>Contact: +91-XXXXXXXXXX</div>
-              <div>Printed: ${new Date().toLocaleString('en-IN')}</div>
-            </div>
+        <body onload="window.print(); setTimeout(() => window.close(), 1000);">
+          <!-- First Copy -->
+          <div class="receipt">
+            <table class="header">
+              <tr><td align="center" colspan="6"><b>Dr. S.N. MEDICAL COLLEGE AND ATTACHED GROUP OF HOSPITAL, JODHPUR</b></td></tr>
+              <tr><td align="center" colspan="6"><b>Rajasthan Medical Relief Society, M.D.M. Hospital, Jodhpur</b></td></tr>
+              <tr><td align="center" colspan="6"><b>IMAGING CENTRE UNDER P.P.P.MODE : VARAHA SDC</b></td></tr>
+              <tr><td align="center" colspan="6"><b>256 SLICE DUAL ENERGY CT SCAN, M.D.M HOSPITAL Jodhpur(Raj.) - 342003</b></td></tr>
+              <tr><td align="center" colspan="6"><b>Tel. : +91-291-2648120 , 0291-2648121 , 0291-2648122</b></td></tr>
+            </table>
+
+            <table>
+              <tr>
+                <td width="55">Reg.No :</td>
+                <td width="200"><span class="form_input_box"><input type="text" class="form_input" value="${selectedPatient.cro_number}(${selectedPatient.p_id})"></span></td>
+                <td colspan="6"><span class="cash-receipt">Cash Receipt</span></td>
+                <td width="36">Date</td>
+                <td width="144"><span class="form_input_box"><input type="text" class="form_input" value="${selectedPatient.date}"></span></td>
+              </tr>
+            </table>
+
+            <table>
+              <tr>
+                <td width="56">Ref. By :</td>
+                <td width="482"><span class="form_input_box"><input type="text" class="form_input" value="${selectedPatient.dname || 'MDM'}"></span></td>
+                <td width="174">Date and Time of Appointment :</td>
+                <td width="316"><span class="form_input_box"><input type="text" class="form_input" value="${selectedPatient.allot_date || selectedPatient.date}"></span></td>
+              </tr>
+            </table>
+
+            <table>
+              <tr>
+                <td width="78">Patient Name:</td>
+                <td width="650"><span class="form_input_box"><input type="text" class="form_input" value="${selectedPatient.patient_name}"></span></td>
+                <td width="33">Age :</td>
+                <td width="144"><span class="form_input_box"><input type="text" class="form_input" value="${selectedPatient.age}Year"></span></td>
+                <td width="36">Gender</td>
+                <td width="144"><span class="form_input_box"><input type="text" class="form_input" value="${selectedPatient.gender}"></span></td>
+              </tr>
+            </table>
+
+            <table>
+              <tr>
+                <td width="40">Address</td>
+                <td width="687"><span class="form_input_box"><input type="text" class="form_input" value="${selectedPatient.address || 'JODHPUR'}"></span></td>
+                <td width="687"><span class="form_input_box"><label>Category</label><input type="text" class="form_input" value="${selectedPatient.category || 'Sn. CITIZEN'}"></span></td>
+                <td width="33">Phone:</td>
+                <td width="333"><span class="form_input_box"><input type="text" class="form_input" value="${selectedPatient.mobile}"></span></td>
+              </tr>
+            </table>
+
+            <table>
+              <tr>
+                <td width="59">Investigations:</td>
+                <td width="1042"><span class="form_input_box"><input type="text" class="form_input" value="${selectedPatient.scan_type || 'NCCT Brain / Head,'}"></span></td>
+              </tr>
+            </table>
+
+            <table>
+              <tr>
+                <td width="129" height="24">For Sum Of Rupees:</td>
+                <td width="733"><span class="form_input_box"><input type="text" class="form_input" value="${amountInWords} RUPEES ONLY"></span></td>
+                <td width="147"><label>Scan Amount</label><input type="text" class="amount-box" value="₹ ${selectedPatient.amount}"></td>
+                <td width="147"><label>Received Amount</label><input type="text" class="amount-box" value="₹ ${selectedPatient.amount}"></td>
+              </tr>
+            </table>
+
+            <table>
+              <tr>
+                <td height="27" colspan="6" align="right">For Varaha SDC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br><span class="footer-text">Jodhpur</span></td>
+              </tr>
+            </table>
           </div>
-          
-          <script>
-            window.onload = function() {
-              setTimeout(() => {
-                window.print();
-                window.onafterprint = function() {
-                  window.close();
-                }
-              }, 500);
-            }
-          </script>
+
+          <hr>
+
+          <!-- Second Copy -->
+          <div class="receipt">
+            <table class="header">
+              <tr><td align="center" colspan="6"><b>Dr. S.N. MEDICAL COLLEGE AND ATTACHED GROUP OF HOSPITAL, JODHPUR</b></td></tr>
+              <tr><td align="center" colspan="6"><b>Rajasthan Medical Relief Society, M.D.M. Hospital, Jodhpur</b></td></tr>
+              <tr><td align="center" colspan="6"><b>IMAGING CENTRE UNDER P.P.P.MODE : VARAHA SDC</b></td></tr>
+              <tr><td align="center" colspan="6"><b>256 SLICE DUAL ENERGY CT SCAN, M.D.M HOSPITAL Jodhpur(Raj.) - 342003</b></td></tr>
+              <tr><td align="center" colspan="6"><b>Tel. : +91-291-2648120 , 0291-2648121 , 0291-2648122</b></td></tr>
+            </table>
+
+            <table>
+              <tr>
+                <td width="55">Reg.No :</td>
+                <td width="200"><span class="form_input_box"><input type="text" class="form_input" value="${selectedPatient.cro_number} (${selectedPatient.p_id})"></span></td>
+                <td colspan="6"><span class="cash-receipt">Cash Receipt</span></td>
+                <td width="36">Date</td>
+                <td width="144"><span class="form_input_box"><input type="text" class="form_input" value="${selectedPatient.date}"></span></td>
+              </tr>
+            </table>
+
+            <table>
+              <tr>
+                <td width="56">Ref. By :</td>
+                <td width="482"><span class="form_input_box"><input type="text" class="form_input" value="${selectedPatient.dname || 'MDM'}"></span></td>
+                <td width="174">Date and Time of Appointment :</td>
+                <td width="316"><span class="form_input_box"><input type="text" class="form_input" value="${selectedPatient.allot_date || selectedPatient.date}"></span></td>
+              </tr>
+            </table>
+
+            <table>
+              <tr>
+                <td width="78">Patient Name:</td>
+                <td width="650"><span class="form_input_box"><input type="text" class="form_input" value="${selectedPatient.patient_name}"></span></td>
+                <td width="33">Age :</td>
+                <td width="144"><span class="form_input_box"><input type="text" class="form_input" value="${selectedPatient.age}Year"></span></td>
+                <td width="36">Gender</td>
+                <td width="144"><span class="form_input_box"><input type="text" class="form_input" value="${selectedPatient.gender}"></span></td>
+              </tr>
+            </table>
+
+            <table>
+              <tr>
+                <td width="40">Address</td>
+                <td width="687"><span class="form_input_box"><input type="text" class="form_input" value="${selectedPatient.address || 'JODHPUR'}"></span></td>
+                <td width="687"><span class="form_input_box"><label>Category</label><input type="text" class="form_input" value="${selectedPatient.category || 'Sn. CITIZEN'}"></span></td>
+                <td width="33">Phone:</td>
+                <td width="333"><span class="form_input_box"><input type="text" class="form_input" value="${selectedPatient.mobile}"></span></td>
+              </tr>
+            </table>
+
+            <table>
+              <tr>
+                <td width="59">Investigations:</td>
+                <td width="1042"><span class="form_input_box"><input type="text" class="form_input" value="${selectedPatient.scan_type || 'NCCT Brain / Head,'}"></span></td>
+              </tr>
+            </table>
+
+            <table>
+              <tr>
+                <td width="129" height="24">For Sum Of Rupees:</td>
+                <td width="733"><span class="form_input_box"><input type="text" class="form_input" value="${amountInWords} RUPEES ONLY"></span></td>
+                <td width="147"><label>Scan Amount</label><input type="text" class="amount-box" value="₹ ${selectedPatient.amount}"></td>
+                <td width="147"><label>Received Amount</label><input type="text" class="amount-box" value="₹ ${selectedPatient.amount}"></td>
+              </tr>
+            </table>
+
+            <table>
+              <tr>
+                <td height="27" colspan="6" align="right">For Varaha SDC&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br><span class="footer-text">Jodhpur</span></td>
+              </tr>
+            </table>
+          </div>
         </body>
       </html>
     `;
 
-    const printWindow = window.open('', '_blank', 'width=400,height=600');
+    const printWindow = window.open('', '_blank', 'width=800,height=600');
     if (printWindow) {
       printWindow.document.write(printContent);
       printWindow.document.close();
@@ -280,6 +391,10 @@ export default function PatientReprint() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
               <p className="text-gray-900">{selectedPatient.date}</p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+              <p className="text-gray-900">{selectedPatient.category || 'General'}</p>
             </div>
           </div>
           
