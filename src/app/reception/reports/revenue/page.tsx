@@ -18,15 +18,9 @@ export default function RevenueReport() {
   const fetchRevenueReport = async () => {
     setLoading(true);
     try {
-      // Mock data for now - replace with actual API call
-      const mockData: RevenueData[] = [
-        { date: '01-08-2025', amount: 45000, patients: 25 },
-        { date: '02-08-2025', amount: 52000, patients: 30 },
-        { date: '03-08-2025', amount: 38000, patients: 22 },
-        { date: '04-08-2025', amount: 61000, patients: 35 },
-        { date: '05-08-2025', amount: 47000, patients: 28 }
-      ];
-      setRevenueData(mockData);
+      const response = await fetch(`/api/reports/revenue?from=${fromDate}&to=${toDate}`);
+      const data = await response.json();
+      setRevenueData(data.data || []);
     } catch (error) {
       console.error('Error fetching revenue report:', error);
     } finally {
@@ -206,21 +200,6 @@ export default function RevenueReport() {
                     <p className="text-3xl font-bold text-purple-700">₹{Math.round(averageRevenue).toLocaleString()}</p>
                   </div>
                   <TrendingUp className="h-8 w-8 text-purple-600" />
-                </div>
-              </div>
-            </div>
-
-            {/* Revenue Chart Placeholder */}
-            <div className="bg-gray-50 p-8 rounded-xl border border-gray-200">
-              <h3 className="text-lg font-semibold mb-4 flex items-center">
-                <PieChart className="h-5 w-5 mr-2" />
-                Revenue Trend
-              </h3>
-              <div className="h-64 flex items-center justify-center text-gray-500">
-                <div className="text-center">
-                  <BarChart3 className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-                  <p>Revenue chart visualization would be displayed here</p>
-                  <p className="text-sm">Integration with charting library needed</p>
                 </div>
               </div>
             </div>

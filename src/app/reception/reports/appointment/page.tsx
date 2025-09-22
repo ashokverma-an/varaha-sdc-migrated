@@ -25,46 +25,9 @@ export default function AppointmentReport() {
   const fetchAppointments = async () => {
     setLoading(true);
     try {
-      // Mock data for now - replace with actual API call
-      const mockData: Appointment[] = [
-        {
-          id: 1,
-          cro: 'VDC/01-08-2025/001',
-          patient_name: 'John Doe',
-          doctor_name: 'Dr. Smith',
-          hospital_name: 'City Hospital',
-          appointment_date: selectedDate,
-          appointment_time: '09:00',
-          status: 'completed',
-          category: 'MRI',
-          amount: 2500
-        },
-        {
-          id: 2,
-          cro: 'VDC/01-08-2025/002',
-          patient_name: 'Jane Smith',
-          doctor_name: 'Dr. Johnson',
-          hospital_name: 'General Hospital',
-          appointment_date: selectedDate,
-          appointment_time: '10:30',
-          status: 'scheduled',
-          category: 'CT Scan',
-          amount: 1800
-        },
-        {
-          id: 3,
-          cro: 'VDC/01-08-2025/003',
-          patient_name: 'Bob Wilson',
-          doctor_name: 'Dr. Brown',
-          hospital_name: 'Medical Center',
-          appointment_date: selectedDate,
-          appointment_time: '14:00',
-          status: 'pending',
-          category: 'X-Ray',
-          amount: 800
-        }
-      ];
-      setAppointments(mockData);
+      const response = await fetch(`/api/reports/appointment?date=${selectedDate}&status=${statusFilter}`);
+      const data = await response.json();
+      setAppointments(data.data || []);
     } catch (error) {
       console.error('Error fetching appointments:', error);
     } finally {
