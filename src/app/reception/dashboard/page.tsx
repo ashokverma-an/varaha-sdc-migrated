@@ -28,7 +28,7 @@ export default function ReceptionDashboard() {
 
   const fetchReceptionStats = async () => {
     try {
-      const response = await fetch('https://varaha-api-qpkj.vercel.app/admin/stats');
+      const response = await fetch('https://varahasdc.co.in/api/admin/stats');
       if (response.ok) {
         const data = await response.json();
         setStats({

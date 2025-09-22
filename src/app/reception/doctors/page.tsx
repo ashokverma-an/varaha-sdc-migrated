@@ -25,7 +25,7 @@ export default function ReceptionDoctors() {
 
   const fetchDoctors = async () => {
     try {
-      const response = await fetch('https://varaha-api-qpkj.vercel.app/admin/doctors');
+      const response = await fetch('https://varahasdc.co.in/api/admin/doctors');
       if (response.ok) {
         const data = await response.json();
         setDoctors(data || []);

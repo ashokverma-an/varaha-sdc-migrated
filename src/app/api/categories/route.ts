@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET() {
   try {
-    const response = await fetch('https://varaha-api-qpkj.vercel.app/admin/categories');
+    const response = await fetch('https://varahasdc.co.in/api/admin/categories');
     if (!response.ok) {
       throw new Error('External API call failed');
     }

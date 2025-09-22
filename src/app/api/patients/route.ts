@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
     const date = searchParams.get('date');
     const before = searchParams.get('before');
     
-    let apiUrl = 'https://varaha-api-qpkj.vercel.app/admin/patient-list';
+    let apiUrl = 'https://varahasdc.co.in/api/admin/patient-list';
     const params = new URLSearchParams();
     
     if (date) params.append('from_date', date);
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
       notes: data.notes || ''
     };
     
-    const response = await fetch('https://varaha-api-qpkj.vercel.app/admin/patients', {
+    const response = await fetch('https://varahasdc.co.in/api/admin/patients', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
