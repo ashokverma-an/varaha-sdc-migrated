@@ -4,10 +4,10 @@ import { useState, useEffect } from 'react';
 import { Search, Clock, CheckCircle, XCircle, Calendar, Phone } from 'lucide-react';
 
 interface PendingPatient {
-  patient_id: number;
-  cro: string;
+  p_id: number;
+  cro_number: string;
   patient_name: string;
-  age: number;
+  age: string;
   gender: string;
   mobile: string;
   h_name: string;
@@ -15,6 +15,9 @@ interface PendingPatient {
   category: string;
   date: string;
   amount: number;
+  address: string;
+  remark: string;
+  scan_type: string;
 }
 
 export default function PendingPatient() {
@@ -70,7 +73,7 @@ export default function PendingPatient() {
 
   const filteredPatients = patients.filter(patient =>
     patient.patient_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    patient.cro.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    patient.cro_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
     patient.mobile.includes(searchTerm)
   );
 
@@ -119,8 +122,10 @@ export default function PendingPatient() {
                   <th className="border border-gray-300 px-4 py-2 text-left">Patient Name</th>
                   <th className="border border-gray-300 px-4 py-2 text-left">Age/Gender</th>
                   <th className="border border-gray-300 px-4 py-2 text-left">Mobile</th>
+                  <th className="border border-gray-300 px-4 py-2 text-left">Address</th>
                   <th className="border border-gray-300 px-4 py-2 text-left">Hospital</th>
                   <th className="border border-gray-300 px-4 py-2 text-left">Doctor</th>
+                  <th className="border border-gray-300 px-4 py-2 text-left">Category</th>
                   <th className="border border-gray-300 px-4 py-2 text-left">Amount</th>
                   <th className="border border-gray-300 px-4 py-2 text-left">Date</th>
                   <th className="border border-gray-300 px-4 py-2 text-left">Actions</th>
@@ -128,35 +133,37 @@ export default function PendingPatient() {
               </thead>
               <tbody>
                 {paginatedPatients.map((patient, index) => (
-                  <tr key={patient.patient_id} className="hover:bg-gray-50">
+                  <tr key={patient.p_id} className="hover:bg-gray-50">
                     <td className="border border-gray-300 px-4 py-2">{startIndex + index + 1}</td>
-                    <td className="border border-gray-300 px-4 py-2 font-medium">{patient.cro}</td>
+                    <td className="border border-gray-300 px-4 py-2 font-medium">{patient.cro_number}</td>
                     <td className="border border-gray-300 px-4 py-2">{patient.patient_name}</td>
-                    <td className="border border-gray-300 px-4 py-2">{patient.age}y, {patient.gender}</td>
+                    <td className="border border-gray-300 px-4 py-2">{patient.age}, {patient.gender}</td>
                     <td className="border border-gray-300 px-4 py-2">{patient.mobile}</td>
+                    <td className="border border-gray-300 px-4 py-2">{patient.address || '-'}</td>
                     <td className="border border-gray-300 px-4 py-2">{patient.h_name || '-'}</td>
                     <td className="border border-gray-300 px-4 py-2">{patient.dname || '-'}</td>
+                    <td className="border border-gray-300 px-4 py-2">{patient.category || '-'}</td>
                     <td className="border border-gray-300 px-4 py-2">₹{patient.amount}</td>
                     <td className="border border-gray-300 px-4 py-2">{patient.date}</td>
                     <td className="border border-gray-300 px-4 py-2">
                       <div className="flex space-x-1">
                         <button
-                          onClick={() => updatePatientStatus(patient.patient_id, 'in_progress')}
-                          disabled={updating === patient.patient_id}
+                          onClick={() => updatePatientStatus(patient.p_id, 'in_progress')}
+                          disabled={updating === patient.p_id}
                           className="px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 disabled:opacity-50"
                         >
                           Start
                         </button>
                         <button
-                          onClick={() => updatePatientStatus(patient.patient_id, 'completed')}
-                          disabled={updating === patient.patient_id}
+                          onClick={() => updatePatientStatus(patient.p_id, 'completed')}
+                          disabled={updating === patient.p_id}
                           className="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 disabled:opacity-50"
                         >
                           Complete
                         </button>
                         <button
-                          onClick={() => updatePatientStatus(patient.patient_id, 'cancelled')}
-                          disabled={updating === patient.patient_id}
+                          onClick={() => updatePatientStatus(patient.p_id, 'cancelled')}
+                          disabled={updating === patient.p_id}
                           className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 disabled:opacity-50"
                         >
                           Cancel
