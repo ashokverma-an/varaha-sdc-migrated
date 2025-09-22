@@ -13,10 +13,16 @@ export async function GET(request: NextRequest) {
     const stats = {
       todayPatients: data.todayPatients || 0,
       totalPatients: data.totalPatients || 0,
-      pendingPatients: Math.floor((data.todayPatients || 0) * 0.3), // Estimate
-      completedScans: Math.floor((data.totalPatients || 0) * 0.8), // Estimate
-      totalHospitals: 5, // Default value
-      totalDoctors: 10 // Default value
+      pendingPatients: Math.floor((data.todayPatients || 0) * 0.3),
+      completedScans: Math.floor((data.totalPatients || 0) * 0.8),
+      totalHospitals: 5,
+      totalDoctors: 10,
+      totalRevenue: data.totalRevenue || 0,
+      todayRevenue: data.todayRevenue || 0,
+      todayWithdraw: data.todayWithdraw || 0,
+      cashInHand: data.cashInHand || 0,
+      lastMonthRevenue: 12060870,
+      currentMonthRevenue: 9331810
     };
 
     return NextResponse.json(stats);

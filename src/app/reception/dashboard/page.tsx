@@ -1,11 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Activity, TrendingUp, DollarSign, Users, Hospital, Stethoscope } from 'lucide-react';
+import { Activity, TrendingUp, Users, Hospital, Stethoscope, IndianRupee } from 'lucide-react';
 
 interface ReceptionStats {
   todayPatients: number;
   totalPatients: number;
+  pendingPatients: number;
+  completedScans: number;
+  totalHospitals: number;
+  totalDoctors: number;
   totalRevenue: number;
   todayRevenue: number;
   todayWithdraw: number;
@@ -18,6 +22,10 @@ export default function ReceptionDashboard() {
   const [stats, setStats] = useState<ReceptionStats>({
     todayPatients: 0,
     totalPatients: 0,
+    pendingPatients: 0,
+    completedScans: 0,
+    totalHospitals: 0,
+    totalDoctors: 0,
     totalRevenue: 0,
     todayRevenue: 0,
     todayWithdraw: 0,
@@ -32,19 +40,10 @@ export default function ReceptionDashboard() {
 
   const fetchReceptionStats = async () => {
     try {
-      const response = await fetch('https://varahasdc.co.in/api/admin/stats');
+      const response = await fetch('/api/reception/stats');
       if (response.ok) {
         const data = await response.json();
-        setStats({
-          todayPatients: data.todayPatients || 0,
-          totalPatients: data.totalPatients || 0,
-          totalRevenue: data.totalRevenue || 0,
-          todayRevenue: data.todayRevenue || 0,
-          todayWithdraw: data.todayWithdraw || 0,
-          cashInHand: data.cashInHand || 0,
-          lastMonthRevenue: 12060870,
-          currentMonthRevenue: 9331810
-        });
+        setStats(data);
       }
     } catch (error) {
       console.error('Error fetching reception stats:', error);
@@ -62,8 +61,8 @@ export default function ReceptionDashboard() {
         <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Patient Registered</p>
-              <p className="text-3xl font-bold text-blue-600">{stats.totalPatients}</p>
+              <p className="text-sm font-medium text-gray-600">Today's Patients</p>
+              <p className="text-3xl font-bold text-blue-600">{stats.todayPatients}</p>
             </div>
             <div className="p-3 bg-blue-100 rounded-full">
               <Users className="h-8 w-8 text-blue-600" />
@@ -74,8 +73,8 @@ export default function ReceptionDashboard() {
         <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total MRI</p>
-              <p className="text-3xl font-bold text-green-600">{stats.todayPatients}</p>
+              <p className="text-sm font-medium text-gray-600">Total Patients</p>
+              <p className="text-3xl font-bold text-green-600">{stats.totalPatients}</p>
             </div>
             <div className="p-3 bg-green-100 rounded-full">
               <Activity className="h-8 w-8 text-green-600" />
@@ -86,35 +85,11 @@ export default function ReceptionDashboard() {
         <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Received Amount</p>
-              <p className="text-3xl font-bold text-emerald-600">₹{stats.totalRevenue.toLocaleString()}</p>
-            </div>
-            <div className="p-3 bg-emerald-100 rounded-full">
-              <DollarSign className="h-8 w-8 text-emerald-600" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Due Amount</p>
-              <p className="text-3xl font-bold text-red-600">₹{stats.todayRevenue.toLocaleString()}</p>
-            </div>
-            <div className="p-3 bg-red-100 rounded-full">
-              <TrendingUp className="h-8 w-8 text-red-600" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Withdraw</p>
-              <p className="text-3xl font-bold text-orange-600">₹{stats.todayWithdraw.toLocaleString()}</p>
+              <p className="text-sm font-medium text-gray-600">Pending Patients</p>
+              <p className="text-3xl font-bold text-orange-600">{stats.pendingPatients}</p>
             </div>
             <div className="p-3 bg-orange-100 rounded-full">
-              <DollarSign className="h-8 w-8 text-orange-600" />
+              <TrendingUp className="h-8 w-8 text-orange-600" />
             </div>
           </div>
         </div>
@@ -122,11 +97,35 @@ export default function ReceptionDashboard() {
         <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Cash In Hand</p>
-              <p className="text-3xl font-bold text-purple-600">₹{stats.cashInHand.toLocaleString()}</p>
+              <p className="text-sm font-medium text-gray-600">Completed Scans</p>
+              <p className="text-3xl font-bold text-purple-600">{stats.completedScans}</p>
             </div>
             <div className="p-3 bg-purple-100 rounded-full">
-              <DollarSign className="h-8 w-8 text-purple-600" />
+              <IndianRupee className="h-8 w-8 text-purple-600" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Total Hospitals</p>
+              <p className="text-3xl font-bold text-indigo-600">{stats.totalHospitals}</p>
+            </div>
+            <div className="p-3 bg-indigo-100 rounded-full">
+              <Hospital className="h-8 w-8 text-indigo-600" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Total Doctors</p>
+              <p className="text-3xl font-bold text-teal-600">{stats.totalDoctors}</p>
+            </div>
+            <div className="p-3 bg-teal-100 rounded-full">
+              <Stethoscope className="h-8 w-8 text-teal-600" />
             </div>
           </div>
         </div>
@@ -141,7 +140,7 @@ export default function ReceptionDashboard() {
               <p className="text-3xl font-bold">₹{stats.lastMonthRevenue.toLocaleString()}.00</p>
             </div>
             <div className="p-3 bg-indigo-400 rounded-full">
-              <TrendingUp className="h-8 w-8 text-white" />
+              <IndianRupee className="h-8 w-8 text-white" />
             </div>
           </div>
         </div>
@@ -153,7 +152,7 @@ export default function ReceptionDashboard() {
               <p className="text-3xl font-bold">₹{stats.currentMonthRevenue.toLocaleString()}.00</p>
             </div>
             <div className="p-3 bg-teal-400 rounded-full">
-              <DollarSign className="h-8 w-8 text-white" />
+              <IndianRupee className="h-8 w-8 text-white" />
             </div>
           </div>
         </div>
