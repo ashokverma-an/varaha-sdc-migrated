@@ -17,7 +17,7 @@ export default function ReceptionDoctors() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(50);
+  const [itemsPerPage] = useState(10);
   const [showModal, setShowModal] = useState(false);
   const [editingDoctor, setEditingDoctor] = useState<DoctorData | null>(null);
   const [formData, setFormData] = useState({ dname: '', specialization: '', contact: '', email: '', qualification: '' });

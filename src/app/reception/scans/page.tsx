@@ -18,7 +18,7 @@ export default function ReceptionScans() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(50);
+  const [itemsPerPage] = useState(10);
   const [showModal, setShowModal] = useState(false);
   const [editingScan, setEditingScan] = useState<ScanData | null>(null);
   const [formData, setFormData] = useState({ s_name: '', n_o_films: 0, contrass: 0, total_scan: 1, estimate_time: '', charges: 0 });
