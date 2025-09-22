@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { CheckCircle, XCircle, AlertCircle, Info, X } from 'lucide-react';
 
 export interface Toast {
@@ -62,4 +62,48 @@ const ToastComponent = ({ toast, onRemove }: ToastProps) => {
   );
 };
 
+// Toast component for displaying individual toasts
+const Toast = ({ message, type, isVisible, onClose }: {
+  message: string;
+  type: 'success' | 'error' | 'warning' | 'info';
+  isVisible: boolean;
+  onClose: () => void;
+}) => {
+  if (!isVisible) return null;
+  
+  const toast = {
+    id: 'single-toast',
+    type,
+    message
+  };
+  
+  return (
+    <div className="fixed top-4 right-4 z-50">
+      <ToastComponent toast={toast} onRemove={onClose} />
+    </div>
+  );
+};
+
 export default ToastComponent;
+// Custom hook that provides the expected API for compatibility
+const useToastCompat = () => {
+  const [toast, setToast] = useState({
+    message: '',
+    type: 'info' as 'success' | 'error' | 'warning' | 'info',
+    isVisible: false
+  });
+
+  const showToast = useCallback((message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') => {
+    setToast({ message, type, isVisible: true });
+  }, []);
+
+  const hideToast = useCallback(() => {
+    setToast(prev => ({ ...prev, isVisible: false }));
+  }, []);
+
+  return { toast, showToast, hideToast };
+};
+
+export { Toast };
+export { useToastCompat as useToast };
+export type { Toast as ToastType } from '../../hooks/useToast';

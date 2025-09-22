@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Search, Printer, FileText } from 'lucide-react';
+import { useToastContext } from '@/context/ToastContext';
 
 interface Patient {
   patient_id: number;
@@ -18,6 +19,7 @@ interface Patient {
 }
 
 export default function PatientReprintOld() {
+  const toast = useToastContext();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');

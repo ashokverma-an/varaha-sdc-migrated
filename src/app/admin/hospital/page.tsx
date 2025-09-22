@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Hospital, Plus, Edit, Trash2, Search, ChevronLeft, ChevronRight, Filter, Download } from 'lucide-react';
 import SuperAdminLayout, { Card, Table, TableHeader, TableHeaderCell, TableBody, TableRow, TableCell, Button, Pagination } from '@/components/SuperAdminLayout';
+import { useToastContext } from '@/context/ToastContext';
 
 interface HospitalData {
   h_id: number;
@@ -14,6 +15,7 @@ interface HospitalData {
 }
 
 export default function HospitalManagement() {
+  const toast = useToastContext();
   const [hospitals, setHospitals] = useState<HospitalData[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);

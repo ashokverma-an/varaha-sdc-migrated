@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { User, Save, RotateCcw, ArrowLeft, ArrowRight, Search } from 'lucide-react';
+import { useToastContext } from '@/context/ToastContext';
 
 interface HospitalData {
   h_id: number;
@@ -39,6 +40,7 @@ interface PatientData {
 }
 
 export default function PatientEdit() {
+  const toast = useToastContext();
   const [currentStep, setCurrentStep] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPatient, setSelectedPatient] = useState<PatientData | null>(null);

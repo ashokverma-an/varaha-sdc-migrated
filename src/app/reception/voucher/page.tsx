@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Receipt, Plus, Calendar, DollarSign, Save, ArrowLeft } from 'lucide-react';
+import { useToastContext } from '@/context/ToastContext';
 
 interface Transaction {
   id: number;
@@ -13,6 +14,7 @@ interface Transaction {
 }
 
 export default function Voucher() {
+  const toast = useToastContext();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);

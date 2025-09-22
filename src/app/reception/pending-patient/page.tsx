@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Search, Clock, CheckCircle, XCircle, Calendar, Phone } from 'lucide-react';
+import { useToastContext } from '@/context/ToastContext';
 
 interface PendingPatient {
   p_id: number;
@@ -21,6 +22,7 @@ interface PendingPatient {
 }
 
 export default function PendingPatient() {
+  const toast = useToastContext();
   const [patients, setPatients] = useState<PendingPatient[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');

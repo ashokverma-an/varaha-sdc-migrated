@@ -1,7 +1,7 @@
 'use client';
 
 import { useToast } from '@/hooks/useToast';
-import ToastComponent from './toast';
+import ToastComponent from './Toast';
 
 const ToastContainer = () => {
   const { toasts, removeToast } = useToast();

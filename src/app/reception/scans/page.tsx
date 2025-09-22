@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Camera, Plus, Edit, Trash2, Search, X } from 'lucide-react';
+import { useToastContext } from '@/context/ToastContext';
 
 interface ScanData {
   s_id: number;
@@ -14,6 +15,7 @@ interface ScanData {
 }
 
 export default function ReceptionScans() {
+  const toast = useToastContext();
   const [scans, setScans] = useState<ScanData[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');

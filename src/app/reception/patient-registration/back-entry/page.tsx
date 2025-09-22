@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Save, ArrowLeft, User, Phone, MapPin, Calendar, DollarSign, Clock } from 'lucide-react';
+import { useToastContext } from '@/context/ToastContext';
 
 interface Hospital {
   h_id: number;
@@ -19,6 +20,7 @@ interface Category {
 }
 
 export default function BackEntryPatientRegistration() {
+  const toast = useToastContext();
   const [hospitals, setHospitals] = useState<Hospital[]>([]);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);

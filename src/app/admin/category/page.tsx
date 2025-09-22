@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Tag, Plus, Edit, Trash2, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useToastContext } from '@/context/ToastContext';
 
 interface CategoryData {
   cat_id: number;
@@ -10,6 +11,7 @@ interface CategoryData {
 }
 
 export default function CategoryManagement() {
+  const toast = useToastContext();
   const [categories, setCategories] = useState<CategoryData[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);

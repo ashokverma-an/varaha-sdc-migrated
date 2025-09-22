@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Tag, Plus, Edit, Search, X } from 'lucide-react';
+import { useToastContext } from '@/context/ToastContext';
 
 interface Category {
   cat_id: number;
@@ -10,6 +11,7 @@ interface Category {
 }
 
 export default function PatientCategory() {
+  const toast = useToastContext();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Hospital, Plus, Edit, Trash2, Search, X } from 'lucide-react';
+import { useToastContext } from '@/context/ToastContext';
 
 interface HospitalData {
   h_id: number;
@@ -13,6 +14,7 @@ interface HospitalData {
 }
 
 export default function ReceptionHospitals() {
+  const toast = useToastContext();
   const [hospitals, setHospitals] = useState<HospitalData[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Search, Plus, Edit, Eye, Calendar, Filter, Printer, FileText } from 'lucide-react';
+import { useToastContext } from '@/context/ToastContext';
 
 interface Patient {
   p_id: number;
@@ -20,6 +21,7 @@ interface Patient {
 }
 
 export default function PatientList() {
+  const toast = useToastContext();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');

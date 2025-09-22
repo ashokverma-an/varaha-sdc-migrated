@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { UserPlus, Save, RotateCcw, ArrowLeft, ArrowRight, Check, Printer } from 'lucide-react';
+import { useToastContext } from '@/context/ToastContext';
 
 interface HospitalData {
   h_id: number;
@@ -20,6 +21,7 @@ interface ScanData {
 }
 
 export default function PatientRegistration() {
+  const toast = useToastContext();
   const [currentStep, setCurrentStep] = useState(1);
   const [hospitals, setHospitals] = useState<HospitalData[]>([]);
   const [doctors, setDoctors] = useState<DoctorData[]>([]);
