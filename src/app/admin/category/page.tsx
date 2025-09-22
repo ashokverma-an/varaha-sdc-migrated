@@ -60,15 +60,15 @@ export default function CategoryManagement() {
       });
 
       if (response.ok) {
-        alert(editingCategory ? 'Category updated successfully!' : 'Category created successfully!');
+        toast.error(editingCategory ? 'Category updated successfully!' : 'Category created successfully!');
         fetchCategories();
         resetForm();
       } else {
-        alert('Failed to save category');
+        toast.error('Failed to save category');
       }
     } catch (error) {
       console.error('Error saving category:', error);
-      alert('Error saving category');
+      toast.error('Error saving category');
     }
   };
 
@@ -89,14 +89,14 @@ export default function CategoryManagement() {
           method: 'DELETE' 
         });
         if (response.ok) {
-          alert('Category deleted successfully!');
+          toast.error('Category deleted successfully!');
           fetchCategories();
         } else {
-          alert('Failed to delete category');
+          toast.error('Failed to delete category');
         }
       } catch (error) {
         console.error('Error deleting category:', error);
-        alert('Error deleting category');
+        toast.error('Error deleting category');
       }
     }
   };

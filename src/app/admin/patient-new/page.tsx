@@ -130,14 +130,14 @@ export default function PatientRegistration() {
       });
 
       if (response.ok) {
-        alert('Patient registered successfully!');
+        toast.error('Patient registered successfully!');
         resetForm();
       } else {
-        alert('Failed to register patient');
+        toast.error('Failed to register patient');
       }
     } catch (error) {
       console.error('Error registering patient:', error);
-      alert('Error registering patient');
+      toast.error('Error registering patient');
     } finally {
       setLoading(false);
     }

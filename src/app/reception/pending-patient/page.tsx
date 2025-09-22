@@ -58,14 +58,14 @@ export default function PendingPatient() {
       });
 
       if (response.ok) {
-        alert(`Patient status updated to ${newStatus}`);
+        toast.error(`Patient status updated to ${newStatus}`);
         fetchPendingPatients();
       } else {
-        alert('Error updating patient status');
+        toast.error('Error updating patient status');
       }
     } catch (error) {
       console.error('Error updating status:', error);
-      alert('Error updating patient status');
+      toast.error('Error updating patient status');
     } finally {
       setUpdating(null);
     }

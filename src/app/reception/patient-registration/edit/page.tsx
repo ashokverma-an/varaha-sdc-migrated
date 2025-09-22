@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Save, ArrowLeft, User, Phone, MapPin, Calendar, DollarSign, Printer, Search } from 'lucide-react';
+import { useToastContext } from '@/context/ToastContext';
 
 interface Hospital {
   h_id: number;
@@ -35,6 +36,7 @@ interface Patient {
 }
 
 export default function EditPatientRegistration() {
+  const toast = useToastContext();
   const [patient, setPatient] = useState<Patient | null>(null);
   const [hospitals, setHospitals] = useState<Hospital[]>([]);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
@@ -84,7 +86,7 @@ export default function EditPatientRegistration() {
 
   const searchPatient = async () => {
     if (!searchCRO.trim()) {
-      alert('Please enter CRO number');
+      toast.error('Please enter CRO number');
       return;
     }
 
@@ -106,14 +108,14 @@ export default function EditPatientRegistration() {
             remark: patientData.remark || ''
           });
         } else {
-          alert('Patient not found');
+          toast.error('Patient not found');
         }
       } else {
-        alert('Error searching patient');
+        toast.error('Error searching patient');
       }
     } catch (error) {
       console.error('Error:', error);
-      alert('Error searching patient');
+      toast.error('Error searching patient');
     } finally {
       setLoading(false);
     }
@@ -123,12 +125,12 @@ export default function EditPatientRegistration() {
     e.preventDefault();
     
     if (!patient) {
-      alert('No patient selected');
+      toast.error('No patient selected');
       return;
     }
 
     if (!formData.patient_name.trim()) {
-      alert('Patient name is required');
+      toast.error('Patient name is required');
       return;
     }
 
@@ -143,14 +145,14 @@ export default function EditPatientRegistration() {
       });
 
       if (response.ok) {
-        alert('Patient updated successfully!');
+        toast.success('Patient updated successfully!');
         window.location.href = '/reception/patient-registration';
       } else {
-        alert('Error updating patient');
+        toast.error('Error updating patient');
       }
     } catch (error) {
       console.error('Error:', error);
-      alert('Error updating patient');
+      toast.error('Error updating patient');
     } finally {
       setLoading(false);
     }
@@ -158,7 +160,7 @@ export default function EditPatientRegistration() {
 
   const generateReceipt = () => {
     if (!patient) {
-      alert('No patient selected');
+      toast.error('No patient selected');
       return;
     }
 

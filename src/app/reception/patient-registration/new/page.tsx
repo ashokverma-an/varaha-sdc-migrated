@@ -73,31 +73,31 @@ export default function NewPatientRegistration() {
 
   const validateForm = () => {
     if (!formData.patient_name.trim()) {
-      alert('Patient name is required');
+      toast.error('Patient name is required');
       return false;
     }
     if (!formData.age.trim()) {
-      alert('Age is required');
+      toast.error('Age is required');
       return false;
     }
     if (!formData.contact_number.trim()) {
-      alert('Contact number is required');
+      toast.error('Contact number is required');
       return false;
     }
     if (formData.contact_number.length !== 10) {
-      alert('Contact number must be 10 digits');
+      toast.error('Contact number must be 10 digits');
       return false;
     }
     if (!formData.hospital_id) {
-      alert('Please select a hospital');
+      toast.error('Please select a hospital');
       return false;
     }
     if (!formData.doctor_name) {
-      alert('Please select a doctor');
+      toast.error('Please select a doctor');
       return false;
     }
     if (!formData.amount.trim()) {
-      alert('Amount is required');
+      toast.error('Amount is required');
       return false;
     }
     return true;
@@ -120,14 +120,14 @@ export default function NewPatientRegistration() {
 
       if (response.ok) {
         const result = await response.json();
-        alert(`Patient registered successfully! CRO: ${result.data?.cro || 'Generated'}`);
+        toast.error(`Patient registered successfully! CRO: ${result.data?.cro || 'Generated'}`);
         window.location.href = '/reception/patient-registration';
       } else {
-        alert('Error registering patient');
+        toast.error('Error registering patient');
       }
     } catch (error) {
       console.error('Error:', error);
-      alert('Error registering patient');
+      toast.error('Error registering patient');
     } finally {
       setLoading(false);
     }

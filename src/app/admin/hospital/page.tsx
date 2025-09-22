@@ -62,15 +62,15 @@ export default function HospitalManagement() {
       });
 
       if (response.ok) {
-        alert(editingHospital ? 'Hospital updated successfully!' : 'Hospital created successfully!');
+        toast.error(editingHospital ? 'Hospital updated successfully!' : 'Hospital created successfully!');
         fetchHospitals();
         resetForm();
       } else {
-        alert('Failed to save hospital');
+        toast.error('Failed to save hospital');
       }
     } catch (error) {
       console.error('Error saving hospital:', error);
-      alert('Error saving hospital');
+      toast.error('Error saving hospital');
     }
   };
 
@@ -92,14 +92,14 @@ export default function HospitalManagement() {
           method: 'DELETE' 
         });
         if (response.ok) {
-          alert('Hospital deleted successfully!');
+          toast.error('Hospital deleted successfully!');
           fetchHospitals();
         } else {
-          alert('Failed to delete hospital');
+          toast.error('Failed to delete hospital');
         }
       } catch (error) {
         console.error('Error deleting hospital:', error);
-        alert('Error deleting hospital');
+        toast.error('Error deleting hospital');
       }
     }
   };

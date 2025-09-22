@@ -57,11 +57,11 @@ export default function ReceptionDoctors() {
       try {
         const response = await fetch(`https://varahasdc.co.in/api/admin/doctors/${doctor.d_id}`, { method: 'DELETE' });
         if (response.ok) {
-          alert('Doctor deleted successfully!');
+          toast.error('Doctor deleted successfully!');
           fetchDoctors();
         }
       } catch (error) {
-        alert('Error deleting doctor');
+        toast.error('Error deleting doctor');
       }
     }
   };
@@ -77,12 +77,12 @@ export default function ReceptionDoctors() {
         body: JSON.stringify(formData)
       });
       if (response.ok) {
-        alert(`Doctor ${editingDoctor ? 'updated' : 'created'} successfully!`);
+        toast.error(`Doctor ${editingDoctor ? 'updated' : 'created'} successfully!`);
         setShowModal(false);
         fetchDoctors();
       }
     } catch (error) {
-      alert('Error saving doctor');
+      toast.error('Error saving doctor');
     }
   };
 

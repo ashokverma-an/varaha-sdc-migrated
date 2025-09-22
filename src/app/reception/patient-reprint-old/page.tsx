@@ -45,9 +45,9 @@ export default function PatientReprintOld() {
   const handleReprint = async (patient: Patient) => {
     setPrinting(patient.patient_id);
     try {
-      alert(`Reprinting receipt for ${patient.patient_name} (${patient.cro})`);
+      toast.error(`Reprinting receipt for ${patient.patient_name} (${patient.cro})`);
     } catch (error) {
-      alert('Error reprinting receipt');
+      toast.error('Error reprinting receipt');
     } finally {
       setPrinting(null);
     }

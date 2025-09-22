@@ -37,15 +37,15 @@ export default function PatientReprint() {
         if (data.data && data.data.length > 0) {
           setSelectedPatient(data.data[0]);
         } else {
-          alert('Patient not found');
+          toast.error('Patient not found');
           setSelectedPatient(null);
         }
       } else {
-        alert('Error searching patient');
+        toast.error('Error searching patient');
       }
     } catch (error) {
       console.error('Error searching patient:', error);
-      alert('Error searching patient');
+      toast.error('Error searching patient');
     } finally {
       setLoading(false);
     }

@@ -57,11 +57,11 @@ export default function ReceptionHospitals() {
       try {
         const response = await fetch(`https://varahasdc.co.in/api/admin/hospitals/${hospital.h_id}`, { method: 'DELETE' });
         if (response.ok) {
-          alert('Hospital deleted successfully!');
+          toast.error('Hospital deleted successfully!');
           fetchHospitals();
         }
       } catch (error) {
-        alert('Error deleting hospital');
+        toast.error('Error deleting hospital');
       }
     }
   };
@@ -77,12 +77,12 @@ export default function ReceptionHospitals() {
         body: JSON.stringify(formData)
       });
       if (response.ok) {
-        alert(`Hospital ${editingHospital ? 'updated' : 'created'} successfully!`);
+        toast.error(`Hospital ${editingHospital ? 'updated' : 'created'} successfully!`);
         setShowModal(false);
         fetchHospitals();
       }
     } catch (error) {
-      alert('Error saving hospital');
+      toast.error('Error saving hospital');
     }
   };
 

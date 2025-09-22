@@ -78,7 +78,7 @@ export default function PatientList() {
   };
 
   const handleView = (patient: Patient) => {
-    alert(`Patient Details:\nCRO: ${patient.cro_number}\nName: ${patient.patient_name}\nAge: ${patient.age}\nGender: ${patient.gender}\nMobile: ${patient.mobile}\nHospital: ${patient.h_name || '-'}\nDoctor: ${patient.dname || '-'}\nAmount: ₹${patient.amount}\nDate: ${patient.date}`);
+    toast.error(`Patient Details:\nCRO: ${patient.cro_number}\nName: ${patient.patient_name}\nAge: ${patient.age}\nGender: ${patient.gender}\nMobile: ${patient.mobile}\nHospital: ${patient.h_name || '-'}\nDoctor: ${patient.dname || '-'}\nAmount: ₹${patient.amount}\nDate: ${patient.date}`);
   };
 
   const generateReport = () => {

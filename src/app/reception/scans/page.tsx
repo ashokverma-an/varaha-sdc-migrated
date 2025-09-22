@@ -58,11 +58,11 @@ export default function ReceptionScans() {
       try {
         const response = await fetch(`https://varahasdc.co.in/api/admin/scans/${scan.s_id}`, { method: 'DELETE' });
         if (response.ok) {
-          alert('Scan deleted successfully!');
+          toast.error('Scan deleted successfully!');
           fetchScans();
         }
       } catch (error) {
-        alert('Error deleting scan');
+        toast.error('Error deleting scan');
       }
     }
   };
@@ -78,12 +78,12 @@ export default function ReceptionScans() {
         body: JSON.stringify(formData)
       });
       if (response.ok) {
-        alert(`Scan ${editingScan ? 'updated' : 'created'} successfully!`);
+        toast.error(`Scan ${editingScan ? 'updated' : 'created'} successfully!`);
         setShowModal(false);
         fetchScans();
       }
     } catch (error) {
-      alert('Error saving scan');
+      toast.error('Error saving scan');
     }
   };
 

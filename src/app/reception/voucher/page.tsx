@@ -57,12 +57,12 @@ export default function Voucher() {
     const due = parseFloat(formData.d_amount) || 0;
 
     if (withdraw < 0 || received < 0 || due < 0) {
-      alert('Amounts cannot be negative');
+      toast.error('Amounts cannot be negative');
       return false;
     }
 
     if (withdraw === 0 && received === 0 && due === 0) {
-      alert('At least one amount must be greater than 0');
+      toast.error('At least one amount must be greater than 0');
       return false;
     }
 
@@ -97,10 +97,10 @@ export default function Voucher() {
       });
       
       setShowForm(false);
-      alert('Transaction added successfully!');
+      toast.error('Transaction added successfully!');
     } catch (error) {
       console.error('Error adding transaction:', error);
-      alert('Error adding transaction');
+      toast.error('Error adding transaction');
     } finally {
       setLoading(false);
     }

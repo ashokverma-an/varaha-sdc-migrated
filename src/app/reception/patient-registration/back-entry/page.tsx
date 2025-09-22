@@ -73,42 +73,42 @@ export default function BackEntryPatientRegistration() {
 
   const validateForm = () => {
     if (!formData.patient_name.trim()) {
-      alert('Patient name is required');
+      toast.error('Patient name is required');
       return false;
     }
     if (!formData.age.trim()) {
-      alert('Age is required');
+      toast.error('Age is required');
       return false;
     }
     if (!formData.contact_number.trim()) {
-      alert('Contact number is required');
+      toast.error('Contact number is required');
       return false;
     }
     if (formData.contact_number.length !== 10) {
-      alert('Contact number must be 10 digits');
+      toast.error('Contact number must be 10 digits');
       return false;
     }
     if (!formData.hospital_id) {
-      alert('Please select a hospital');
+      toast.error('Please select a hospital');
       return false;
     }
     if (!formData.doctor_name) {
-      alert('Please select a doctor');
+      toast.error('Please select a doctor');
       return false;
     }
     if (!formData.amount.trim()) {
-      alert('Amount is required');
+      toast.error('Amount is required');
       return false;
     }
     if (!formData.date.trim()) {
-      alert('Registration date is required');
+      toast.error('Registration date is required');
       return false;
     }
     
     // Validate date format (dd-mm-yyyy)
     const dateRegex = /^\d{2}-\d{2}-\d{4}$/;
     if (!dateRegex.test(formData.date)) {
-      alert('Date must be in DD-MM-YYYY format');
+      toast.error('Date must be in DD-MM-YYYY format');
       return false;
     }
 
@@ -119,7 +119,7 @@ export default function BackEntryPatientRegistration() {
     today.setHours(23, 59, 59, 999);
     
     if (entryDate > today) {
-      alert('Registration date cannot be in the future');
+      toast.error('Registration date cannot be in the future');
       return false;
     }
 
@@ -143,7 +143,7 @@ export default function BackEntryPatientRegistration() {
 
       if (response.ok) {
         const result = await response.json();
-        alert(`Back entry patient registered successfully! CRO: ${result.data?.cro || 'Generated'}`);
+        toast.error(`Back entry patient registered successfully! CRO: ${result.data?.cro || 'Generated'}`);
         
         // Reset form
         setFormData({
@@ -163,11 +163,11 @@ export default function BackEntryPatientRegistration() {
           remark: ''
         });
       } else {
-        alert('Error registering patient');
+        toast.error('Error registering patient');
       }
     } catch (error) {
       console.error('Error:', error);
-      alert('Error registering patient');
+      toast.error('Error registering patient');
     } finally {
       setLoading(false);
     }

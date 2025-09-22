@@ -136,14 +136,14 @@ export default function PatientEdit() {
             est_time: '0'
           });
         } else {
-          alert('Patient not found');
+          toast.error('Patient not found');
         }
       } else {
-        alert('Error searching patient');
+        toast.error('Error searching patient');
       }
     } catch (error) {
       console.error('Error searching patient:', error);
-      alert('Error searching patient');
+      toast.error('Error searching patient');
     } finally {
       setLoading(false);
     }
@@ -188,13 +188,13 @@ export default function PatientEdit() {
       });
 
       if (response.ok) {
-        alert('Patient updated successfully!');
+        toast.error('Patient updated successfully!');
       } else {
-        alert('Failed to update patient');
+        toast.error('Failed to update patient');
       }
     } catch (error) {
       console.error('Error updating patient:', error);
-      alert('Error updating patient');
+      toast.error('Error updating patient');
     } finally {
       setLoading(false);
     }

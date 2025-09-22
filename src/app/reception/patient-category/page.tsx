@@ -60,12 +60,12 @@ export default function PatientCategory() {
         body: JSON.stringify(formData)
       });
       if (response.ok) {
-        alert(`Category ${editingCategory ? 'updated' : 'created'} successfully!`);
+        toast.error(`Category ${editingCategory ? 'updated' : 'created'} successfully!`);
         setShowModal(false);
         fetchCategories();
       }
     } catch (error) {
-      alert('Error saving category');
+      toast.error('Error saving category');
     }
   };
 
