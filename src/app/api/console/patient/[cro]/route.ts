@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest, { params }: { params: { cro: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ cro: string }> }) {
   try {
-    const cro = decodeURIComponent(params.cro);
+    const { cro } = await params;
+    const decodedCro = decodeURIComponent(cro);
     
     // Get patient details
-    const response = await fetch(`https://varahasdc.co.in/api/admin/patients/search?q=${encodeURIComponent(cro)}`);
+    const response = await fetch(`https://varahasdc.co.in/api/admin/patients/search?q=${encodeURIComponent(decodedCro)}`);
     
     if (!response.ok) {
       throw new Error('Failed to fetch patient details');
