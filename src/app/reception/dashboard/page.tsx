@@ -28,10 +28,17 @@ export default function ReceptionDashboard() {
 
   const fetchReceptionStats = async () => {
     try {
-      const response = await fetch('/api/reception/stats');
+      const response = await fetch('https://varaha-api-qpkj.vercel.app/api/admin/stats');
       if (response.ok) {
         const data = await response.json();
-        setStats(data);
+        setStats({
+          todayPatients: data.todayPatients || 0,
+          totalPatients: data.totalPatients || 0,
+          pendingPatients: data.todayPatients || 0,
+          completedScans: data.totalPatients || 0,
+          totalHospitals: 5, // Default value
+          totalDoctors: 10 // Default value
+        });
       }
     } catch (error) {
       console.error('Error fetching reception stats:', error);

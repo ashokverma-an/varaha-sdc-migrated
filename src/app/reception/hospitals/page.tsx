@@ -25,7 +25,7 @@ export default function ReceptionHospitals() {
 
   const fetchHospitals = async () => {
     try {
-      const response = await fetch('/api/reception/hospitals');
+      const response = await fetch('https://varaha-api-qpkj.vercel.app/api/admin/hospitals');
       if (response.ok) {
         const data = await response.json();
         setHospitals(data.data || []);

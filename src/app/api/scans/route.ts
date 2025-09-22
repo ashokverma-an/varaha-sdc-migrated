@@ -1,25 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const response = await fetch('https://varahasdc.co.in/api/admin/scans', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
+    const response = await fetch('https://varaha-api-qpkj.vercel.app/api/admin/scans');
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error('External API call failed');
     }
-
+    
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
     console.error('Error fetching scans:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch scans' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to fetch scans' }, { status: 500 });
   }
 }
