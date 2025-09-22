@@ -1,282 +1,359 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, Calendar, Download, Plus, Eye, Edit } from 'lucide-react';
-import Link from 'next/link';
+import { Receipt, Calendar, Search, Filter, Printer, ArrowLeft } from 'lucide-react';
 
-interface Voucher {
+interface Transaction {
   id: number;
-  voucher_number: string;
-  date: string;
-  description: string;
-  amount: number;
-  type: 'income' | 'expense';
-  category: string;
-  created_at: string;
+  withdraw: number;
+  r_amount: number;
+  d_amount: number;
+  added_on: string;
+  remark: string;
 }
 
 export default function VoucherList() {
-  const [vouchers, setVouchers] = useState<Voucher[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
+  const [dateFilter, setDateFilter] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [typeFilter, setTypeFilter] = useState('all');
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(25);
 
   useEffect(() => {
-    fetchVouchers();
-  }, []);
+    fetchTransactions();
+  }, [dateFilter]);
 
-  const fetchVouchers = async () => {
+  const fetchTransactions = async () => {
+    setLoading(true);
     try {
-      const response = await fetch('/api/vouchers');
-      if (response.ok) {
-        const data = await response.json();
-        setVouchers(data);
+      // Mock data - replace with actual API call to today_transaction table
+      const mockData: Transaction[] = [
+        {
+          id: 1,
+          withdraw: 500,
+          r_amount: 2000,
+          d_amount: 300,
+          added_on: '01-08-2025',
+          remark: 'Daily collection'
+        },
+        {
+          id: 2,
+          withdraw: 1000,
+          r_amount: 5000,
+          d_amount: 800,
+          added_on: '31-07-2025',
+          remark: 'Weekly settlement'
+        },
+        {
+          id: 3,
+          withdraw: 200,
+          r_amount: 1500,
+          d_amount: 100,
+          added_on: '30-07-2025',
+          remark: 'Patient payments'
+        }
+      ];
+      
+      // Filter by date if provided
+      let filteredData = mockData;
+      if (dateFilter) {
+        const [year, month, day] = dateFilter.split('-');
+        const formattedDate = `${day}-${month}-${year}`;
+        filteredData = mockData.filter(t => t.added_on === formattedDate);
       }
+      
+      setTransactions(filteredData);
     } catch (error) {
-      console.error('Error fetching vouchers:', error);
+      console.error('Error fetching transactions:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const downloadVoucherReport = async () => {
-    try {
-      const params = new URLSearchParams();
-      if (dateFrom) params.append('from', dateFrom);
-      if (dateTo) params.append('to', dateTo);
-      if (typeFilter !== 'all') params.append('type', typeFilter);
-      
-      const response = await fetch(`/api/vouchers/export?${params.toString()}`);
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `vouchers-report-${new Date().toISOString().split('T')[0]}.xlsx`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-      }
-    } catch (error) {
-      console.error('Error downloading report:', error);
-    }
+  const filteredTransactions = transactions.filter(transaction =>
+    transaction.remark.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    transaction.added_on.includes(searchTerm)
+  );
+
+  const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedTransactions = filteredTransactions.slice(startIndex, startIndex + itemsPerPage);
+
+  // Calculate totals
+  const totals = filteredTransactions.reduce(
+    (acc, transaction) => ({
+      withdraw: acc.withdraw + transaction.withdraw,
+      received: acc.received + transaction.r_amount,
+      due: acc.due + transaction.d_amount
+    }),
+    { withdraw: 0, received: 0, due: 0 }
+  );
+
+  const cashInHand = totals.received - totals.due - totals.withdraw;
+
+  const generateReport = () => {
+    const reportWindow = window.open('', '_blank');
+    if (!reportWindow) return;
+
+    const reportHTML = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Voucher List Report</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 20px; }
+          .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
+          .logo { font-size: 24px; font-weight: bold; color: #2563eb; }
+          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+          th, td { border: 1px solid #000; padding: 8px; text-align: left; font-size: 12px; }
+          th { background-color: #f0f0f0; font-weight: bold; }
+          .summary { margin: 20px 0; padding: 15px; background-color: #f9f9f9; border: 1px solid #ddd; }
+          .footer { margin-top: 30px; text-align: center; font-size: 12px; }
+          @media print { body { margin: 0; } }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div class="logo">VARAHA DIAGNOSTIC CENTER</div>
+          <div>Voucher List Report</div>
+          ${dateFilter ? `<div>Date: ${dateFilter}</div>` : '<div>All Records</div>'}
+        </div>
+        
+        <div class="summary">
+          <h3>Summary</h3>
+          <p><strong>Total Received:</strong> ₹${totals.received.toLocaleString()}</p>
+          <p><strong>Total Due:</strong> ₹${totals.due.toLocaleString()}</p>
+          <p><strong>Total Withdraw:</strong> ₹${totals.withdraw.toLocaleString()}</p>
+          <p><strong>Cash in Hand:</strong> ₹${Math.max(0, cashInHand).toLocaleString()}</p>
+        </div>
+        
+        <table>
+          <thead>
+            <tr>
+              <th>S.No</th>
+              <th>Date</th>
+              <th>Received (₹)</th>
+              <th>Due (₹)</th>
+              <th>Withdraw (₹)</th>
+              <th>Remarks</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${filteredTransactions.map((transaction, index) => `
+              <tr>
+                <td>${index + 1}</td>
+                <td>${transaction.added_on}</td>
+                <td>₹${transaction.r_amount.toLocaleString()}</td>
+                <td>₹${transaction.d_amount.toLocaleString()}</td>
+                <td>₹${transaction.withdraw.toLocaleString()}</td>
+                <td>${transaction.remark || '-'}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+        
+        <div class="footer">
+          <p>Total Transactions: ${filteredTransactions.length}</p>
+          <p>Generated on: ${new Date().toLocaleString()}</p>
+        </div>
+        
+        <script>
+          window.onload = function() {
+            window.print();
+          }
+        </script>
+      </body>
+      </html>
+    `;
+
+    reportWindow.document.write(reportHTML);
+    reportWindow.document.close();
   };
-
-  const filteredVouchers = vouchers.filter(voucher => {
-    const matchesSearch = 
-      voucher.voucher_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      voucher.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      voucher.category.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesType = typeFilter === 'all' || voucher.type === typeFilter;
-    
-    const voucherDate = new Date(voucher.date);
-    const matchesDateFrom = !dateFrom || voucherDate >= new Date(dateFrom);
-    const matchesDateTo = !dateTo || voucherDate <= new Date(dateTo);
-    
-    return matchesSearch && matchesType && matchesDateFrom && matchesDateTo;
-  });
-
-  const totalIncome = filteredVouchers
-    .filter(v => v.type === 'income')
-    .reduce((sum, v) => sum + v.amount, 0);
-
-  const totalExpense = filteredVouchers
-    .filter(v => v.type === 'expense')
-    .reduce((sum, v) => sum + v.amount, 0);
-
-  const netAmount = totalIncome - totalExpense;
 
   return (
     <div className="p-6 space-y-6">
-      <div className="bg-gradient-to-r from-rose-600 to-rose-700 text-white p-6 rounded-xl shadow-lg">
-        <h1 className="text-3xl font-bold mb-2">Voucher List</h1>
-        <p className="text-rose-100 text-lg">View and manage all vouchers</p>
+      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 rounded-xl shadow-lg">
+        <div className="flex items-center space-x-4">
+          <button 
+            onClick={() => window.location.href = '/reception/voucher'}
+            className="p-2 hover:bg-blue-500 rounded-lg transition-colors"
+          >
+            <ArrowLeft className="h-6 w-6" />
+          </button>
+          <div>
+            <h1 className="text-3xl font-bold mb-2">Voucher List</h1>
+            <p className="text-blue-100 text-lg">View all voucher transactions and history</p>
+          </div>
+        </div>
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-          <h3 className="text-sm font-medium text-green-600">Total Income</h3>
-          <p className="text-2xl font-bold text-green-700">₹{totalIncome.toFixed(2)}</p>
+          <div className="text-2xl font-bold text-green-600">₹{totals.received.toLocaleString()}</div>
+          <div className="text-sm text-green-800">Total Received</div>
         </div>
-        
+
         <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-          <h3 className="text-sm font-medium text-red-600">Total Expense</h3>
-          <p className="text-2xl font-bold text-red-700">₹{totalExpense.toFixed(2)}</p>
+          <div className="text-2xl font-bold text-red-600">₹{totals.due.toLocaleString()}</div>
+          <div className="text-sm text-red-800">Total Due</div>
         </div>
-        
-        <div className={`p-4 rounded-lg border ${
-          netAmount >= 0 
-            ? 'bg-blue-50 border-blue-200' 
-            : 'bg-orange-50 border-orange-200'
-        }`}>
-          <h3 className={`text-sm font-medium ${
-            netAmount >= 0 ? 'text-blue-600' : 'text-orange-600'
-          }`}>
-            Net Amount
-          </h3>
-          <p className={`text-2xl font-bold ${
-            netAmount >= 0 ? 'text-blue-700' : 'text-orange-700'
-          }`}>
-            ₹{netAmount.toFixed(2)}
-          </p>
+
+        <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+          <div className="text-2xl font-bold text-orange-600">₹{totals.withdraw.toLocaleString()}</div>
+          <div className="text-sm text-orange-800">Total Withdraw</div>
+        </div>
+
+        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+          <div className="text-2xl font-bold text-blue-600">₹{Math.max(0, cashInHand).toLocaleString()}</div>
+          <div className="text-sm text-blue-800">Net Cash</div>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-lg p-6">
-        {/* Filters */}
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 space-y-4 lg:space-y-0">
-          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
-            <div className="relative">
+      <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+          <div className="flex flex-col sm:flex-row gap-4 flex-1">
+            <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
               <input
                 type="text"
-                placeholder="Search vouchers..."
+                placeholder="Search by remarks or date..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent w-full sm:w-80"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
             
-            <select
-              value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
+            <div className="relative">
+              <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <input
+                type="date"
+                value={dateFilter}
+                onChange={(e) => setDateFilter(e.target.value)}
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+            
+            <button
+              onClick={fetchTransactions}
+              disabled={loading}
+              className="flex items-center space-x-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
             >
-              <option value="all">All Types</option>
-              <option value="income">Income</option>
-              <option value="expense">Expense</option>
-            </select>
-            
-            <div className="flex items-center space-x-2">
-              <Calendar className="h-5 w-5 text-gray-500" />
-              <input
-                type="date"
-                value={dateFrom}
-                onChange={(e) => setDateFrom(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
-                placeholder="From"
-              />
-              <span className="text-gray-500">to</span>
-              <input
-                type="date"
-                value={dateTo}
-                onChange={(e) => setDateTo(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
-                placeholder="To"
-              />
-            </div>
+              <Search className="h-5 w-5" />
+              <span>{loading ? 'Loading...' : 'Refresh'}</span>
+            </button>
           </div>
           
-          <div className="flex space-x-2">
-            <button
-              onClick={downloadVoucherReport}
-              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2"
-            >
-              <Download className="h-4 w-4" />
-              <span>Export</span>
-            </button>
-            
-            <Link
-              href="/reception/voucher"
-              className="bg-gradient-to-r from-rose-600 to-rose-700 text-white px-4 py-2 rounded-lg hover:from-rose-700 hover:to-rose-800 transition-all duration-200 flex items-center space-x-2"
-            >
-              <Plus className="h-4 w-4" />
-              <span>New Voucher</span>
-            </Link>
-          </div>
+          <button
+            onClick={generateReport}
+            className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          >
+            <Printer className="h-5 w-5" />
+            <span>Print Report</span>
+          </button>
         </div>
 
-        {loading ? (
-          <div className="text-center py-8">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-rose-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading vouchers...</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Voucher Number
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Date
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Type / Category
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Description
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Amount
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredVouchers.map((voucher) => (
-                  <tr key={voucher.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {voucher.voucher_number}
-                      </div>
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse border border-gray-300">
+            <thead>
+              <tr className="bg-blue-50">
+                <th className="border border-gray-300 px-4 py-2 text-left">S.No</th>
+                <th className="border border-gray-300 px-4 py-2 text-left">Date</th>
+                <th className="border border-gray-300 px-4 py-2 text-left">Received (₹)</th>
+                <th className="border border-gray-300 px-4 py-2 text-left">Due (₹)</th>
+                <th className="border border-gray-300 px-4 py-2 text-left">Withdraw (₹)</th>
+                <th className="border border-gray-300 px-4 py-2 text-left">Net Amount (₹)</th>
+                <th className="border border-gray-300 px-4 py-2 text-left">Remarks</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedTransactions.map((transaction, index) => {
+                const netAmount = transaction.r_amount - transaction.d_amount - transaction.withdraw;
+                return (
+                  <tr key={transaction.id} className="hover:bg-gray-50">
+                    <td className="border border-gray-300 px-4 py-2">{startIndex + index + 1}</td>
+                    <td className="border border-gray-300 px-4 py-2 font-medium">{transaction.added_on}</td>
+                    <td className="border border-gray-300 px-4 py-2 text-green-600 font-medium">
+                      ₹{transaction.r_amount.toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {new Date(voucher.date).toLocaleDateString()}
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        Created: {new Date(voucher.created_at).toLocaleDateString()}
-                      </div>
+                    <td className="border border-gray-300 px-4 py-2 text-red-600 font-medium">
+                      ₹{transaction.d_amount.toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        voucher.type === 'income' 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {voucher.type}
-                      </span>
-                      <div className="text-sm text-gray-500 mt-1">{voucher.category}</div>
+                    <td className="border border-gray-300 px-4 py-2 text-orange-600 font-medium">
+                      ₹{transaction.withdraw.toLocaleString()}
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-900 max-w-xs truncate">
-                        {voucher.description}
-                      </div>
+                    <td className={`border border-gray-300 px-4 py-2 font-medium ${netAmount >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
+                      ₹{netAmount.toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className={`text-sm font-semibold ${
-                        voucher.type === 'income' ? 'text-green-600' : 'text-red-600'
-                      }`}>
-                        {voucher.type === 'income' ? '+' : '-'}₹{voucher.amount}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                      <button className="text-blue-600 hover:text-blue-900">
-                        <Eye className="h-4 w-4" />
-                      </button>
-                      <button className="text-indigo-600 hover:text-indigo-900">
-                        <Edit className="h-4 w-4" />
-                      </button>
-                    </td>
+                    <td className="border border-gray-300 px-4 py-2">{transaction.remark || '-'}</td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-            
-            {filteredVouchers.length === 0 && (
-              <div className="text-center py-8">
-                <p className="text-gray-500">No vouchers found matching your criteria.</p>
-              </div>
-            )}
+                );
+              })}
+            </tbody>
+            <tfoot>
+              <tr className="bg-gray-100 font-bold">
+                <td className="border border-gray-300 px-4 py-2" colSpan={2}>Total</td>
+                <td className="border border-gray-300 px-4 py-2 text-green-600">
+                  ₹{totals.received.toLocaleString()}
+                </td>
+                <td className="border border-gray-300 px-4 py-2 text-red-600">
+                  ₹{totals.due.toLocaleString()}
+                </td>
+                <td className="border border-gray-300 px-4 py-2 text-orange-600">
+                  ₹{totals.withdraw.toLocaleString()}
+                </td>
+                <td className={`border border-gray-300 px-4 py-2 ${cashInHand >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
+                  ₹{cashInHand.toLocaleString()}
+                </td>
+                <td className="border border-gray-300 px-4 py-2">-</td>
+              </tr>
+            </tfoot>
+          </table>
+          
+          {paginatedTransactions.length === 0 && (
+            <div className="text-center py-12">
+              {loading ? (
+                <div>
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                  <p className="text-gray-600">Loading transactions...</p>
+                </div>
+              ) : (
+                <div>
+                  <Receipt className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No Transactions Found</h3>
+                  <p className="text-gray-500">No voucher transactions found matching your criteria.</p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between mt-6">
+            <div className="text-sm text-gray-700">
+              Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredTransactions.length)} of {filteredTransactions.length}
+            </div>
+            <div className="flex space-x-2">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-1 border border-gray-300 rounded disabled:opacity-50"
+              >
+                Previous
+              </button>
+              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded">
+                {currentPage} of {totalPages}
+              </span>
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1 border border-gray-300 rounded disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
           </div>
         )}
       </div>
