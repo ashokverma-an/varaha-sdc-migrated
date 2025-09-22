@@ -7,15 +7,14 @@ export async function GET(request: NextRequest) {
     const date = searchParams.get('date');
     const before = searchParams.get('before');
     
-    let apiUrl = 'https://varaha-api-qpkj.vercel.app/api/patients';
+    let apiUrl = 'https://varaha-api-qpkj.vercel.app/admin/patient-list';
     const params = new URLSearchParams();
     
-    if (status) params.append('status', status);
-    if (date) params.append('date_from', date);
-    if (before) params.append('date_to', before);
+    if (date) params.append('from_date', date);
+    if (before) params.append('to_date', before);
     
     if (params.toString()) {
-      apiUrl += '/search?' + params.toString();
+      apiUrl += '?' + params.toString();
     }
     
     const response = await fetch(apiUrl);
@@ -50,7 +49,7 @@ export async function POST(request: NextRequest) {
       notes: data.notes || ''
     };
     
-    const response = await fetch('https://varaha-api-qpkj.vercel.app/api/patients/register', {
+    const response = await fetch('https://varaha-api-qpkj.vercel.app/admin/patients', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

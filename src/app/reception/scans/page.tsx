@@ -26,7 +26,7 @@ export default function ReceptionScans() {
 
   const fetchScans = async () => {
     try {
-      const response = await fetch('https://varaha-api-qpkj.vercel.app/api/admin/scans');
+      const response = await fetch('https://varaha-api-qpkj.vercel.app/admin/scans');
       if (response.ok) {
         const data = await response.json();
         setScans(data.data || []);
