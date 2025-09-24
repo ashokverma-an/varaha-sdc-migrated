@@ -145,3 +145,48 @@ textarea::placeholder {
 .bg-white .modal {
   color: #000000 !important;
 }
+
+/* Modal overlay fixes */
+.fixed.inset-0.bg-black {
+  background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
+.fixed.inset-0.bg-gray-900 {
+  background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Modal content */
+.bg-white.rounded-lg {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+/* Form labels in modals */
+.form-label {
+  color: #000000 !important;
+}
+
+/* Badge text visibility */
+.bg-blue-100 {
+  color: #1e3a8a !important;
+}
+
+.bg-green-100 {
+  color: #14532d !important;
+}
+
+.text-blue-800 {
+  color: #1e40af !important;
+}
+
+.text-green-800 {
+  color: #166534 !important;
+}
+
+.text-blue-900 {
+  color: #1e3a8a !important;
+}
+
+.text-green-900 {
+  color: #14532d !important;
+}

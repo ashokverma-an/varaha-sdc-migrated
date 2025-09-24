@@ -153,9 +153,9 @@ export default function ReceptionHospitals() {
                   <td className="border border-gray-300 px-4 py-2">{startIndex + index + 1}</td>
                   <td className="border border-gray-300 px-4 py-2 font-medium">{hospital.h_name}</td>
                   <td className="border border-gray-300 px-4 py-2">{hospital.h_short || '-'}</td>
-                  <td className="border border-gray-300 px-4 py-2">
-                    <span className={`px-2 py-1 rounded text-xs ${
-                      hospital.h_type === 'Private' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
+                  <td className="border border-gray-300 px-4 py-2 text-black">
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${
+                      hospital.h_type === 'Private' ? 'bg-blue-100 text-blue-900' : 'bg-green-100 text-green-900'
                     }`}>
                       {hospital.h_type || 'Private'}
                     </span>
@@ -213,10 +213,10 @@ export default function ReceptionHospitals() {
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-2xl">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">{editingHospital ? 'Edit Hospital' : 'Add Hospital'}</h3>
+              <h3 className="text-lg font-semibold text-black">{editingHospital ? 'Edit Hospital' : 'Add Hospital'}</h3>
               <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700">
                 <X className="h-5 w-5" />
               </button>
