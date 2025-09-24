@@ -11,6 +11,7 @@ interface SuperAdminLayoutProps {
 
 export default function SuperAdminLayout({ children, title, subtitle, actions }: SuperAdminLayoutProps) {
   return (
+    
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 shadow-sm">
