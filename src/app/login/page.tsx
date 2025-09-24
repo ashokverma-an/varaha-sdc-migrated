@@ -81,30 +81,29 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50 flex items-center justify-center p-2 relative overflow-hidden">
       {/* Animated Background Elements */}
       <div className="absolute inset-0">
-        <div className="absolute top-20 left-20 w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse"></div>
-        <div className="absolute top-40 right-20 w-72 h-72 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-2000"></div>
-        <div className="absolute -bottom-8 left-40 w-72 h-72 bg-pink-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-4000"></div>
+        <div className="absolute top-20 left-20 w-64 h-64 bg-blue-100 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
+        <div className="absolute top-40 right-20 w-64 h-64 bg-cyan-100 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse animation-delay-2000"></div>
+        <div className="absolute -bottom-8 left-40 w-64 h-64 bg-blue-100 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse animation-delay-4000"></div>
       </div>
       
-      <div className="relative w-full max-w-5xl mx-auto">
-        <div className="grid lg:grid-cols-2 gap-6 items-center">
+      <div className="relative w-full max-w-4xl mx-auto">
+        <div className="grid lg:grid-cols-2 gap-4 items-center">
           {/* Left Side - Branding */}
           <div className="text-center lg:text-left space-y-8">
             <div className="flex items-center justify-center lg:justify-start space-x-4">
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl blur opacity-75"></div>
-                <div className="relative p-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl">
-                  <Hospital className="h-12 w-12 text-white" />
+                <div className="p-3 bg-gradient-to-r from-blue-400 to-cyan-400 rounded-2xl shadow-md">
+                  <Hospital className="h-10 w-10 text-white" />
                 </div>
               </div>
               <div>
-                <h1 className="text-5xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 bg-clip-text text-transparent">
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-700 via-blue-600 to-cyan-600 bg-clip-text text-transparent">
                   Varaha SDC
                 </h1>
-                <p className="text-gray-600 text-xl font-medium">CT Scan Management System</p>
+                <p className="text-gray-500 text-lg font-medium">CT Scan Management System</p>
               </div>
             </div>
             
@@ -120,16 +119,15 @@ export default function Login() {
           </div>
 
           {/* Right Side - Login Form */}
-          <div className="w-full max-w-md mx-auto">
+          <div className="w-full max-w-sm mx-auto">
             <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl blur opacity-20"></div>
-              <div className="relative bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/30">
-                <div className="text-center mb-8">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl mb-4">
-                    <Lock className="h-8 w-8 text-white" />
+              <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-gray-100">
+                <div className="text-center mb-6">
+                  <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-r from-blue-400 to-cyan-400 rounded-xl mb-3">
+                    <Lock className="h-6 w-6 text-white" />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Secure Sign In</h3>
-                  <p className="text-gray-600">Choose your role to access the system</p>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-1">Sign In</h3>
+                  <p className="text-gray-500 text-sm">Choose your role to access</p>
                 </div>
 
                 {/* Enhanced Role Selection */}
@@ -141,15 +139,15 @@ export default function Login() {
                         key={role.id}
                         type="button"
                         onClick={() => handleRoleSelect(role)}
-                        className={`group relative p-3 rounded-xl border-2 transition-all duration-300 transform hover:scale-105 ${
+                        className={`group relative p-2.5 rounded-lg border transition-all duration-200 ${
                           selectedRole === role.id
-                            ? `bg-gradient-to-r ${role.color} text-white border-transparent shadow-xl scale-105`
-                            : `${role.bgColor} hover:shadow-lg border-gray-200 ${role.textColor} hover:border-gray-300`
+                            ? `bg-gradient-to-r ${role.color} text-white border-transparent shadow-md`
+                            : `bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-600 hover:border-gray-300`
                         }`}
                       >
                         <div className="relative z-10">
-                          <IconComponent className="h-6 w-6 mx-auto mb-1" />
-                          <div className="text-xs font-semibold">{role.name}</div>
+                          <IconComponent className="h-5 w-5 mx-auto mb-1" />
+                          <div className="text-xs font-medium">{role.name}</div>
                         </div>
                         {selectedRole === role.id && (
                           <div className="absolute inset-0 bg-white/20 rounded-2xl animate-pulse"></div>
@@ -159,7 +157,7 @@ export default function Login() {
                   })}
                 </div>
 
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-3">
                 {error && (
                   <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-lg">
                     <div className="flex">
@@ -170,7 +168,7 @@ export default function Login() {
 
                 {/* Username Field */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700 block">
+                  <label className="text-sm font-medium text-gray-600 block">
                     Username
                   </label>
                   <div className="relative">
@@ -182,7 +180,7 @@ export default function Login() {
                       required
                       value={formData.username}
                       onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white text-gray-900 placeholder-gray-500"
+                      className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white text-gray-800 placeholder-gray-400"
                       placeholder="Enter username"
                     />
                   </div>
@@ -190,7 +188,7 @@ export default function Login() {
 
                 {/* Password Field */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700 block">
+                  <label className="text-sm font-medium text-gray-600 block">
                     Password
                   </label>
                   <div className="relative">
@@ -202,7 +200,7 @@ export default function Login() {
                       required
                       value={formData.password}
                       onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                      className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white text-gray-900 placeholder-gray-500"
+                      className="w-full pl-10 pr-12 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white text-gray-800 placeholder-gray-400"
                       placeholder="Enter password"
                     />
                     <button
@@ -223,28 +221,22 @@ export default function Login() {
                 <button
                   type="submit"
                   disabled={loading || !selectedRole}
-                  className="group relative w-full bg-gradient-to-r from-blue-600 via-purple-600 to-blue-700 text-white py-4 px-6 rounded-2xl font-semibold hover:from-blue-700 hover:via-purple-700 hover:to-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-500/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:scale-[1.02] active:scale-[0.98]"
+                  className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-2.5 px-4 rounded-lg font-medium hover:from-blue-600 hover:to-cyan-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="relative z-10">
-                    {loading ? (
-                      <div className="flex items-center justify-center space-x-3">
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        <span className="text-lg">Signing in...</span>
-                      </div>
-                    ) : (
-                      <span className="text-lg">Sign In Securely</span>
-                    )}
-                  </div>
+                  {loading ? (
+                    <div className="flex items-center justify-center space-x-2">
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>Signing in...</span>
+                    </div>
+                  ) : (
+                    <span>Sign In</span>
+                  )}
                 </button>
               </form>
 
                 {/* Footer */}
                 <div className="mt-4 text-center">
-                  <div className="flex items-center justify-center space-x-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                    <p className="text-xs text-gray-600">Secure SSL Connection</p>
-                  </div>
+                  <p className="text-xs text-gray-400">Secure Connection</p>
                 </div>
               </div>
             </div>

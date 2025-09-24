@@ -316,3 +316,121 @@ html {
   transform: translateY(-8px) scale(1.02);
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
 }
+
+/* Dark background text visibility fixes */
+.bg-gray-800, .bg-gray-900, .bg-slate-800, .bg-slate-900,
+.bg-blue-800, .bg-blue-900, .bg-indigo-800, .bg-indigo-900,
+.bg-purple-800, .bg-purple-900, .bg-violet-800, .bg-violet-900,
+.bg-green-800, .bg-green-900, .bg-emerald-800, .bg-emerald-900,
+.bg-red-800, .bg-red-900, .bg-rose-800, .bg-rose-900 {
+  color: white !important;
+}
+
+/* Dark gradient backgrounds */
+.bg-gradient-to-r.from-gray-800, .bg-gradient-to-r.from-slate-800,
+.bg-gradient-to-r.from-blue-800, .bg-gradient-to-r.from-indigo-800,
+.bg-gradient-to-r.from-purple-800, .bg-gradient-to-r.from-violet-800,
+.bg-gradient-to-r.from-green-800, .bg-gradient-to-r.from-emerald-800,
+.bg-gradient-to-r.from-red-800, .bg-gradient-to-r.from-rose-800 {
+  color: white !important;
+}
+
+/* Button text visibility on dark backgrounds */
+button.bg-gray-800, button.bg-gray-900,
+button.bg-blue-800, button.bg-blue-900,
+button.bg-purple-800, button.bg-purple-900,
+button.bg-green-800, button.bg-green-900,
+button.bg-red-800, button.bg-red-900 {
+  color: white !important;
+}
+
+/* Ensure all child elements have white text on dark backgrounds */
+.bg-gray-800 *, .bg-gray-900 *,
+.bg-blue-800 *, .bg-blue-900 *,
+.bg-purple-800 *, .bg-purple-900 *,
+.bg-green-800 *, .bg-green-900 *,
+.bg-red-800 *, .bg-red-900 * {
+  color: white !important;
+}
+
+/* Override for inputs that should remain readable */
+.bg-gray-800 input, .bg-gray-900 input,
+.bg-blue-800 input, .bg-blue-900 input,
+.bg-purple-800 input, .bg-purple-900 input {
+  color: #374151 !important;
+  background-color: white !important;
+}
+
+/* Specific text color overrides for dark backgrounds */
+[class*="bg-gray-8"] h1, [class*="bg-gray-8"] h2, [class*="bg-gray-8"] h3,
+[class*="bg-gray-9"] h1, [class*="bg-gray-9"] h2, [class*="bg-gray-9"] h3,
+[class*="bg-blue-8"] h1, [class*="bg-blue-8"] h2, [class*="bg-blue-8"] h3,
+[class*="bg-blue-9"] h1, [class*="bg-blue-9"] h2, [class*="bg-blue-9"] h3 {
+  color: white !important;
+}
+
+/* Table text on dark backgrounds */
+.bg-gray-800 table, .bg-gray-900 table,
+.bg-blue-800 table, .bg-blue-900 table {
+  color: white !important;
+}
+
+.bg-gray-800 th, .bg-gray-900 th,
+.bg-blue-800 th, .bg-blue-900 th,
+.bg-gray-800 td, .bg-gray-900 td,
+.bg-blue-800 td, .bg-blue-900 td {
+  color: white !important;
+}
+
+/* PHP Admin Report Styling */
+.report-table {
+  font-family: Arial, sans-serif !important;
+  font-size: 11px !important;
+  border-collapse: collapse !important;
+  width: 100% !important;
+}
+
+.report-table th {
+  background-color: #f8f9fa !important;
+  border: 1px solid #dee2e6 !important;
+  padding: 4px 6px !important;
+  font-weight: bold !important;
+  font-size: 11px !important;
+  text-align: left !important;
+  color: #212529 !important;
+}
+
+.report-table td {
+  border: 1px solid #dee2e6 !important;
+  padding: 3px 6px !important;
+  font-size: 11px !important;
+  color: #212529 !important;
+  vertical-align: top !important;
+}
+
+.report-amount {
+  text-align: right !important;
+  font-family: monospace !important;
+  font-weight: bold !important;
+}
+
+.report-date {
+  font-family: Arial, sans-serif !important;
+  font-size: 11px !important;
+  white-space: nowrap !important;
+}
+
+.report-header {
+  font-family: Arial, sans-serif !important;
+  font-size: 14px !important;
+  font-weight: bold !important;
+  text-align: center !important;
+  margin-bottom: 10px !important;
+}
+
+.php-admin-page {
+  font-family: Arial, sans-serif !important;
+  font-size: 11px !important;
+  background-color: white !important;
+  padding: 10px !important;
+}
