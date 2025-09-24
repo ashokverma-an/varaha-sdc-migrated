@@ -56,7 +56,11 @@ export default function PatientInQueue() {
   };
 
   const handleViewNursing = (cro: string) => {
-    router.push(`/doctor/nursing/${encodeURIComponent(cro)}`);
+    console.log('Navigating to nursing page with CRO:', cro);
+    const encodedCro = encodeURIComponent(cro);
+    const url = `/doctor/nursing/${encodedCro}`;
+    console.log('Navigation URL:', url);
+    router.push(url);
   };
 
   const handleSearch = (e: React.FormEvent) => {
