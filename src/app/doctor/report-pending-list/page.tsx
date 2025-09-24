@@ -330,65 +330,63 @@ export default function ReportPendingList() {
             <div className="text-sm text-gray-700">
               Page {currentPage} of {totalPages} | Total: {totalRecords} records
             </div>
-            {totalPages > 1 && (
-              <div className="flex items-center space-x-2">
-                {currentPage > 1 && (
-                  <>
+            <div className="flex items-center space-x-2">
+              {currentPage > 1 && (
+                <>
+                  <button
+                    onClick={() => setCurrentPage(1)}
+                    className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+                  >
+                    First
+                  </button>
+                  <button
+                    onClick={() => setCurrentPage(currentPage - 1)}
+                    className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+                  >
+                    Previous
+                  </button>
+                </>
+              )}
+              
+              <div className="flex items-center space-x-1">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  const startPage = Math.max(1, currentPage - 2);
+                  const page = startPage + i;
+                  if (page > totalPages) return null;
+                  
+                  return (
                     <button
-                      onClick={() => setCurrentPage(1)}
-                      className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`px-3 py-2 text-sm font-medium rounded-lg ${
+                        currentPage === page
+                          ? 'bg-emerald-600 text-white'
+                          : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+                      }`}
                     >
-                      First
+                      {page}
                     </button>
-                    <button
-                      onClick={() => setCurrentPage(currentPage - 1)}
-                      className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
-                    >
-                      Previous
-                    </button>
-                  </>
-                )}
-                
-                <div className="flex items-center space-x-1">
-                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    const startPage = Math.max(1, currentPage - 2);
-                    const page = startPage + i;
-                    if (page > totalPages) return null;
-                    
-                    return (
-                      <button
-                        key={page}
-                        onClick={() => setCurrentPage(page)}
-                        className={`px-3 py-2 text-sm font-medium rounded-lg ${
-                          currentPage === page
-                            ? 'bg-emerald-600 text-white'
-                            : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
-                        }`}
-                      >
-                        {page}
-                      </button>
-                    );
-                  })}
-                </div>
-                
-                {currentPage < totalPages && (
-                  <>
-                    <button
-                      onClick={() => setCurrentPage(currentPage + 1)}
-                      className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
-                    >
-                      Next
-                    </button>
-                    <button
-                      onClick={() => setCurrentPage(totalPages)}
-                      className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
-                    >
-                      Last
-                    </button>
-                  </>
-                )}
+                  );
+                })}
               </div>
-            )}
+              
+              {currentPage < totalPages && (
+                <>
+                  <button
+                    onClick={() => setCurrentPage(currentPage + 1)}
+                    className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+                  >
+                    Next
+                  </button>
+                  <button
+                    onClick={() => setCurrentPage(totalPages)}
+                    className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+                  >
+                    Last
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </div>
