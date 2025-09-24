@@ -168,17 +168,17 @@ export default function ReportPendingList() {
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="bg-gradient-to-r from-orange-600 to-orange-700 text-white p-6 rounded-xl shadow-lg">
+      <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 text-white p-6 rounded-xl shadow-lg">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold mb-2">Report Pending List</h1>
-            <p className="text-orange-100">Nursing patients with incomplete CT-Scan or X-Ray reports</p>
+            <p className="text-emerald-100">Nursing patients with incomplete CT-Scan or X-Ray reports</p>
           </div>
           <div className="flex items-center space-x-3">
             <button
               onClick={exportToExcel}
               disabled={exporting || totalRecords === 0}
-              className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-500 rounded-lg transition-colors disabled:opacity-50"
+              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors disabled:opacity-50"
             >
               <Download className="h-5 w-5" />
               <span>{exporting ? 'Exporting...' : 'Export Excel'}</span>
@@ -186,7 +186,7 @@ export default function ReportPendingList() {
             <button
               onClick={fetchPendingReports}
               disabled={loading}
-              className="flex items-center space-x-2 px-4 py-2 bg-orange-500 hover:bg-orange-400 rounded-lg transition-colors disabled:opacity-50"
+              className="flex items-center space-x-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-400 rounded-lg transition-colors disabled:opacity-50"
             >
               <RefreshCw className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
               <span>Refresh</span>
@@ -205,7 +205,7 @@ export default function ReportPendingList() {
               placeholder="Search by CRO or Patient Name"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
             />
           </div>
           
@@ -213,14 +213,14 @@ export default function ReportPendingList() {
             type="date"
             value={dateFilter}
             onChange={(e) => setDateFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
           />
           
           <div></div>
           
           <button
             type="submit"
-            className="px-6 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+            className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
           >
             Search
           </button>
@@ -257,7 +257,7 @@ export default function ReportPendingList() {
                 <tr>
                   <td colSpan={10} className="px-6 py-12 text-center">
                     <div className="flex items-center justify-center space-x-2">
-                      <RefreshCw className="h-5 w-5 animate-spin text-orange-500" />
+                      <RefreshCw className="h-5 w-5 animate-spin text-emerald-500" />
                       <span className="text-gray-500">Loading pending reports...</span>
                     </div>
                   </td>
@@ -361,7 +361,7 @@ export default function ReportPendingList() {
                         onClick={() => setCurrentPage(page)}
                         className={`px-3 py-2 text-sm font-medium rounded-lg ${
                           currentPage === page
-                            ? 'bg-orange-600 text-white'
+                            ? 'bg-emerald-600 text-white'
                             : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
                         }`}
                       >
