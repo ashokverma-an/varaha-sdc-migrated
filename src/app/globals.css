@@ -140,6 +140,25 @@ th {
   font-family: sans-serif !important;
 }
 
+/* Force white text on common dark UI elements */
+.bg-dark, .bg-dark *, .navbar-dark, .navbar-dark *,
+.card-dark, .card-dark *, .modal-dark, .modal-dark * {
+  color: white !important;
+}
+
+/* Ensure proper contrast on all dark elements */
+[style*="background-color: rgb(31"], [style*="background-color: rgb(17"],
+[style*="background-color: rgb(55"], [style*="background-color: rgb(75"],
+[style*="background-color: rgb(107"], [style*="background-color: rgb(156"] {
+  color: white !important;
+}
+
+[style*="background-color: rgb(31"] *, [style*="background-color: rgb(17"] *,
+[style*="background-color: rgb(55"] *, [style*="background-color: rgb(75"] *,
+[style*="background-color: rgb(107"] *, [style*="background-color: rgb(156"] * {
+  color: white !important;
+}
+
 /* Specific overrides for common elements */
 input[type="text"],
 input[type="email"],
@@ -317,12 +336,18 @@ html {
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
 }
 
-/* Dark background text visibility fixes */
+/* Comprehensive dark background text visibility fixes */
 .bg-gray-800, .bg-gray-900, .bg-slate-800, .bg-slate-900,
 .bg-blue-800, .bg-blue-900, .bg-indigo-800, .bg-indigo-900,
 .bg-purple-800, .bg-purple-900, .bg-violet-800, .bg-violet-900,
 .bg-green-800, .bg-green-900, .bg-emerald-800, .bg-emerald-900,
-.bg-red-800, .bg-red-900, .bg-rose-800, .bg-rose-900 {
+.bg-red-800, .bg-red-900, .bg-rose-800, .bg-rose-900,
+.bg-sky-800, .bg-sky-900, .bg-cyan-800, .bg-cyan-900,
+.bg-teal-800, .bg-teal-900, .bg-lime-800, .bg-lime-900,
+.bg-yellow-800, .bg-yellow-900, .bg-amber-800, .bg-amber-900,
+.bg-orange-800, .bg-orange-900, .bg-pink-800, .bg-pink-900,
+.bg-fuchsia-800, .bg-fuchsia-900, .bg-stone-800, .bg-stone-900,
+.bg-neutral-800, .bg-neutral-900, .bg-zinc-800, .bg-zinc-900 {
   color: white !important;
 }
 
@@ -331,54 +356,105 @@ html {
 .bg-gradient-to-r.from-blue-800, .bg-gradient-to-r.from-indigo-800,
 .bg-gradient-to-r.from-purple-800, .bg-gradient-to-r.from-violet-800,
 .bg-gradient-to-r.from-green-800, .bg-gradient-to-r.from-emerald-800,
-.bg-gradient-to-r.from-red-800, .bg-gradient-to-r.from-rose-800 {
+.bg-gradient-to-r.from-red-800, .bg-gradient-to-r.from-rose-800,
+.bg-gradient-to-r.from-sky-800, .bg-gradient-to-r.from-cyan-800,
+.bg-gradient-to-r.from-teal-800, .bg-gradient-to-r.from-lime-800,
+.bg-gradient-to-r.from-yellow-800, .bg-gradient-to-r.from-amber-800,
+.bg-gradient-to-r.from-orange-800, .bg-gradient-to-r.from-pink-800,
+.bg-gradient-to-r.from-fuchsia-800, .bg-gradient-to-r.from-stone-800,
+.bg-gradient-to-r.from-neutral-800, .bg-gradient-to-r.from-zinc-800 {
+  color: white !important;
+}
+
+/* All gradient directions */
+.bg-gradient-to-l, .bg-gradient-to-t, .bg-gradient-to-b,
+.bg-gradient-to-tr, .bg-gradient-to-tl, .bg-gradient-to-br, .bg-gradient-to-bl {
   color: white !important;
 }
 
 /* Button text visibility on dark backgrounds */
-button.bg-gray-800, button.bg-gray-900,
-button.bg-blue-800, button.bg-blue-900,
-button.bg-purple-800, button.bg-purple-900,
-button.bg-green-800, button.bg-green-900,
-button.bg-red-800, button.bg-red-900 {
+button.bg-gray-800, button.bg-gray-900, button.bg-slate-800, button.bg-slate-900,
+button.bg-blue-800, button.bg-blue-900, button.bg-indigo-800, button.bg-indigo-900,
+button.bg-purple-800, button.bg-purple-900, button.bg-violet-800, button.bg-violet-900,
+button.bg-green-800, button.bg-green-900, button.bg-emerald-800, button.bg-emerald-900,
+button.bg-red-800, button.bg-red-900, button.bg-rose-800, button.bg-rose-900,
+button.bg-sky-800, button.bg-sky-900, button.bg-cyan-800, button.bg-cyan-900,
+button.bg-teal-800, button.bg-teal-900, button.bg-lime-800, button.bg-lime-900,
+button.bg-yellow-800, button.bg-yellow-900, button.bg-amber-800, button.bg-amber-900,
+button.bg-orange-800, button.bg-orange-900, button.bg-pink-800, button.bg-pink-900 {
   color: white !important;
 }
 
-/* Ensure all child elements have white text on dark backgrounds */
-.bg-gray-800 *, .bg-gray-900 *,
-.bg-blue-800 *, .bg-blue-900 *,
-.bg-purple-800 *, .bg-purple-900 *,
-.bg-green-800 *, .bg-green-900 *,
-.bg-red-800 *, .bg-red-900 * {
+/* Ensure ALL child elements have white text on dark backgrounds */
+.bg-gray-800 *, .bg-gray-900 *, .bg-slate-800 *, .bg-slate-900 *,
+.bg-blue-800 *, .bg-blue-900 *, .bg-indigo-800 *, .bg-indigo-900 *,
+.bg-purple-800 *, .bg-purple-900 *, .bg-violet-800 *, .bg-violet-900 *,
+.bg-green-800 *, .bg-green-900 *, .bg-emerald-800 *, .bg-emerald-900 *,
+.bg-red-800 *, .bg-red-900 *, .bg-rose-800 *, .bg-rose-900 *,
+.bg-sky-800 *, .bg-sky-900 *, .bg-cyan-800 *, .bg-cyan-900 *,
+.bg-teal-800 *, .bg-teal-900 *, .bg-lime-800 *, .bg-lime-900 *,
+.bg-yellow-800 *, .bg-yellow-900 *, .bg-amber-800 *, .bg-amber-900 *,
+.bg-orange-800 *, .bg-orange-900 *, .bg-pink-800 *, .bg-pink-900 *,
+.bg-fuchsia-800 *, .bg-fuchsia-900 *, .bg-stone-800 *, .bg-stone-900 *,
+.bg-neutral-800 *, .bg-neutral-900 *, .bg-zinc-800 *, .bg-zinc-900 * {
   color: white !important;
 }
 
-/* Override for inputs that should remain readable */
-.bg-gray-800 input, .bg-gray-900 input,
-.bg-blue-800 input, .bg-blue-900 input,
-.bg-purple-800 input, .bg-purple-900 input {
+/* Dark color classes that need white text */
+[class*="-800"], [class*="-900"] {
+  color: white !important;
+}
+
+[class*="-800"] *, [class*="-900"] * {
+  color: white !important;
+}
+
+/* Override for inputs, selects, and textareas that should remain readable */
+.bg-gray-800 input, .bg-gray-900 input, .bg-slate-800 input, .bg-slate-900 input,
+.bg-blue-800 input, .bg-blue-900 input, .bg-indigo-800 input, .bg-indigo-900 input,
+.bg-purple-800 input, .bg-purple-900 input, .bg-violet-800 input, .bg-violet-900 input,
+.bg-green-800 input, .bg-green-900 input, .bg-emerald-800 input, .bg-emerald-900 input,
+.bg-red-800 input, .bg-red-900 input, .bg-rose-800 input, .bg-rose-900 input,
+[class*="-800"] input, [class*="-900"] input,
+[class*="-800"] select, [class*="-900"] select,
+[class*="-800"] textarea, [class*="-900"] textarea {
   color: #374151 !important;
   background-color: white !important;
 }
 
-/* Specific text color overrides for dark backgrounds */
-[class*="bg-gray-8"] h1, [class*="bg-gray-8"] h2, [class*="bg-gray-8"] h3,
-[class*="bg-gray-9"] h1, [class*="bg-gray-9"] h2, [class*="bg-gray-9"] h3,
-[class*="bg-blue-8"] h1, [class*="bg-blue-8"] h2, [class*="bg-blue-8"] h3,
-[class*="bg-blue-9"] h1, [class*="bg-blue-9"] h2, [class*="bg-blue-9"] h3 {
+/* Specific text color overrides for ALL dark backgrounds */
+[class*="-800"] h1, [class*="-800"] h2, [class*="-800"] h3, [class*="-800"] h4, [class*="-800"] h5, [class*="-800"] h6,
+[class*="-900"] h1, [class*="-900"] h2, [class*="-900"] h3, [class*="-900"] h4, [class*="-900"] h5, [class*="-900"] h6 {
   color: white !important;
 }
 
-/* Table text on dark backgrounds */
-.bg-gray-800 table, .bg-gray-900 table,
-.bg-blue-800 table, .bg-blue-900 table {
+[class*="-800"] p, [class*="-800"] span, [class*="-800"] div, [class*="-800"] a,
+[class*="-900"] p, [class*="-900"] span, [class*="-900"] div, [class*="-900"] a {
   color: white !important;
 }
 
-.bg-gray-800 th, .bg-gray-900 th,
-.bg-blue-800 th, .bg-blue-900 th,
-.bg-gray-800 td, .bg-gray-900 td,
-.bg-blue-800 td, .bg-blue-900 td {
+/* Table text on ALL dark backgrounds */
+[class*="-800"] table, [class*="-900"] table {
+  color: white !important;
+}
+
+[class*="-800"] th, [class*="-800"] td,
+[class*="-900"] th, [class*="-900"] td {
+  color: white !important;
+}
+
+/* Sidebar specific fixes */
+.sidebar, nav[class*="bg-"], .sidebar * {
+  color: white !important;
+}
+
+/* Navigation and menu fixes */
+.nav-link, .navbar-nav .nav-link, .dropdown-item {
+  color: white !important;
+}
+
+/* Force white text on any element with dark background */
+.text-white, .text-white * {
   color: white !important;
 }
 
