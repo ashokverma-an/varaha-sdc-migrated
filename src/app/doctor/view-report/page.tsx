@@ -259,10 +259,12 @@ export default function ViewReport() {
         </div>
 
         {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="px-6 py-4 border-t border-gray-200">
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-700">Page {currentPage} of {totalPages}</div>
+        <div className="px-6 py-4 border-t border-gray-200">
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-gray-700">
+              Page {currentPage} of {totalPages} | Total: {totalRecords} records
+            </div>
+            {totalPages > 1 && (
               <div className="flex items-center space-x-2">
                 {currentPage > 1 && (
                   <>
@@ -298,9 +300,9 @@ export default function ViewReport() {
                   </>
                 )}
               </div>
-            </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
