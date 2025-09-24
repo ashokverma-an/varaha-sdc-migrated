@@ -95,7 +95,7 @@ export default function ConsoleDashboard() {
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-1">{card.title}</p>
                   <p className={`text-3xl font-bold ${card.textColor}`}>
-                    {loading ? '...' : card.value.toLocaleString()}
+                    {loading ? '...' : (card.value || 0).toLocaleString()}
                   </p>
                 </div>
                 <div className={`${card.color} p-3 rounded-lg`}>
