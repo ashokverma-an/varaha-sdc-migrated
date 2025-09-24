@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Activity, FileText, Clock, CheckCircle, Users, Stethoscope } from 'lucide-react';
+import { Activity, FileText, Clock, CheckCircle, Users, Stethoscope, UserPlus } from 'lucide-react';
 
 interface DoctorStats {
   todayPatients: number;
@@ -120,6 +120,15 @@ export default function DoctorDashboard() {
               <Stethoscope className="h-5 w-5 text-white" />
             </div>
             <span className="font-medium text-gray-700">CT Scan Doctor List</span>
+          </a>
+          <a
+            href="/doctor/ct-scan-doctors"
+            className="flex items-center space-x-3 p-4 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors"
+          >
+            <div className="p-2 rounded-lg bg-purple-500">
+              <UserPlus className="h-5 w-5 text-white" />
+            </div>
+            <span className="font-medium text-gray-700">Manage Doctors</span>
           </a>
         </div>
       </div>
