@@ -22,11 +22,7 @@ export default function CTScanDoctors() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingDoctor, setEditingDoctor] = useState<Doctor | null>(null);
   const [formData, setFormData] = useState({
-    doctor_name: '',
-    specialization: '',
-    mobile: '',
-    email: '',
-    address: ''
+    doctor_name: ''
   });
 
   useEffect(() => {
@@ -87,11 +83,7 @@ export default function CTScanDoctors() {
   const handleEdit = (doctor: Doctor) => {
     setEditingDoctor(doctor);
     setFormData({
-      doctor_name: doctor.doctor_name,
-      specialization: doctor.specialization || '',
-      mobile: doctor.mobile || '',
-      email: doctor.email || '',
-      address: doctor.address || ''
+      doctor_name: doctor.doctor_name
     });
     setShowAddForm(true);
   };
@@ -119,15 +111,13 @@ export default function CTScanDoctors() {
   };
 
   const resetForm = () => {
-    setFormData({ doctor_name: '', specialization: '', mobile: '', email: '', address: '' });
+    setFormData({ doctor_name: '' });
     setEditingDoctor(null);
     setShowAddForm(false);
   };
 
   const filteredDoctors = doctors.filter(doctor =>
-    doctor.doctor_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    doctor.specialization?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    doctor.mobile?.includes(searchTerm)
+    doctor.doctor_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -154,7 +144,7 @@ export default function CTScanDoctors() {
             <UserPlus className="h-5 w-5 mr-2" />
             {editingDoctor ? 'Edit Doctor' : 'Add New Doctor'}
           </h2>
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Doctor Name *</label>
               <input
@@ -166,47 +156,7 @@ export default function CTScanDoctors() {
                 placeholder="Enter doctor name"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Specialization</label>
-              <input
-                type="text"
-                value={formData.specialization}
-                onChange={(e) => setFormData(prev => ({ ...prev, specialization: e.target.value }))}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                placeholder="Enter specialization"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Mobile</label>
-              <input
-                type="tel"
-                value={formData.mobile}
-                onChange={(e) => setFormData(prev => ({ ...prev, mobile: e.target.value }))}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                placeholder="Enter mobile number"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-              <input
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                placeholder="Enter email address"
-              />
-            </div>
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
-              <textarea
-                value={formData.address}
-                onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
-                rows={3}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                placeholder="Enter address"
-              />
-            </div>
-            <div className="md:col-span-2 flex space-x-4">
+            <div className="flex space-x-4">
               <button
                 type="submit"
                 className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
@@ -251,19 +201,17 @@ export default function CTScanDoctors() {
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Doctor Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Specialization</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mobile</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500">Loading...</td>
+                  <td colSpan={3} className="px-6 py-12 text-center text-gray-500">Loading...</td>
                 </tr>
               ) : filteredDoctors.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500">No doctors found</td>
+                  <td colSpan={3} className="px-6 py-12 text-center text-gray-500">No doctors found</td>
                 </tr>
               ) : (
                 filteredDoctors.map((doctor) => (
@@ -271,12 +219,6 @@ export default function CTScanDoctors() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{doctor.d_id}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       Dr. {doctor.doctor_name}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {doctor.specialization || '-'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {doctor.mobile || '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       <div className="flex items-center space-x-2">
