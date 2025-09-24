@@ -8,7 +8,7 @@ export const USER_CREDENTIALS = {
   doctor: { username: 'doctor', password: 'Admin@321', role: 'doctor' },
   console: { username: 'console', password: 'Admin@321', role: 'console' },
   admin: { username: 'admin', password: 'Admin@Varaha', role: 'admin' },
-  accounts: { username: 'accounts', password: 'Admin@321', role: 'accounts' },
+
   superadmin: { username: 'superadmin', password: 'Super@321', role: 'superadmin' }
 };
 
@@ -161,50 +161,7 @@ class ApiClient {
     });
   }
 
-  // Accounts APIs
-  async getAccountsStats() {
-    return this.request('/accounts/stats');
-  }
 
-  async getAccountsTransactions(fromDate?: string, toDate?: string, limit?: number, offset?: number) {
-    const params = new URLSearchParams();
-    if (fromDate) params.append('from_date', fromDate);
-    if (toDate) params.append('to_date', toDate);
-    if (limit) params.append('limit', limit.toString());
-    if (offset) params.append('offset', offset.toString());
-    
-    return this.request(`/accounts/transactions?${params}`);
-  }
-
-  async updateAccountsPayment(cro: string, receivedAmount: number, dueAmount: number, paymentMethod: string, remark: string) {
-    return this.request('/accounts/update-payment', {
-      method: 'POST',
-      body: JSON.stringify({
-        cro,
-        received_amount: receivedAmount,
-        due_amount: dueAmount,
-        payment_method: paymentMethod,
-        remark,
-      }),
-    });
-  }
-
-  async getAccountsRevenueReport(fromDate?: string, toDate?: string, groupBy?: string) {
-    const params = new URLSearchParams();
-    if (fromDate) params.append('from_date', fromDate);
-    if (toDate) params.append('to_date', toDate);
-    if (groupBy) params.append('group_by', groupBy);
-    
-    return this.request(`/accounts/revenue-report?${params}`);
-  }
-
-  async getAccountsVouchers(limit?: number, offset?: number) {
-    const params = new URLSearchParams();
-    if (limit) params.append('limit', limit.toString());
-    if (offset) params.append('offset', offset.toString());
-    
-    return this.request(`/accounts/vouchers?${params}`);
-  }
 
   // Reports APIs
   async getPatientReport(fromDate?: string, toDate?: string) {

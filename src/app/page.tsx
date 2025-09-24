@@ -30,9 +30,7 @@ export default function Home() {
           case 'console':
             router.push('/console/dashboard');
             break;
-          case 'accounts':
-            router.push('/dashboard');
-            break;
+
           default:
             router.push('/dashboard');
         }

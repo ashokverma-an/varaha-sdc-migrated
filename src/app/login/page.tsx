@@ -21,7 +21,7 @@ export default function Login() {
     { id: 'admin', name: 'Admin', icon: Shield, color: 'from-blue-500 to-blue-600', bgColor: 'bg-blue-50', textColor: 'text-blue-700', username: 'admin', password: 'Admin@Varaha' },
     { id: 'reception', name: 'Reception', icon: UserCheck, color: 'from-rose-500 to-rose-600', bgColor: 'bg-rose-50', textColor: 'text-rose-700', username: 'reception', password: 'Admin@321' },
     { id: 'doctor', name: 'Doctor', icon: Stethoscope, color: 'from-emerald-500 to-emerald-600', bgColor: 'bg-emerald-50', textColor: 'text-emerald-700', username: 'doctor', password: 'Admin@321' },
-    { id: 'accounts', name: 'Accounts', icon: UserCheck, color: 'from-teal-500 to-teal-600', bgColor: 'bg-teal-50', textColor: 'text-teal-700', username: 'accounts', password: 'Admin@321' },
+
     { id: 'console', name: 'Console', icon: Monitor, color: 'from-violet-500 to-violet-600', bgColor: 'bg-violet-50', textColor: 'text-violet-700', username: 'console', password: 'Admin@321' },
   ];
 
@@ -65,9 +65,7 @@ export default function Login() {
           case 'console':
             router.push('/console/dashboard');
             break;
-          case 'accounts':
-            router.push('/dashboard');
-            break;
+
           default:
             router.push('/dashboard');
         }
