@@ -21,7 +21,8 @@ export async function GET(request: NextRequest) {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to fetch patient in queue data');
+      const errorText = await response.text();
+      throw new Error(`HTTP ${response.status}: ${errorText}`);
     }
 
     const data = await response.json();
@@ -38,7 +39,14 @@ export async function GET(request: NextRequest) {
     console.error('Patient in queue API error:', error);
     return NextResponse.json({ 
       success: false,
-      error: 'Failed to fetch patient in queue data' 
+      error: 'Failed to fetch patient in queue data',
+      details: error instanceof Error ? error.message : String(error),
+      url: request.url,
+      params: {
+        page: request.nextUrl.searchParams.get('page'),
+        search: request.nextUrl.searchParams.get('search'),
+        limit: request.nextUrl.searchParams.get('limit')
+      }
     }, { status: 500 });
   }
 }
