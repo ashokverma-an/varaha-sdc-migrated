@@ -1,122 +1,85 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Edit, Copy, Trash2, Search, RefreshCw } from 'lucide-react';
+import { Search, RefreshCw } from 'lucide-react';
 import { useToastContext } from '@/context/ToastContext';
+import { useRouter } from 'next/navigation';
 
-interface CorridorData {
+interface PatientInQueue {
   c_id: number;
   cro_number: string;
-  n_status: number;
+  patient_name: string;
+  pre: string;
+  allot_date: string;
+  examination_id: number;
   added: string;
 }
 
-export default function CTScanDoctorList() {
+export default function PatientInQueue() {
   const toast = useToastContext();
-  const [corridorData, setCorridorData] = useState<CorridorData[]>([]);
+  const router = useRouter();
+  const [patientData, setPatientData] = useState<PatientInQueue[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 10;
 
   useEffect(() => {
-    fetchCorridorData();
-  }, []);
+    fetchPatientData();
+  }, [currentPage, searchTerm]);
 
-  const fetchCorridorData = async () => {
+  const fetchPatientData = async () => {
     setLoading(true);
     try {
-      // Using the existing API endpoint structure
-      const response = await fetch('https://varahasdc.co.in/api/doctor/corridor-list');
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        search: searchTerm,
+        limit: itemsPerPage.toString()
+      });
+      
+      const response = await fetch(`/api/doctor/patient-in-queue?${params}`);
       if (response.ok) {
         const data = await response.json();
-        // Sort by added date descending
-        const sortedData = (data.data || []).sort((a: CorridorData, b: CorridorData) => 
-          new Date(b.added).getTime() - new Date(a.added).getTime()
-        );
-        setCorridorData(sortedData);
+        setPatientData(data.data || []);
+        setTotalPages(data.totalPages || 1);
       } else {
-        toast.error('Failed to fetch corridor data');
+        const errorData = await response.json().catch(() => ({}));
+        toast.error(errorData.error || 'Failed to fetch patient data');
       }
     } catch (error) {
-      console.error('Error fetching corridor data:', error);
+      console.error('Error fetching patient data:', error);
       toast.error('Error loading data');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleEdit = (item: CorridorData) => {
-    // Navigate to edit page or open edit modal
-    window.location.href = `/doctor/ct-scan-edit/${item.c_id}`;
+  const handleViewNursing = (cro: string) => {
+    router.push(`/doctor/nursing/${encodeURIComponent(cro)}`);
   };
 
-  const handleCopy = (item: CorridorData) => {
-    const textToCopy = `CRO: ${item.cro_number}\nStatus: ${item.n_status}\nID: ${item.c_id}`;
-    navigator.clipboard.writeText(textToCopy).then(() => {
-      toast.success('Data copied to clipboard');
-    }).catch(() => {
-      toast.error('Failed to copy data');
-    });
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setCurrentPage(1);
+    fetchPatientData();
   };
 
-  const handleDelete = async (item: CorridorData) => {
-    if (!confirm(`Are you sure you want to delete CRO ${item.cro_number}?`)) {
-      return;
-    }
-
-    try {
-      const response = await fetch(`https://varahasdc.co.in/api/doctor/corridor/${item.c_id}`, {
-        method: 'DELETE'
-      });
-      
-      if (response.ok) {
-        toast.success('Record deleted successfully');
-        fetchCorridorData(); // Refresh the list
-      } else {
-        toast.error('Failed to delete record');
-      }
-    } catch (error) {
-      console.error('Error deleting record:', error);
-      toast.error('Error deleting record');
-    }
-  };
-
-  const filteredData = corridorData.filter(item =>
-    item.cro_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.c_id.toString().includes(searchTerm)
-  );
-
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedData = filteredData.slice(startIndex, startIndex + itemsPerPage);
-
-  const getStatusBadge = (status: number) => {
-    switch (status) {
-      case 0:
-        return <span className="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">Inactive</span>;
-      case 1:
-        return <span className="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">Pending</span>;
-      case 2:
-        return <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Active</span>;
-      default:
-        return <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">Unknown</span>;
-    }
-  };
 
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 rounded-xl shadow-lg">
+      <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 text-white p-6 rounded-xl shadow-lg">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold mb-2">CT Scan Doctor List</h1>
-            <p className="text-blue-100">Manage corridor data and patient records</p>
+            <h1 className="text-3xl font-bold mb-2">Patient In Queue</h1>
+            <p className="text-emerald-100">Manage patient queue and examination records</p>
           </div>
           <button
-            onClick={fetchCorridorData}
+            onClick={fetchPatientData}
             disabled={loading}
-            className="flex items-center space-x-2 px-4 py-2 bg-blue-500 hover:bg-blue-400 rounded-lg transition-colors disabled:opacity-50"
+            className="flex items-center space-x-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-400 rounded-lg transition-colors disabled:opacity-50"
           >
             <RefreshCw className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
             <span>Refresh</span>
@@ -126,26 +89,32 @@ export default function CTScanDoctorList() {
 
       {/* Search */}
       <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
-        <div className="flex items-center space-x-4">
+        <form onSubmit={handleSearch} className="flex items-center space-x-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
             <input
               type="text"
-              placeholder="Search by CRO number or ID..."
+              placeholder="Search by VDC No..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
             />
           </div>
-        </div>
+          <button
+            type="submit"
+            className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+          >
+            Search
+          </button>
+        </form>
       </div>
 
       {/* Table */}
       <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">Corridor Records</h2>
+          <h2 className="text-xl font-semibold text-gray-900">Patient Queue Records</h2>
           <p className="text-sm text-gray-600 mt-1">
-            Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredData.length)} of {filteredData.length} records
+            Page {currentPage} of {totalPages}
           </p>
         </div>
 
@@ -154,77 +123,65 @@ export default function CTScanDoctorList() {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  CRO Number
+                  Sr. No.
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
+                  VDC No.
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Added Date
+                  Patient Name
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  ID
+                  VDC Date
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
+                  Remark
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center">
+                  <td colSpan={5} className="px-6 py-12 text-center">
                     <div className="flex items-center justify-center space-x-2">
-                      <RefreshCw className="h-5 w-5 animate-spin text-blue-500" />
+                      <RefreshCw className="h-5 w-5 animate-spin text-emerald-500" />
                       <span className="text-gray-500">Loading patient data...</span>
                     </div>
                   </td>
                 </tr>
-              ) : filteredData.length === 0 ? (
+              ) : patientData.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
-                    No corridor records found
+                    No patient records found
                   </td>
                 </tr>
               ) : (
-                paginatedData.map((item, index) => (
+                patientData.map((item, index) => (
                   <tr key={item.c_id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {startIndex + index + 1}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{item.cro_number}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {getStatusBadge(item.n_status)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {new Date(item.added).toLocaleDateString('en-GB')}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {item.c_id}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <div className="flex items-center space-x-2">
-                        <button
-                          onClick={() => handleEdit(item)}
-                          className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"
-                          title="Edit"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => handleCopy(item)}
-                          className="p-2 text-green-600 hover:bg-green-100 rounded-lg transition-colors"
-                          title="Copy"
-                        >
-                          <Copy className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(item)}
-                          className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
-                          title="Delete"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                      <div className="text-sm font-medium text-blue-600 cursor-pointer hover:text-blue-800"
+                           onClick={() => handleViewNursing(item.cro_number)}>
+                        {item.cro_number}
                       </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">
+                        {item.pre} {item.patient_name}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {item.allot_date}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <button
+                        onClick={() => handleViewNursing(item.cro_number)}
+                        className="px-4 py-2 bg-emerald-100 text-emerald-800 rounded-lg hover:bg-emerald-200 transition-colors text-sm font-medium"
+                      >
+                        {item.cro_number}
+                      </button>
                     </td>
                   </tr>
                 ))
@@ -238,27 +195,39 @@ export default function CTScanDoctorList() {
           <div className="px-6 py-4 border-t border-gray-200">
             <div className="flex items-center justify-between">
               <div className="text-sm text-gray-700">
-                Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredData.length)} of {filteredData.length} results
+                Page {currentPage} of {totalPages}
               </div>
               <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                  disabled={currentPage === 1}
-                  className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Previous
-                </button>
+                {currentPage > 1 && (
+                  <>
+                    <button
+                      onClick={() => setCurrentPage(1)}
+                      className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+                    >
+                      First
+                    </button>
+                    <button
+                      onClick={() => setCurrentPage(currentPage - 1)}
+                      className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+                    >
+                      Previous
+                    </button>
+                  </>
+                )}
                 
                 <div className="flex items-center space-x-1">
                   {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    const page = i + 1;
+                    const startPage = Math.max(1, currentPage - 2);
+                    const page = startPage + i;
+                    if (page > totalPages) return null;
+                    
                     return (
                       <button
                         key={page}
                         onClick={() => setCurrentPage(page)}
                         className={`px-3 py-2 text-sm font-medium rounded-lg ${
                           currentPage === page
-                            ? 'bg-blue-600 text-white'
+                            ? 'bg-emerald-600 text-white'
                             : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
                         }`}
                       >
@@ -268,13 +237,22 @@ export default function CTScanDoctorList() {
                   })}
                 </div>
                 
-                <button
-                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                  disabled={currentPage === totalPages}
-                  className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Next
-                </button>
+                {currentPage < totalPages && (
+                  <>
+                    <button
+                      onClick={() => setCurrentPage(currentPage + 1)}
+                      className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+                    >
+                      Next
+                    </button>
+                    <button
+                      onClick={() => setCurrentPage(totalPages)}
+                      className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+                    >
+                      Last
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>

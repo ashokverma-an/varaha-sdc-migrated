@@ -37,7 +37,8 @@ export default function CTScanDoctors() {
         const data = await response.json();
         setDoctors(data.data || []);
       } else {
-        toast.error('Failed to fetch doctors');
+        const errorData = await response.json().catch(() => ({}));
+        toast.error(errorData.error || 'Failed to fetch doctors');
       }
     } catch (error) {
       console.error('Error fetching doctors:', error);
@@ -68,11 +69,13 @@ export default function CTScanDoctors() {
       });
 
       if (response.ok) {
-        toast.success(editingDoctor ? 'Doctor updated successfully!' : 'Doctor added successfully!');
+        const data = await response.json();
+        toast.success(data.message || (editingDoctor ? 'Doctor updated successfully!' : 'Doctor added successfully!'));
         fetchDoctors();
         resetForm();
       } else {
-        toast.error('Failed to save doctor');
+        const errorData = await response.json().catch(() => ({}));
+        toast.error(errorData.error || 'Failed to save doctor');
       }
     } catch (error) {
       console.error('Error saving doctor:', error);
@@ -99,10 +102,12 @@ export default function CTScanDoctors() {
       });
       
       if (response.ok) {
-        toast.success('Doctor deleted successfully!');
+        const data = await response.json();
+        toast.success(data.message || 'Doctor deleted successfully!');
         fetchDoctors();
       } else {
-        toast.error('Failed to delete doctor');
+        const errorData = await response.json().catch(() => ({}));
+        toast.error(errorData.error || 'Failed to delete doctor');
       }
     } catch (error) {
       console.error('Error deleting doctor:', error);
@@ -199,7 +204,7 @@ export default function CTScanDoctors() {
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sr. No.</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Doctor Name</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
@@ -214,9 +219,9 @@ export default function CTScanDoctors() {
                   <td colSpan={3} className="px-6 py-12 text-center text-gray-500">No doctors found</td>
                 </tr>
               ) : (
-                filteredDoctors.map((doctor) => (
+                filteredDoctors.map((doctor, index) => (
                   <tr key={doctor.d_id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{doctor.d_id}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{index + 1}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       Dr. {doctor.doctor_name}
                     </td>
