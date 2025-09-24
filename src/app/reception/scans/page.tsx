@@ -107,9 +107,11 @@ export default function ReceptionScans() {
     scan.s_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const totalPages = Math.ceil(filteredScans.length / itemsPerPage);
+  // Sort all scans in descending order (latest first)
+  const sortedScans = [...filteredScans].sort((a, b) => b.s_id - a.s_id);
+  const totalPages = Math.ceil(sortedScans.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedScans = filteredScans.slice(startIndex, startIndex + itemsPerPage);
+  const paginatedScans = sortedScans.slice(startIndex, startIndex + itemsPerPage);
 
   return (
     <div className="p-6 space-y-6">
@@ -159,9 +161,9 @@ export default function ReceptionScans() {
               </tr>
             </thead>
             <tbody>
-              {[...paginatedScans].reverse().map((scan, index) => (
+              {paginatedScans.map((scan, index) => (
                 <tr key={scan.s_id} className="hover:bg-gray-50">
-                  <td className="border border-gray-300 px-4 py-2">{paginatedScans.length - index}</td>
+                  <td className="border border-gray-300 px-4 py-2">{startIndex + index + 1}</td>
                   <td className="border border-gray-300 px-4 py-2 font-medium">{scan.s_name}</td>
                   <td className="border border-gray-300 px-4 py-2 text-center">{scan.n_o_films}</td>
                   <td className="border border-gray-300 px-4 py-2 text-center">{scan.total_scan}</td>
@@ -192,7 +194,7 @@ export default function ReceptionScans() {
         {/* Pagination */}
         <div className="flex items-center justify-between mt-6">
           <div className="text-sm text-gray-700">
-            Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredScans.length)} of {filteredScans.length}
+            Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, sortedScans.length)} of {sortedScans.length}
           </div>
           <div className="flex space-x-2">
             <button
@@ -218,7 +220,7 @@ export default function ReceptionScans() {
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">{editingScan ? 'Edit Scan' : 'Add Scan'}</h3>

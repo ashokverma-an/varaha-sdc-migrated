@@ -47,9 +47,12 @@ export default function PatientReprintOld() {
   const handleReprint = async (patient: Patient) => {
     setPrinting(patient.patient_id);
     try {
-      toast.error(`Reprinting receipt for ${patient.patient_name} (${patient.cro})`);
+      // Open PHP receipt page in new window
+      const printUrl = `https://varahasdc.co.in/sdc_admin/d_payment.php?cro=${patient.cro}&r_amount=0&d_amount=0`;
+      window.open(printUrl, '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
+      toast.error(`Opening receipt for ${patient.patient_name} (${patient.cro})`);
     } catch (error) {
-      toast.error('Error reprinting receipt');
+      toast.error('Error opening receipt');
     } finally {
       setPrinting(null);
     }
