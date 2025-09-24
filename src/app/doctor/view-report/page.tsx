@@ -11,16 +11,16 @@ interface CompletedReport {
   age: number;
   gender: string;
   mobile: string;
-  scan_name: string;
   doctor_name: string;
-  hospital_name: string;
+  n_patient_ct: string;
+  n_patient_ct_report_date: string;
+  n_patient_ct_remark: string;
+  n_patient_x_ray: string;
+  n_patient_x_ray_report_date: string;
+  n_patient_x_ray_remark: string;
   date: string;
   allot_date: string;
   amount: number;
-  category: string;
-  remark: string;
-  c_status: number;
-  added_on: string;
 }
 
 export default function ViewReport() {
@@ -97,7 +97,7 @@ export default function ViewReport() {
     }
   };
 
-  const totalAmount = reports.reduce((sum, report) => sum + (report.amount || 0), 0);
+
 
   const exportToExcel = async () => {
     setExporting(true);
@@ -118,8 +118,6 @@ export default function ViewReport() {
       const data = await response.json();
       const allReports = data.data || [];
       
-      const totalAmount = allReports.reduce((sum: number, report: CompletedReport) => sum + (report.amount || 0), 0);
-      
       // Create workbook with formatted headers
       const wb = XLSX.utils.book_new();
       
@@ -128,7 +126,7 @@ export default function ViewReport() {
         ['VARAHA DIAGNOSTIC CENTER'],
         ['COMPLETED REPORTS - ' + new Date().toLocaleDateString()],
         [''],
-        ['S.No', 'CRO Number', 'Patient Name', 'Age', 'Gender', 'Mobile', 'Doctor Name', 'Hospital Name', 'Scan Type', 'Date', 'Allot Date', 'Amount', 'Category', 'Remark', 'Report Date']
+        ['S.No', 'CRO', 'Patient Name', 'Doctor Name', 'Ct-Scan', 'Ct-Scan Report Date', 'Ct-Scan Review', 'X-Ray Film', 'X-Ray Film Date', 'X-Ray Film Review']
       ];
       
       // Add data rows
@@ -136,24 +134,16 @@ export default function ViewReport() {
         index + 1,
         report.cro,
         report.patient_name,
-        report.age,
-        report.gender,
-        report.mobile,
         report.doctor_name || '-',
-        report.hospital_name || '-',
-        report.scan_name || '-',
-        formatDate(report.date),
-        formatDate(report.allot_date),
-        report.amount || 0,
-        report.category || '-',
-        report.remark || '-',
-        formatDate(report.added_on)
+        report.n_patient_ct,
+        formatDate(report.n_patient_ct_report_date),
+        report.n_patient_ct_remark || '-',
+        report.n_patient_x_ray,
+        formatDate(report.n_patient_x_ray_report_date),
+        report.n_patient_x_ray_remark || '-'
       ]);
       
-      // Add total row
-      exportData.push([
-        '', '', '', '', '', '', '', '', '', '', 'TOTAL', totalAmount, '', '', ''
-      ]);
+
       
       const allData = [...headerData, ...exportData];
       const ws = XLSX.utils.aoa_to_sheet(allData);
@@ -163,15 +153,14 @@ export default function ViewReport() {
       
       // Merge title cells
       ws['!merges'] = [
-        { s: { r: 0, c: 0 }, e: { r: 0, c: 14 } },
-        { s: { r: 1, c: 0 }, e: { r: 1, c: 14 } }
+        { s: { r: 0, c: 0 }, e: { r: 0, c: 9 } },
+        { s: { r: 1, c: 0 }, e: { r: 1, c: 9 } }
       ];
       
       // Set column widths
       ws['!cols'] = [
-        { width: 8 }, { width: 15 }, { width: 20 }, { width: 8 }, { width: 10 },
-        { width: 12 }, { width: 20 }, { width: 25 }, { width: 15 }, { width: 12 },
-        { width: 12 }, { width: 12 }, { width: 15 }, { width: 30 }, { width: 12 }
+        { width: 8 }, { width: 15 }, { width: 20 }, { width: 20 }, { width: 12 },
+        { width: 15 }, { width: 30 }, { width: 12 }, { width: 15 }, { width: 30 }
       ];
       
       XLSX.utils.book_append_sheet(wb, ws, 'Completed Reports');
@@ -260,7 +249,6 @@ export default function ViewReport() {
 
         <div className="mb-4 flex justify-between items-center text-sm">
           <span className="text-gray-600">Total Records: {totalRecords} | Page {currentPage} of {totalPages}</span>
-          <span className="text-gray-600 font-medium">Total Amount: ₹{totalAmount.toLocaleString()}</span>
         </div>
 
         <div className="overflow-x-auto">
@@ -268,20 +256,15 @@ export default function ViewReport() {
             <thead>
               <tr className="bg-green-50">
                 <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">S.No</th>
-                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">CRO Number</th>
+                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">CRO</th>
                 <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Patient Name</th>
-                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Age</th>
-                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Gender</th>
-                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Mobile</th>
                 <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Doctor Name</th>
-                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Hospital Name</th>
-                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Scan Type</th>
-                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Date</th>
-                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Allot Date</th>
-                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Amount</th>
-                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Category</th>
-                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Remark</th>
-                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Report Date</th>
+                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Ct-Scan</th>
+                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Ct-Scan Report Date</th>
+                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Ct-Scan Review</th>
+                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">X-Ray Film</th>
+                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">X-Ray Film Date</th>
+                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">X-Ray Film Review</th>
               </tr>
             </thead>
             <tbody>
@@ -292,30 +275,17 @@ export default function ViewReport() {
                     {report.cro}
                   </td>
                   <td className="border border-gray-300 px-3 py-2 text-sm">{report.patient_name}</td>
-                  <td className="border border-gray-300 px-3 py-2 text-sm">{report.age}</td>
-                  <td className="border border-gray-300 px-3 py-2 text-sm">{report.gender}</td>
-                  <td className="border border-gray-300 px-3 py-2 text-sm">{report.mobile}</td>
                   <td className="border border-gray-300 px-3 py-2 text-sm">{report.doctor_name || '-'}</td>
-                  <td className="border border-gray-300 px-3 py-2 text-sm">{report.hospital_name || '-'}</td>
-                  <td className="border border-gray-300 px-3 py-2 text-sm">{report.scan_name || '-'}</td>
-                  <td className="border border-gray-300 px-3 py-2 text-sm">{formatDate(report.date)}</td>
-                  <td className="border border-gray-300 px-3 py-2 text-sm">{formatDate(report.allot_date)}</td>
-                  <td className="border border-gray-300 px-3 py-2 text-sm">₹{(report.amount || 0).toLocaleString()}</td>
-                  <td className="border border-gray-300 px-3 py-2 text-sm">{report.category || '-'}</td>
-                  <td className="border border-gray-300 px-3 py-2 text-sm">{report.remark || '-'}</td>
-                  <td className="border border-gray-300 px-3 py-2 text-sm">{formatDate(report.added_on)}</td>
+                  <td className="border border-gray-300 px-3 py-2 text-sm">{report.n_patient_ct}</td>
+                  <td className="border border-gray-300 px-3 py-2 text-sm">{formatDate(report.n_patient_ct_report_date)}</td>
+                  <td className="border border-gray-300 px-3 py-2 text-sm">{report.n_patient_ct_remark || '-'}</td>
+                  <td className="border border-gray-300 px-3 py-2 text-sm">{report.n_patient_x_ray}</td>
+                  <td className="border border-gray-300 px-3 py-2 text-sm">{formatDate(report.n_patient_x_ray_report_date)}</td>
+                  <td className="border border-gray-300 px-3 py-2 text-sm">{report.n_patient_x_ray_remark || '-'}</td>
                 </tr>
               ))}
             </tbody>
-            {reports.length > 0 && (
-              <tfoot>
-                <tr className="bg-gray-100 font-medium">
-                  <td colSpan={11} className="border border-gray-300 px-3 py-2 text-sm text-right">TOTAL:</td>
-                  <td className="border border-gray-300 px-3 py-2 text-sm">₹{totalAmount.toLocaleString()}</td>
-                  <td colSpan={3} className="border border-gray-300 px-3 py-2 text-sm"></td>
-                </tr>
-              </tfoot>
-            )}
+
           </table>
           
           {reports.length === 0 && (

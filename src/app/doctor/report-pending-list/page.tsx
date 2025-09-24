@@ -12,13 +12,15 @@ interface PendingReport {
   age: number;
   gender: string;
   mobile: string;
-  scan_name: string;
   doctor_name: string;
-  hospital_name: string;
+  n_patient_ct: string;
+  n_patient_ct_report_date: string;
+  n_patient_ct_remark: string;
+  n_patient_x_ray: string;
+  n_patient_x_ray_report_date: string;
+  n_patient_x_ray_remark: string;
   date: string;
   allot_date: string;
-  c_status: number;
-  remark: string;
 }
 
 export default function ReportPendingList() {
@@ -26,7 +28,7 @@ export default function ReportPendingList() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [dateFilter, setDateFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState('pending');
+
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
@@ -92,17 +94,7 @@ export default function ReportPendingList() {
     }
   };
 
-  const filteredReports = reports.filter(report => {
-    const matchesSearch = report.cro.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         report.patient_name.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesDate = !dateFilter || report.date === dateFilter;
-    
-    const matchesStatus = statusFilter === 'all' || 
-                         (statusFilter === 'pending' && (report.c_status === 0 || report.c_status === null));
-    
-    return matchesSearch && matchesDate && matchesStatus;
-  });
+
 
   const exportToExcel = async () => {
     setExporting(true);
@@ -129,7 +121,7 @@ export default function ReportPendingList() {
         ['VARAHA DIAGNOSTIC CENTER'],
         ['PENDING REPORTS - ' + new Date().toLocaleDateString()],
         [''],
-        ['S.No', 'CRO Number', 'Patient Name', 'Age', 'Gender', 'Mobile', 'Doctor Name', 'Hospital Name', 'Scan Type', 'Date', 'Allot Date', 'Status', 'Remark']
+        ['S.No', 'CRO', 'Patient Name', 'Doctor Name', 'Ct-Scan', 'Ct-Scan Report Date', 'Ct-Scan Review', 'X-Ray Film', 'X-Ray Film Date', 'X-Ray Film Review']
       ];
       
       // Add data rows
@@ -137,16 +129,13 @@ export default function ReportPendingList() {
         index + 1,
         report.cro,
         report.patient_name,
-        report.age,
-        report.gender,
-        report.mobile,
         report.doctor_name || '-',
-        report.hospital_name || '-',
-        report.scan_name || '-',
-        formatDate(report.date),
-        formatDate(report.allot_date),
-        report.c_status === 1 ? 'Completed' : 'Pending',
-        report.remark || '-'
+        report.n_patient_ct,
+        formatDate(report.n_patient_ct_report_date),
+        report.n_patient_ct_remark || '-',
+        report.n_patient_x_ray,
+        formatDate(report.n_patient_x_ray_report_date),
+        report.n_patient_x_ray_remark || '-'
       ]);
       
       const allData = [...headerData, ...exportData];
@@ -157,15 +146,14 @@ export default function ReportPendingList() {
       
       // Merge title cells
       ws['!merges'] = [
-        { s: { r: 0, c: 0 }, e: { r: 0, c: 12 } },
-        { s: { r: 1, c: 0 }, e: { r: 1, c: 12 } }
+        { s: { r: 0, c: 0 }, e: { r: 0, c: 9 } },
+        { s: { r: 1, c: 0 }, e: { r: 1, c: 9 } }
       ];
       
       // Set column widths
       ws['!cols'] = [
-        { width: 8 }, { width: 15 }, { width: 20 }, { width: 8 }, { width: 10 },
-        { width: 12 }, { width: 20 }, { width: 25 }, { width: 15 }, { width: 12 },
-        { width: 12 }, { width: 10 }, { width: 30 }
+        { width: 8 }, { width: 15 }, { width: 20 }, { width: 20 }, { width: 12 },
+        { width: 15 }, { width: 30 }, { width: 12 }, { width: 15 }, { width: 30 }
       ];
       
       XLSX.utils.book_append_sheet(wb, ws, 'Pending Reports');
@@ -212,14 +200,11 @@ export default function ReportPendingList() {
           </div>
           
           <div>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+            <input
+              type="text"
+              placeholder="Filter by Doctor Name"
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-            >
-              <option value="pending">Pending Only</option>
-              <option value="all">All Reports</option>
-            </select>
+            />
           </div>
           
           <div className="flex space-x-2">
@@ -253,18 +238,15 @@ export default function ReportPendingList() {
             <thead>
               <tr className="bg-orange-50">
                 <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">S.No</th>
-                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">CRO Number</th>
+                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">CRO</th>
                 <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Patient Name</th>
-                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Age</th>
-                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Gender</th>
-                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Mobile</th>
                 <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Doctor Name</th>
-                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Hospital Name</th>
-                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Scan Type</th>
-                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Date</th>
-                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Allot Date</th>
-                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Status</th>
-                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Action</th>
+                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Ct-Scan</th>
+                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Ct-Scan Report Date</th>
+                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Ct-Scan Review</th>
+                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">X-Ray Film</th>
+                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">X-Ray Film Date</th>
+                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">X-Ray Film Review</th>
               </tr>
             </thead>
             <tbody>
@@ -275,32 +257,13 @@ export default function ReportPendingList() {
                     {report.cro}
                   </td>
                   <td className="border border-gray-300 px-3 py-2 text-sm">{report.patient_name}</td>
-                  <td className="border border-gray-300 px-3 py-2 text-sm">{report.age}</td>
-                  <td className="border border-gray-300 px-3 py-2 text-sm">{report.gender}</td>
-                  <td className="border border-gray-300 px-3 py-2 text-sm">{report.mobile}</td>
                   <td className="border border-gray-300 px-3 py-2 text-sm">{report.doctor_name || '-'}</td>
-                  <td className="border border-gray-300 px-3 py-2 text-sm">{report.hospital_name || '-'}</td>
-                  <td className="border border-gray-300 px-3 py-2 text-sm">{report.scan_name || '-'}</td>
-                  <td className="border border-gray-300 px-3 py-2 text-sm">{formatDate(report.date)}</td>
-                  <td className="border border-gray-300 px-3 py-2 text-sm">{formatDate(report.allot_date)}</td>
-                  <td className="border border-gray-300 px-3 py-2 text-sm">
-                    <span className={`px-2 py-1 rounded text-xs ${
-                      report.c_status === 1 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-orange-100 text-orange-800'
-                    }`}>
-                      {report.c_status === 1 ? 'Completed' : 'Pending'}
-                    </span>
-                  </td>
-                  <td className="border border-gray-300 px-3 py-2 text-sm">
-                    <Link
-                      href={`/doctor/nursing/${encodeURIComponent(report.cro)}`}
-                      className="inline-flex items-center space-x-1 px-3 py-1 bg-orange-600 text-white rounded hover:bg-orange-700 transition-colors text-xs"
-                    >
-                      <Eye className="h-3 w-3" />
-                      <span>Review</span>
-                    </Link>
-                  </td>
+                  <td className="border border-gray-300 px-3 py-2 text-sm">{report.n_patient_ct}</td>
+                  <td className="border border-gray-300 px-3 py-2 text-sm">{formatDate(report.n_patient_ct_report_date)}</td>
+                  <td className="border border-gray-300 px-3 py-2 text-sm">{report.n_patient_ct_remark || '-'}</td>
+                  <td className="border border-gray-300 px-3 py-2 text-sm">{report.n_patient_x_ray}</td>
+                  <td className="border border-gray-300 px-3 py-2 text-sm">{formatDate(report.n_patient_x_ray_report_date)}</td>
+                  <td className="border border-gray-300 px-3 py-2 text-sm">{report.n_patient_x_ray_remark || '-'}</td>
                 </tr>
               ))}
             </tbody>
