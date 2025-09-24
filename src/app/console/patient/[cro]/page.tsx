@@ -33,7 +33,9 @@ export default function ConsolePatient({ params }: { params: Promise<{ cro: stri
   const [loading, setLoading] = useState(true);
   const [startTime, setStartTime] = useState('');
   const [stopTime, setStopTime] = useState('');
-  const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString());
+  const [currentTime, setCurrentTime] = useState(
+    new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Calcutta' })
+  );
   const [cro, setCro] = useState('');
   const [formData, setFormData] = useState({
     examination_id: '',
@@ -55,7 +57,7 @@ export default function ConsolePatient({ params }: { params: Promise<{ cro: stri
       fetchPatientData();
     }
     const timer = setInterval(() => {
-      setCurrentTime(new Date().toLocaleTimeString());
+      setCurrentTime(new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Calcutta' }));
     }, 1000);
     return () => clearInterval(timer);
   }, [cro]);

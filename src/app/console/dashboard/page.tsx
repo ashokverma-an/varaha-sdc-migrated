@@ -33,10 +33,6 @@ export default function ConsoleDashboard() {
       }
     } catch (error) {
       console.error('Error fetching console stats:', error);
-      if (error.response) {
-        const errorData = await error.response.json().catch(() => ({}));
-        console.error('Console stats API error:', errorData);
-      }
     } finally {
       setLoading(false);
     }
@@ -141,7 +137,9 @@ export default function ConsoleDashboard() {
             <Clock className="h-8 w-8 text-gray-600" />
             <div>
               <h3 className="font-medium text-gray-900">Current Time</h3>
-              <p className="text-sm text-gray-600">{new Date().toLocaleTimeString()}</p>
+              <p className="text-sm text-gray-600">
+                {new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Calcutta' })}
+              </p>
             </div>
           </div>
         </div>

@@ -20,7 +20,9 @@ export default function ConsoleDailyReport() {
   const toast = useToastContext();
   const [reports, setReports] = useState<DailyReport[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedDate, setSelectedDate] = useState(
+    new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Calcutta' })
+  );
   const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
