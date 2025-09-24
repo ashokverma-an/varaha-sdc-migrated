@@ -1,181 +1,221 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FileText, Download, Calendar } from 'lucide-react';
+import { Calendar, Download, RefreshCw } from 'lucide-react';
+import { useToastContext } from '@/context/ToastContext';
+import * as XLSX from 'xlsx';
 
-interface ReportData {
-  date: string;
+interface DailyReport {
   cro_number: string;
   patient_name: string;
-  age: number;
-  gender: string;
-  category: string;
-  scan_type: string;
-  status: string;
+  pre: string;
   start_time: string;
-  end_time: string;
-  duration: string;
+  stop_time: string;
+  status: string;
+  technician_name: string;
+  added_on: string;
 }
 
 export default function ConsoleDailyReport() {
-  const [reports, setReports] = useState<ReportData[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [dateRange, setDateRange] = useState({
-    from: new Date().toISOString().split('T')[0],
-    to: new Date().toISOString().split('T')[0]
-  });
+  const toast = useToastContext();
+  const [reports, setReports] = useState<DailyReport[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     fetchReports();
-  }, []);
+  }, [selectedDate]);
 
   const fetchReports = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/console/daily-report?from=${dateRange.from}&to=${dateRange.to}`);
+      const params = new URLSearchParams({
+        date: selectedDate
+      });
+      
+      const response = await fetch(`/api/console/daily-report?${params}`);
       if (response.ok) {
         const data = await response.json();
         setReports(data.data || []);
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        toast.error(errorData.error || 'Failed to fetch daily report');
       }
     } catch (error) {
-      console.error('Error fetching reports:', error);
+      console.error('Error fetching daily report:', error);
+      toast.error('Error loading data');
     } finally {
       setLoading(false);
     }
   };
 
-  const exportToExcel = () => {
-    const csvContent = [
-      ['Date', 'CRO Number', 'Patient Name', 'Age', 'Gender', 'Category', 'Scan Type', 'Status', 'Start Time', 'End Time', 'Duration'],
-      ...reports.map(report => [
-        report.date,
+  const exportToExcel = async () => {
+    setExporting(true);
+    try {
+      const wb = XLSX.utils.book_new();
+      
+      const headerData = [
+        ['VARAHA DIAGNOSTIC CENTER'],
+        [`CONSOLE DAILY REPORT - ${new Date(selectedDate).toLocaleDateString()}`],
+        [''],
+        ['S.No', 'CRO', 'Patient Name', 'Start Time', 'Stop Time', 'Status', 'Technician', 'Date']
+      ];
+      
+      const exportData = reports.map((report, index) => [
+        index + 1,
         report.cro_number,
-        report.patient_name,
-        report.age,
-        report.gender,
-        report.category,
-        report.scan_type,
-        report.status,
+        `${report.pre} ${report.patient_name}`,
         report.start_time,
-        report.end_time,
-        report.duration
-      ])
-    ].map(row => row.join(',')).join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `console-daily-report-${dateRange.from}-to-${dateRange.to}.csv`;
-    a.click();
-    window.URL.revokeObjectURL(url);
+        report.stop_time,
+        report.status,
+        report.technician_name || '-',
+        report.added_on
+      ]);
+      
+      const ws = XLSX.utils.aoa_to_sheet([...headerData, ...exportData]);
+      ws['!merges'] = [
+        { s: { r: 0, c: 0 }, e: { r: 0, c: 7 } },
+        { s: { r: 1, c: 0 }, e: { r: 1, c: 7 } }
+      ];
+      ws['!cols'] = Array(8).fill({ width: 15 });
+      
+      XLSX.utils.book_append_sheet(wb, ws, 'Daily Report');
+      XLSX.writeFile(wb, `console_daily_report_${selectedDate}.xlsx`);
+      
+    } catch (error) {
+      console.error('Export error:', error);
+      toast.error('Export failed');
+    } finally {
+      setExporting(false);
+    }
   };
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900">Console Daily Report</h1>
-        <div className="flex items-center space-x-2">
-          <FileText className="h-6 w-6 text-red-600" />
-          <span className="text-lg font-medium text-gray-700">Daily Report</span>
-        </div>
-      </div>
-
-      <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
-        <div className="flex items-center space-x-4 mb-6">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 rounded-xl shadow-lg">
+        <div className="flex items-center justify-between">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">From Date</label>
-            <input
-              type="date"
-              value={dateRange.from}
-              onChange={(e) => setDateRange(prev => ({ ...prev, from: e.target.value }))}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-            />
+            <h1 className="text-3xl font-bold mb-2">Daily Report</h1>
+            <p className="text-blue-100">Console daily activity report</p>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">To Date</label>
-            <input
-              type="date"
-              value={dateRange.to}
-              onChange={(e) => setDateRange(prev => ({ ...prev, to: e.target.value }))}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-            />
-          </div>
-          <div className="flex space-x-2 mt-6">
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={exportToExcel}
+              disabled={exporting || reports.length === 0}
+              className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-500 rounded-lg transition-colors disabled:opacity-50"
+            >
+              <Download className="h-5 w-5" />
+              <span>{exporting ? 'Exporting...' : 'Export Excel'}</span>
+            </button>
             <button
               onClick={fetchReports}
               disabled={loading}
-              className="flex items-center space-x-2 px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+              className="flex items-center space-x-2 px-4 py-2 bg-blue-500 hover:bg-blue-400 rounded-lg transition-colors disabled:opacity-50"
             >
-              <Calendar className="h-5 w-5" />
-              <span>{loading ? 'Loading...' : 'Generate Report'}</span>
-            </button>
-            <button
-              onClick={exportToExcel}
-              disabled={reports.length === 0}
-              className="flex items-center space-x-2 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
-            >
-              <Download className="h-5 w-5" />
-              <span>Export Excel</span>
+              <RefreshCw className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
+              <span>Refresh</span>
             </button>
           </div>
         </div>
+      </div>
+
+      {/* Date Filter */}
+      <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+        <div className="flex items-center space-x-4">
+          <div className="relative">
+            <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+          <div className="text-sm text-gray-600">
+            Total Records: {reports.length}
+          </div>
+        </div>
+      </div>
+
+      {/* Table */}
+      <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <h2 className="text-xl font-semibold text-gray-900">Console Activities</h2>
+          <p className="text-sm text-gray-600 mt-1">
+            Report for {new Date(selectedDate).toLocaleDateString()}
+          </p>
+        </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse border border-gray-300">
-            <thead>
-              <tr className="bg-red-50">
-                <th className="border border-gray-300 px-4 py-2 text-left">S.No</th>
-                <th className="border border-gray-300 px-4 py-2 text-left">Date</th>
-                <th className="border border-gray-300 px-4 py-2 text-left">CRO Number</th>
-                <th className="border border-gray-300 px-4 py-2 text-left">Patient Name</th>
-                <th className="border border-gray-300 px-4 py-2 text-left">Age/Gender</th>
-                <th className="border border-gray-300 px-4 py-2 text-left">Category</th>
-                <th className="border border-gray-300 px-4 py-2 text-left">Scan Type</th>
-                <th className="border border-gray-300 px-4 py-2 text-left">Status</th>
-                <th className="border border-gray-300 px-4 py-2 text-left">Duration</th>
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sr. No.</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CRO</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient Name</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start Time</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stop Time</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Technician</th>
               </tr>
             </thead>
-            <tbody>
-              {reports.map((report, index) => (
-                <tr key={index} className="hover:bg-gray-50">
-                  <td className="border border-gray-300 px-4 py-2">{index + 1}</td>
-                  <td className="border border-gray-300 px-4 py-2">{report.date}</td>
-                  <td className="border border-gray-300 px-4 py-2 font-medium text-blue-600">
-                    {report.cro_number}
+            <tbody className="bg-white divide-y divide-gray-200">
+              {loading ? (
+                <tr>
+                  <td colSpan={7} className="px-6 py-12 text-center">
+                    <div className="flex items-center justify-center space-x-2">
+                      <RefreshCw className="h-5 w-5 animate-spin text-blue-500" />
+                      <span className="text-gray-500">Loading daily report...</span>
+                    </div>
                   </td>
-                  <td className="border border-gray-300 px-4 py-2">{report.patient_name}</td>
-                  <td className="border border-gray-300 px-4 py-2">{report.age}/{report.gender}</td>
-                  <td className="border border-gray-300 px-4 py-2">
-                    <span className={`px-2 py-1 rounded text-xs ${
-                      report.category === 'OPD FREE' || report.category === 'IPD FREE' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-blue-100 text-blue-800'
-                    }`}>
-                      {report.category}
-                    </span>
-                  </td>
-                  <td className="border border-gray-300 px-4 py-2">{report.scan_type}</td>
-                  <td className="border border-gray-300 px-4 py-2">
-                    <span className={`px-2 py-1 rounded text-xs ${
-                      report.status === 'Completed' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {report.status}
-                    </span>
-                  </td>
-                  <td className="border border-gray-300 px-4 py-2">{report.duration || '--'}</td>
                 </tr>
-              ))}
+              ) : reports.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
+                    No activities found for selected date
+                  </td>
+                </tr>
+              ) : (
+                reports.map((report, index) => (
+                  <tr key={`${report.cro_number}-${index}`} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {index + 1}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-blue-600">
+                        {report.cro_number}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">
+                        {report.pre} {report.patient_name}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {report.start_time || '-'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {report.stop_time || '-'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                        report.status === 'Complete' 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {report.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {report.technician_name || '-'}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
-          
-          {reports.length === 0 && (
-            <div className="text-center py-8 text-gray-500">
-              {loading ? 'Loading reports...' : 'No reports found for selected date range'}
-            </div>
-          )}
         </div>
       </div>
     </div>

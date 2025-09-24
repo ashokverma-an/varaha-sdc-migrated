@@ -1,293 +1,341 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Clock, Play, Square, CheckCircle, AlertCircle, ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { Clock, User, Calendar, Phone, ArrowLeft } from 'lucide-react';
+import { useToastContext } from '@/context/ToastContext';
+import { useRouter } from 'next/navigation';
 
 interface PatientData {
-  p_id: number;
-  cro_number: string;
-  patient_name: string;
-  age: number;
-  gender: string;
-  mobile: string;
-  dname: string;
-  category: string;
-  date: string;
-  allot_date: string;
-  scan_type: string;
-  scans: ScanItem[];
+  patient: {
+    cro: string;
+    patient_name: string;
+    pre: string;
+    age: number;
+    contact_number: string;
+    allot_date: string;
+    category: string;
+    doctor_name: string;
+  };
+  scans: Array<{
+    scan_id: number;
+    s_name: string;
+    status: string;
+  }>;
+  console: {
+    stop_time: string;
+  } | null;
 }
 
-interface ScanItem {
-  s_id: number;
-  s_name: string;
-  status: 'Pending' | 'Complete';
-}
-
-export default function PatientConsole() {
-  const params = useParams();
-  const cro = params.cro as string;
-  
-  const [patient, setPatient] = useState<PatientData | null>(null);
+export default function ConsolePatient({ params }: { params: { cro: string } }) {
+  const toast = useToastContext();
+  const router = useRouter();
+  const [patientData, setPatientData] = useState<PatientData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [timer, setTimer] = useState({ start: '', stop: '', running: false, elapsed: 0 });
+  const [startTime, setStartTime] = useState('');
+  const [stopTime, setStopTime] = useState('');
   const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString());
+  const [formData, setFormData] = useState({
+    examination_id: '',
+    number_scan: '',
+    number_film: '',
+    number_contrast: '',
+    technician_name: '',
+    nursing_name: '',
+    issue_cd: 'NO',
+    remark: ''
+  });
+
+  const cro = decodeURIComponent(params.cro);
 
   useEffect(() => {
-    if (cro) {
-      fetchPatientData();
-    }
-  }, [cro]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
+    fetchPatientData();
+    const timer = setInterval(() => {
       setCurrentTime(new Date().toLocaleTimeString());
-      if (timer.running) {
-        setTimer(prev => ({ ...prev, elapsed: prev.elapsed + 1 }));
-      }
     }, 1000);
-    return () => clearInterval(interval);
-  }, [timer.running]);
+    return () => clearInterval(timer);
+  }, []);
 
   const fetchPatientData = async () => {
+    setLoading(true);
     try {
-      const response = await fetch(`/api/console/patient/${cro}`);
+      const response = await fetch(`/api/console/patient/${encodeURIComponent(cro)}`);
       if (response.ok) {
         const data = await response.json();
-        setPatient(data.data);
+        setPatientData(data.data);
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        toast.error(errorData.error || 'Failed to fetch patient data');
       }
     } catch (error) {
-      console.error('Error fetching patient:', error);
+      console.error('Error fetching patient data:', error);
+      toast.error('Error loading patient data');
     } finally {
       setLoading(false);
     }
   };
 
-  const startTimer = () => {
-    const now = new Date().toLocaleTimeString();
-    setTimer({ start: now, stop: '', running: true, elapsed: 0 });
-  };
-
-  const stopTimer = () => {
-    const now = new Date().toLocaleTimeString();
-    setTimer(prev => ({ ...prev, stop: now, running: false }));
-  };
-
-  const toggleScanStatus = async (scanId: number, currentStatus: string) => {
-    const newStatus = currentStatus === 'Pending' ? 'Complete' : 'Pending';
-    
+  const handleScanStatusChange = async (scanId: number, status: string) => {
     try {
-      const response = await fetch(`/api/console/scan-status`, {
-        method: 'PUT',
+      const response = await fetch('/api/console/update-scan-status', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cro, scanId, status: newStatus })
+        body: JSON.stringify({
+          scan_id: scanId,
+          patient_id: cro,
+          status: status
+        })
       });
-      
+
       if (response.ok) {
-        fetchPatientData();
+        fetchPatientData(); // Refresh data
+        toast.success('Scan status updated');
+      } else {
+        toast.error('Failed to update scan status');
       }
     } catch (error) {
       console.error('Error updating scan status:', error);
+      toast.error('Error updating scan status');
     }
   };
 
-  const formatElapsedTime = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  const handleStartTimer = () => {
+    setStartTime(currentTime);
+  };
+
+  const handleStopTimer = () => {
+    setStopTime(currentTime);
+  };
+
+  const handleSubmit = async (status: string) => {
+    try {
+      const response = await fetch('/api/console/save-console', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cro,
+          start_time: startTime,
+          stop_time: stopTime,
+          status,
+          ...formData
+        })
+      });
+
+      if (response.ok) {
+        toast.success('Console data saved successfully');
+        router.push('/console');
+      } else {
+        toast.error('Failed to save console data');
+      }
+    } catch (error) {
+      console.error('Error saving console data:', error);
+      toast.error('Error saving console data');
+    }
   };
 
   if (loading) {
     return (
       <div className="p-6 flex items-center justify-center">
-        <div className="text-lg">Loading patient data...</div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading patient data...</p>
+        </div>
       </div>
     );
   }
 
-  if (!patient) {
+  if (!patientData) {
     return (
-      <div className="p-6">
-        <div className="text-center text-red-600">Patient not found</div>
-        <Link href="/console" className="mt-4 inline-flex items-center text-blue-600 hover:text-blue-800">
-          <ArrowLeft className="h-4 w-4 mr-1" />
-          Back to Console
-        </Link>
+      <div className="p-6 text-center">
+        <p className="text-red-600">Patient not found</p>
+        <button
+          onClick={() => router.push('/console')}
+          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+        >
+          Back to Queue
+        </button>
       </div>
     );
   }
+
+  const allScansComplete = patientData.scans.every(scan => scan.status === 'complete');
+  const pendingScans = patientData.scans.filter(scan => scan.status === 'pending').length;
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Link
-            href="/console"
-            className="flex items-center space-x-2 px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span>Back</span>
-          </Link>
-          <h1 className="text-3xl font-bold text-gray-900">Patient Console</h1>
+      {/* Header */}
+      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 rounded-xl shadow-lg">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={() => router.push('/console')}
+              className="p-2 bg-blue-500 hover:bg-blue-400 rounded-lg transition-colors"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <div>
+              <h1 className="text-3xl font-bold mb-2">Console - {cro}</h1>
+              <p className="text-blue-100">Patient examination console</p>
+            </div>
+          </div>
         </div>
-        <div className="text-lg font-medium text-gray-700">{currentTime}</div>
       </div>
 
-      <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+      {/* Patient Details */}
+      <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Patient History</h2>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Console Date Of Examination</label>
-            <p className="text-gray-900 font-medium">{patient.allot_date || patient.date}</p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Time</label>
-            <p className="text-gray-900">{patient.date}</p>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">CRO Number</label>
-            <p className="text-gray-900 font-medium text-blue-600">{patient.cro_number}</p>
+            <input
+              type="text"
+              value={patientData.patient.cro}
+              readOnly
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50"
+            />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-            <p className="text-gray-900">{patient.patient_name}</p>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Patient Name</label>
+            <input
+              type="text"
+              value={`${patientData.patient.pre} ${patientData.patient.patient_name}`}
+              readOnly
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50"
+            />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Age</label>
-            <p className="text-gray-900">{patient.age}Year</p>
+            <input
+              type="text"
+              value={patientData.patient.age}
+              readOnly
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50"
+            />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Referring Physician</label>
-            <p className="text-gray-900">{patient.dname || 'MDM'}</p>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Doctor</label>
+            <input
+              type="text"
+              value={patientData.patient.doctor_name}
+              readOnly
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50"
+            />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-            <p className="text-gray-900">
-              <span className={`px-2 py-1 rounded text-sm ${
-                patient.category === 'OPD FREE' || patient.category === 'IPD FREE' 
-                  ? 'bg-green-100 text-green-800' 
-                  : 'bg-blue-100 text-blue-800'
-              }`}>
-                {patient.category}
-              </span>
-            </p>
+            <input
+              type="text"
+              value={patientData.patient.category}
+              readOnly
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50"
+            />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Contact Number</label>
-            <p className="text-gray-900">{patient.mobile}</p>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Contact</label>
+            <input
+              type="text"
+              value={patientData.patient.contact_number}
+              readOnly
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50"
+            />
           </div>
         </div>
       </div>
 
-      <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+      {/* Timer */}
+      <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Timer</h2>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Start Time</label>
-            <p className="text-gray-900 font-medium">{timer.start || '--:--:--'}</p>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Start Time</label>
+            <button
+              onClick={handleStartTimer}
+              className="w-full px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-lg font-mono"
+            >
+              {startTime || currentTime}
+            </button>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Stop Time</label>
-            <p className="text-gray-900 font-medium">{timer.stop || '--:--:--'}</p>
-          </div>
-          <div className="flex space-x-2">
-            {!timer.running ? (
-              <button
-                onClick={startTimer}
-                className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-              >
-                <Play className="h-4 w-4" />
-                <span>Start</span>
-              </button>
-            ) : (
-              <button
-                onClick={stopTimer}
-                className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-              >
-                <Square className="h-4 w-4" />
-                <span>Stop</span>
-              </button>
-            )}
+            <label className="block text-sm font-medium text-gray-700 mb-2">Stop Time</label>
+            <button
+              onClick={handleStopTimer}
+              className="w-full px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-lg font-mono"
+            >
+              {stopTime || currentTime}
+            </button>
           </div>
         </div>
-        
-        {timer.running && (
-          <div className="mt-4 text-center">
-            <div className="text-2xl font-bold text-blue-600">
-              Elapsed: {formatElapsedTime(timer.elapsed)}
-            </div>
-          </div>
-        )}
       </div>
 
-      <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+      {/* MRI Details */}
+      <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">MRI Details</h2>
-        
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse border border-gray-300">
-            <thead>
-              <tr className="bg-red-50">
-                <th className="border border-gray-300 px-4 py-2 text-left">S.No</th>
-                <th className="border border-gray-300 px-4 py-2 text-left">MRI NAME</th>
-                <th className="border border-gray-300 px-4 py-2 text-center">Action</th>
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">S.No</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">MRI NAME</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-500">Action</th>
               </tr>
             </thead>
-            <tbody>
-              {patient.scans?.map((scan, index) => (
-                <tr key={scan.s_id} className="hover:bg-gray-50">
-                  <td className="border border-gray-300 px-4 py-2">{index + 1}</td>
-                  <td className="border border-gray-300 px-4 py-2">{scan.s_name}</td>
-                  <td className="border border-gray-300 px-4 py-2 text-center">
-                    <div className="flex items-center justify-center space-x-2">
-                      <button
-                        onClick={() => toggleScanStatus(scan.s_id, scan.status)}
-                        className={`flex items-center space-x-1 px-3 py-1 rounded text-sm transition-colors ${
-                          scan.status === 'Pending'
-                            ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
-                            : 'bg-green-100 text-green-800 hover:bg-green-200'
-                        }`}
-                      >
-                        {scan.status === 'Pending' ? (
-                          <>
-                            <AlertCircle className="h-4 w-4" />
-                            <span>Pending</span>
-                          </>
-                        ) : (
-                          <>
-                            <CheckCircle className="h-4 w-4" />
-                            <span>Complete</span>
-                          </>
-                        )}
-                      </button>
-                      
-                      <button
-                        onClick={() => toggleScanStatus(scan.s_id, scan.status)}
-                        className={`px-3 py-1 rounded text-sm transition-colors ${
-                          scan.status === 'Complete'
-                            ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
-                            : 'bg-green-100 text-green-800 hover:bg-green-200'
-                        }`}
-                      >
-                        {scan.status === 'Complete' ? 'Pending' : 'Complete'}
-                      </button>
+            <tbody className="divide-y divide-gray-200">
+              {patientData.scans.map((scan, index) => (
+                <tr key={scan.scan_id}>
+                  <td className="px-4 py-4 text-sm text-gray-900">{index + 1}</td>
+                  <td className="px-4 py-4 text-sm font-medium text-gray-900">{scan.s_name}</td>
+                  <td className="px-4 py-4">
+                    <div className="flex space-x-4">
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          name={`scan_${scan.scan_id}`}
+                          checked={scan.status === 'pending'}
+                          onChange={() => handleScanStatusChange(scan.scan_id, 'pending')}
+                          className="mr-2"
+                        />
+                        <span className="text-sm text-gray-700">Pending</span>
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          name={`scan_${scan.scan_id}`}
+                          checked={scan.status === 'complete'}
+                          onChange={() => handleScanStatusChange(scan.scan_id, 'complete')}
+                          className="mr-2"
+                        />
+                        <span className="text-sm text-gray-700">Complete</span>
+                      </label>
                     </div>
                   </td>
                 </tr>
-              )) || (
-                <tr>
-                  <td colSpan={3} className="border border-gray-300 px-4 py-8 text-center text-gray-500">
-                    No scans found for this patient
-                  </td>
-                </tr>
-              )}
+              ))}
             </tbody>
           </table>
         </div>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex justify-end space-x-4">
+        <button
+          onClick={() => handleSubmit('Pending')}
+          disabled={allScansComplete}
+          className="px-6 py-3 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {pendingScans > 0 ? 'Pending' : 'Complete'}
+        </button>
+        <button
+          onClick={() => handleSubmit('Complete')}
+          disabled={!allScansComplete}
+          className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Complete
+        </button>
+        <button
+          onClick={() => handleSubmit('Recall')}
+          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          Recall
+        </button>
       </div>
     </div>
   );
