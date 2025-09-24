@@ -72,7 +72,7 @@ function PatientQueue() {
   const paginatedPatients = filteredPatients.slice(startIndex, startIndex + itemsPerPage);
 
   const viewPatient = (cro: string) => {
-    window.location.href = `/console/patient/${encodeURIComponent(cro)}`;
+    window.open(`https://varahasdc.co.in/sdc_admin/console/consol.php?cro=${cro}`, '_blank');
   };
 
   return (
