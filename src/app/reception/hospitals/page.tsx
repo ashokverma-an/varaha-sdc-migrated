@@ -22,7 +22,7 @@ export default function ReceptionHospitals() {
   const [itemsPerPage] = useState(10);
   const [showModal, setShowModal] = useState(false);
   const [editingHospital, setEditingHospital] = useState<HospitalData | null>(null);
-  const [formData, setFormData] = useState({ h_name: '', h_short: '', h_address: '', h_contact: '', h_type: 'General' });
+  const [formData, setFormData] = useState({ h_name: '', h_short: '', h_type: 'Private', h_address: '', h_contact: '' });
 
   useEffect(() => {
     fetchHospitals();
@@ -44,13 +44,13 @@ export default function ReceptionHospitals() {
 
   const handleAdd = () => {
     setEditingHospital(null);
-    setFormData({ h_name: '', h_short: '', h_address: '', h_contact: '', h_type: 'General' });
+    setFormData({ h_name: '', h_short: '', h_type: 'Private', h_address: '', h_contact: '' });
     setShowModal(true);
   };
 
   const handleEdit = (hospital: HospitalData) => {
     setEditingHospital(hospital);
-    setFormData({ h_name: hospital.h_name, h_short: hospital.h_short, h_address: hospital.h_address, h_contact: hospital.h_contact, h_type: hospital.h_type });
+    setFormData({ h_name: hospital.h_name, h_short: hospital.h_short || '', h_type: hospital.h_type || 'Private', h_address: hospital.h_address || '', h_contact: hospital.h_contact || '' });
     setShowModal(true);
   };
 
@@ -139,11 +139,11 @@ export default function ReceptionHospitals() {
             <thead>
               <tr className="bg-blue-50">
                 <th className="border border-gray-300 px-4 py-2 text-left">S.No</th>
-                <th className="border border-gray-300 px-4 py-2 text-left">Hospital Name</th>
+                <th className="border border-gray-300 px-4 py-2 text-left">Hospital</th>
                 <th className="border border-gray-300 px-4 py-2 text-left">Short Name</th>
-                <th className="border border-gray-300 px-4 py-2 text-left">Address</th>
-                <th className="border border-gray-300 px-4 py-2 text-left">Contact</th>
                 <th className="border border-gray-300 px-4 py-2 text-left">Type</th>
+                <th className="border border-gray-300 px-4 py-2 text-left">Contact</th>
+                <th className="border border-gray-300 px-4 py-2 text-left">Address</th>
                 <th className="border border-gray-300 px-4 py-2 text-left">Actions</th>
               </tr>
             </thead>
@@ -152,10 +152,16 @@ export default function ReceptionHospitals() {
                 <tr key={hospital.h_id} className="hover:bg-gray-50">
                   <td className="border border-gray-300 px-4 py-2">{startIndex + index + 1}</td>
                   <td className="border border-gray-300 px-4 py-2 font-medium">{hospital.h_name}</td>
-                  <td className="border border-gray-300 px-4 py-2">{hospital.h_short}</td>
-                  <td className="border border-gray-300 px-4 py-2">{hospital.h_address}</td>
-                  <td className="border border-gray-300 px-4 py-2">{hospital.h_contact}</td>
-                  <td className="border border-gray-300 px-4 py-2">{hospital.h_type}</td>
+                  <td className="border border-gray-300 px-4 py-2">{hospital.h_short || '-'}</td>
+                  <td className="border border-gray-300 px-4 py-2">
+                    <span className={`px-2 py-1 rounded text-xs ${
+                      hospital.h_type === 'Private' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
+                    }`}>
+                      {hospital.h_type || 'Private'}
+                    </span>
+                  </td>
+                  <td className="border border-gray-300 px-4 py-2 text-center">{hospital.h_contact || '-'}</td>
+                  <td className="border border-gray-300 px-4 py-2 text-center">{hospital.h_address || '-'}</td>
                   <td className="border border-gray-300 px-4 py-2">
                     <div className="flex space-x-2">
                       <button onClick={() => handleEdit(hospital)} className="p-1 text-blue-600 hover:bg-blue-100 rounded">
@@ -216,45 +222,78 @@ export default function ReceptionHospitals() {
               </button>
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <input
-                type="text"
-                placeholder="Hospital Name"
-                value={formData.h_name}
-                onChange={(e) => setFormData({...formData, h_name: e.target.value})}
-                className="w-full px-3 py-2 border rounded-lg"
-                required
-              />
-              <input
-                type="text"
-                placeholder="Short Name"
-                value={formData.h_short}
-                onChange={(e) => setFormData({...formData, h_short: e.target.value})}
-                className="w-full px-3 py-2 border rounded-lg"
-                required
-              />
-              <textarea
-                placeholder="Address"
-                value={formData.h_address}
-                onChange={(e) => setFormData({...formData, h_address: e.target.value})}
-                className="w-full px-3 py-2 border rounded-lg"
-                rows={3}
-              />
-              <input
-                type="text"
-                placeholder="Contact"
-                value={formData.h_contact}
-                onChange={(e) => setFormData({...formData, h_contact: e.target.value})}
-                className="w-full px-3 py-2 border rounded-lg"
-              />
-              <select
-                value={formData.h_type}
-                onChange={(e) => setFormData({...formData, h_type: e.target.value})}
-                className="w-full px-3 py-2 border rounded-lg"
-              >
-                <option value="General">General</option>
-                <option value="Specialty">Specialty</option>
-                <option value="Emergency">Emergency</option>
-              </select>
+              <div className="form-group">
+                <label className="form-label block text-sm font-medium text-gray-700 mb-1">Hospital Full Name</label>
+                <input
+                  type="text"
+                  name="h_name"
+                  value={formData.h_name}
+                  onChange={(e) => setFormData({...formData, h_name: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Hospital Name"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label block text-sm font-medium text-gray-700 mb-1">Hospital Short Name</label>
+                <input
+                  type="text"
+                  name="h_short"
+                  value={formData.h_short}
+                  onChange={(e) => setFormData({...formData, h_short: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Hospital Short Name"
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label block text-sm font-medium text-gray-700 mb-2">Hospital Type</label>
+                <div className="flex space-x-4">
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="h_type"
+                      value="Private"
+                      checked={formData.h_type === 'Private'}
+                      onChange={(e) => setFormData({...formData, h_type: e.target.value})}
+                      className="mr-2"
+                    />
+                    <span className="text-sm">Private</span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="h_type"
+                      value="Government"
+                      checked={formData.h_type === 'Government'}
+                      onChange={(e) => setFormData({...formData, h_type: e.target.value})}
+                      className="mr-2"
+                    />
+                    <span className="text-sm">Government</span>
+                  </label>
+                </div>
+              </div>
+              <div className="form-group">
+                <label className="form-label block text-sm font-medium text-gray-700 mb-1">Address</label>
+                <input
+                  type="text"
+                  name="h_address"
+                  value={formData.h_address}
+                  onChange={(e) => setFormData({...formData, h_address: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Address"
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                <input
+                  type="text"
+                  name="h_contact"
+                  value={formData.h_contact}
+                  onChange={(e) => setFormData({...formData, h_contact: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Contact"
+                />
+              </div>
               <div className="flex space-x-2">
                 <button type="submit" className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
                   {editingHospital ? 'Update' : 'Create'}
