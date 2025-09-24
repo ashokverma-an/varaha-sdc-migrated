@@ -35,10 +35,10 @@ export async function GET(request: NextRequest) {
     `);
 
     return NextResponse.json({
-      todayPatients: todayPatients[0].count,
-      completedToday: completedToday[0].count,
-      pendingQueue: pendingQueue[0].count,
-      totalProcessed: totalProcessed[0].count
+      todayPatients: (todayPatients as any)[0].count,
+      completedToday: (completedToday as any)[0].count,
+      pendingQueue: (pendingQueue as any)[0].count,
+      totalProcessed: (totalProcessed as any)[0].count
     });
 
   } catch (error: any) {
