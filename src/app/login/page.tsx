@@ -25,6 +25,7 @@ export default function Login() {
     { id: 'console', name: 'Console', icon: Monitor, color: 'from-violet-500 to-violet-600', bgColor: 'bg-violet-50', textColor: 'text-violet-700', username: 'console', password: 'Admin@321' },
   ];
 
+  
   const handleRoleSelect = (role: any) => {
     setSelectedRole(role.id);
     setFormData({ username: role.username, password: role.password });
