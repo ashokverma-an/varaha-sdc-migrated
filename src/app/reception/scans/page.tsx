@@ -23,7 +23,14 @@ export default function ReceptionScans() {
   const [itemsPerPage] = useState(10);
   const [showModal, setShowModal] = useState(false);
   const [editingScan, setEditingScan] = useState<ScanData | null>(null);
-  const [formData, setFormData] = useState({ s_name: '', n_o_films: 0, contrass: 0, total_scan: 1, estimate_time: '', charges: 0 });
+  const [formData, setFormData] = useState({ 
+    s_name: '', 
+    n_o_films: 0, 
+    contrass: 0, 
+    total_scan: 1, 
+    estimate_time: '', 
+    charges: 0 
+  });
 
   useEffect(() => {
     fetchScans();
@@ -51,7 +58,14 @@ export default function ReceptionScans() {
 
   const handleEdit = (scan: ScanData) => {
     setEditingScan(scan);
-    setFormData({ s_name: scan.s_name, n_o_films: scan.n_o_films, contrass: scan.contrass, total_scan: scan.total_scan, estimate_time: scan.estimate_time, charges: scan.charges });
+    setFormData({ 
+      s_name: scan.s_name, 
+      n_o_films: scan.n_o_films, 
+      contrass: scan.contrass, 
+      total_scan: scan.total_scan, 
+      estimate_time: scan.estimate_time, 
+      charges: scan.charges 
+    });
     setShowModal(true);
   };
 
@@ -137,32 +151,22 @@ export default function ReceptionScans() {
               <tr className="bg-blue-50">
                 <th className="border border-gray-300 px-4 py-2 text-left">S.No</th>
                 <th className="border border-gray-300 px-4 py-2 text-left">Scan Name</th>
-                <th className="border border-gray-300 px-4 py-2 text-left">No. of Films</th>
-                <th className="border border-gray-300 px-4 py-2 text-left">Contrast</th>
+                <th className="border border-gray-300 px-4 py-2 text-left">Films</th>
                 <th className="border border-gray-300 px-4 py-2 text-left">Total Scan</th>
-                <th className="border border-gray-300 px-4 py-2 text-left">Estimate Time</th>
-                <th className="border border-gray-300 px-4 py-2 text-left">Charges (₹)</th>
+                <th className="border border-gray-300 px-4 py-2 text-left">Time</th>
+                <th className="border border-gray-300 px-4 py-2 text-left">Amount</th>
                 <th className="border border-gray-300 px-4 py-2 text-left">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {paginatedScans.map((scan, index) => (
+              {[...paginatedScans].reverse().map((scan, index) => (
                 <tr key={scan.s_id} className="hover:bg-gray-50">
-                  <td className="border border-gray-300 px-4 py-2">{startIndex + index + 1}</td>
+                  <td className="border border-gray-300 px-4 py-2">{paginatedScans.length - index}</td>
                   <td className="border border-gray-300 px-4 py-2 font-medium">{scan.s_name}</td>
                   <td className="border border-gray-300 px-4 py-2 text-center">{scan.n_o_films}</td>
-                  <td className="border border-gray-300 px-4 py-2 text-center">
-                    <span className={`px-2 py-1 rounded text-xs ${
-                      scan.contrass ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                    }`}>
-                      {scan.contrass ? 'Yes' : 'No'}
-                    </span>
-                  </td>
                   <td className="border border-gray-300 px-4 py-2 text-center">{scan.total_scan}</td>
-                  <td className="border border-gray-300 px-4 py-2">{scan.estimate_time}</td>
-                  <td className="border border-gray-300 px-4 py-2 text-right font-medium">
-                    ₹{scan.charges?.toLocaleString() || '0'}
-                  </td>
+                  <td className="border border-gray-300 px-4 py-2 text-center">{scan.estimate_time}</td>
+                  <td className="border border-gray-300 px-4 py-2 text-center">{scan.charges}</td>
                   <td className="border border-gray-300 px-4 py-2">
                     <div className="flex space-x-2">
                       <button onClick={() => handleEdit(scan)} className="p-1 text-blue-600 hover:bg-blue-100 rounded">
@@ -223,43 +227,89 @@ export default function ReceptionScans() {
               </button>
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <input
-                type="text"
-                placeholder="Scan Name"
-                value={formData.s_name}
-                onChange={(e) => setFormData({...formData, s_name: e.target.value})}
-                className="w-full px-3 py-2 border rounded-lg"
-                required
-              />
-              <input
-                type="number"
-                placeholder="Number of Films"
-                value={formData.n_o_films}
-                onChange={(e) => setFormData({...formData, n_o_films: parseInt(e.target.value) || 0})}
-                className="w-full px-3 py-2 border rounded-lg"
-              />
-              <select
-                value={formData.contrass}
-                onChange={(e) => setFormData({...formData, contrass: parseInt(e.target.value)})}
-                className="w-full px-3 py-2 border rounded-lg"
-              >
-                <option value={0}>No Contrast</option>
-                <option value={1}>With Contrast</option>
-              </select>
-              <input
-                type="text"
-                placeholder="Estimate Time (e.g., 30 mins)"
-                value={formData.estimate_time}
-                onChange={(e) => setFormData({...formData, estimate_time: e.target.value})}
-                className="w-full px-3 py-2 border rounded-lg"
-              />
-              <input
-                type="number"
-                placeholder="Charges"
-                value={formData.charges}
-                onChange={(e) => setFormData({...formData, charges: parseFloat(e.target.value) || 0})}
-                className="w-full px-3 py-2 border rounded-lg"
-              />
+              <div className="form-group" style={{padding: '10px'}}>
+                <label className="form-label block text-sm font-medium text-gray-700 mb-1">Scan Name</label>
+                <input
+                  type="text"
+                  name="s_name"
+                  value={formData.s_name}
+                  onChange={(e) => setFormData({...formData, s_name: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Scan Name"
+                  required
+                />
+              </div>
+              <div className="form-group" style={{padding: '10px'}}>
+                <label className="form-label block text-sm font-medium text-gray-700 mb-1">No of Films</label>
+                <input
+                  type="number"
+                  name="n_o_films"
+                  value={formData.n_o_films}
+                  onChange={(e) => setFormData({...formData, n_o_films: parseInt(e.target.value) || 0})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Films"
+                />
+              </div>
+              <div className="form-group" style={{padding: '10px'}}>
+                <label className="form-label block text-sm font-medium text-gray-700 mb-1">Contrast</label>
+                <input
+                  type="number"
+                  name="contrass"
+                  value={formData.contrass}
+                  onChange={(e) => setFormData({...formData, contrass: parseInt(e.target.value) || 0})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Contrast"
+                />
+              </div>
+              <div className="form-group" style={{padding: '10px'}}>
+                <label className="form-label block text-sm font-medium text-gray-700 mb-1">Total Scan</label>
+                <input
+                  type="number"
+                  name="total_scan"
+                  value={formData.total_scan}
+                  onChange={(e) => setFormData({...formData, total_scan: parseInt(e.target.value) || 1})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Total Scan"
+                />
+              </div>
+              <div className="form-group" style={{padding: '10px'}}>
+                <label className="form-label block text-sm font-medium text-gray-700 mb-1">Estimate Time</label>
+                <select
+                  name="estimate_time"
+                  value={formData.estimate_time}
+                  onChange={(e) => setFormData({...formData, estimate_time: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Please select</option>
+                  <option value="1 Min">1 Min</option>
+                  <option value="2 Min">2 Min</option>
+                  <option value="3 Min">3 Min</option>
+                  <option value="4 Min">4 Min</option>
+                  <option value="5 Min">5 Min</option>
+                  <option value="10 Min">10 Min</option>
+                  <option value="15 Min">15 Min</option>
+                  <option value="20 Min">20 Min</option>
+                  <option value="25 Min">25 Min</option>
+                  <option value="30 Min">30 Min</option>
+                  <option value="35 Min">35 Min</option>
+                  <option value="40 Min">40 Min</option>
+                  <option value="45 Min">45 Min</option>
+                  <option value="50 Min">50 Min</option>
+                  <option value="55 Min">55 Min</option>
+                  <option value="60 Min">60 Min</option>
+                </select>
+              </div>
+              <div className="form-group" style={{padding: '10px'}}>
+                <label className="form-label block text-sm font-medium text-gray-700 mb-1">Charges</label>
+                <input
+                  type="number"
+                  name="charges"
+                  value={formData.charges}
+                  onChange={(e) => setFormData({...formData, charges: parseFloat(e.target.value) || 0})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Charges"
+                />
+              </div>
               <div className="flex space-x-2">
                 <button type="submit" className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
                   {editingScan ? 'Update' : 'Create'}
