@@ -18,11 +18,15 @@ export async function GET(request: NextRequest) {
 
     const data = await response.json();
     return NextResponse.json(data);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching console queue:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch console queue' },
-      { status: 500 }
-    );
+    return NextResponse.json({
+      error: 'Failed to fetch console queue data',
+      details: error.message,
+      stack: error.stack,
+      query: Object.fromEntries(new URL(request.url).searchParams),
+      fetchUrl: `https://varahasdc.co.in/api/console/queue?date=${searchParams.get('date') || new Date().toISOString().split('T')[0]}`,
+      errorType: 'External API Error'
+    }, { status: 500 });
   }
 }
