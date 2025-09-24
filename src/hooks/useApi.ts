@@ -86,14 +86,3 @@ export function useConsoleApi() {
   return { ...state, getStats, getQueue };
 }
 
-export function useAccountsApi() {
-  const { execute, ...state } = useApi();
-
-  const getStats = useCallback(() => 
-    execute(() => api.getAccountsStats()), [execute]);
-
-  const getTransactions = useCallback((fromDate?: string, toDate?: string) => 
-    execute(() => api.getAccountsTransactions(fromDate, toDate)), [execute]);
-
-  return { ...state, getStats, getTransactions };
-}

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ArrowLeft, User, Phone, MapPin, Calendar, FileText, Save, Printer } from 'lucide-react';
+import { ArrowLeft, User, FileText, Save } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useToastContext } from '@/context/ToastContext';
 
@@ -73,7 +73,7 @@ export default function NursingDetail() {
       const month = date.toLocaleDateString('en-US', { month: 'short' });
       const year = date.getFullYear();
       return `${day}-${month}-${year}`;
-    } catch (error) {
+    } catch {
       return '-';
     }
   };
@@ -81,7 +81,6 @@ export default function NursingDetail() {
   const formatDateForInput = (dateString: string) => {
     if (!dateString || dateString === '0000-00-00') return '';
     try {
-      let date;
       if (dateString.includes('-') && dateString.split('-').length === 3) {
         const parts = dateString.split('-');
         if (parts[0].length === 4) {
@@ -92,10 +91,10 @@ export default function NursingDetail() {
           return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
         }
       }
-      date = new Date(dateString);
+      const date = new Date(dateString);
       if (isNaN(date.getTime())) return '';
       return date.toISOString().split('T')[0];
-    } catch (error) {
+    } catch {
       return '';
     }
   };
@@ -136,8 +135,7 @@ export default function NursingDetail() {
         toast.error('Patient not found');
         router.push('/doctor/ct-scan-doctor-list');
       }
-    } catch (error) {
-      console.error('Error fetching patient detail:', error);
+    } catch {
       toast.error('Error loading patient details');
     } finally {
       setLoading(false);
@@ -170,105 +168,14 @@ export default function NursingDetail() {
       } else {
         toast.error('Failed to save nursing data');
       }
-    } catch (error) {
-      console.error('Error saving nursing data:', error);
+    } catch {
       toast.error('Error saving nursing data');
     } finally {
       setSaving(false);
     }
   };
 
-  const handlePrint = () => {
-    if (!nursingData) return;
-    const patient = nursingData.patient;
 
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) return;
-
-    const printHTML = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Patient Report - ${patient.cro}</title>
-        <style>
-          body { font-family: Arial, sans-serif; margin: 20px; }
-          .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
-          .logo { font-size: 24px; font-weight: bold; color: #2563eb; }
-          .details { margin: 10px 0; }
-          .row { display: flex; justify-content: space-between; margin: 5px 0; }
-          .label { font-weight: bold; }
-          .report-section { margin-top: 20px; border: 1px solid #ccc; padding: 15px; }
-          .footer { margin-top: 30px; text-align: center; font-size: 12px; }
-          @media print { body { margin: 0; } }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          <div class="logo">VARAHA DIAGNOSTIC CENTER</div>
-          <div>Patient Medical Report</div>
-        </div>
-        
-        <div class="details">
-          <div class="row">
-            <span class="label">CRO Number:</span>
-            <span>${patient.cro}</span>
-          </div>
-          <div class="row">
-            <span class="label">Patient Name:</span>
-            <span>${patient.patient_name}</span>
-          </div>
-          <div class="row">
-            <span class="label">Age/Gender:</span>
-            <span>${patient.age}, ${patient.gender}</span>
-          </div>
-          <div class="row">
-            <span class="label">Mobile:</span>
-            <span>${patient.mobile}</span>
-          </div>
-          <div class="row">
-            <span class="label">Address:</span>
-            <span>${patient.address || '-'}</span>
-          </div>
-          <div class="row">
-            <span class="label">Contact:</span>
-            <span>${patient.contact_number || '-'}</span>
-          </div>
-          <div class="row">
-            <span class="label">Category:</span>
-            <span>${patient.category || '-'}</span>
-          </div>
-          <div class="row">
-            <span class="label">Date:</span>
-            <span>${patient.date}</span>
-          </div>
-        </div>
-        
-        ${patient.n_patient_ct_remark ? `
-        <div class="report-section">
-          <h3>CT Scan Report</h3>
-          <p><strong>CT Scan:</strong> ${patient.n_patient_ct}</p>
-          <p><strong>Report Date:</strong> ${patient.n_patient_ct_report_date || '-'}</p>
-          <p><strong>Remark:</strong> ${patient.n_patient_ct_remark}</p>
-        </div>
-        ` : ''}
-        
-        <div class="footer">
-          <p>Generated on: ${new Date().toLocaleString()}</p>
-          <p>Varaha Diagnostic Center - Medical Report</p>
-        </div>
-        
-        <script>
-          window.onload = function() {
-            window.print();
-          }
-        </script>
-      </body>
-      </html>
-    `;
-
-    printWindow.document.write(printHTML);
-    printWindow.document.close();
-  };
 
   if (loading) {
     return (
