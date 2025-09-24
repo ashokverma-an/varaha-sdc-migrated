@@ -86,7 +86,7 @@ export default function PatientRegistrationEdit() {
     const status = patient.scan_status;
     
     let buttonText = '';
-    let buttonClass = 'btn btn-info';
+    const buttonClass = 'btn btn-info';
     let disabled = isDue;
 
     switch (status) {
@@ -210,7 +210,7 @@ export default function PatientRegistrationEdit() {
                       <div className="flex items-center space-x-2">
                         {getStatusButton(patient)}
                         <div className="flex space-x-1">
-                          <a href={`/reception/patient-registration/edit/${patient.patient_id}`}>
+                          <a href={`/reception/patient-registration/new?edit=${patient.patient_id}`}>
                             <button className="p-1 text-blue-600 hover:bg-blue-100 rounded" title="Edit Client">
                               <Edit className="h-4 w-4" />
                             </button>

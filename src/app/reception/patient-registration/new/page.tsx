@@ -56,6 +56,8 @@ interface Scan {
 export default function NewPatientRegistration() {
   const toast = useToastContext();
   const [currentStep, setCurrentStep] = useState(1);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editPatientId, setEditPatientId] = useState<string | null>(null);
   const [hospitals, setHospitals] = useState<Hospital[]>([]);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [scans, setScans] = useState<Scan[]>([]);
@@ -93,6 +95,15 @@ export default function NewPatientRegistration() {
     fetchHospitals();
     fetchDoctors();
     fetchScans();
+    
+    // Check for edit mode
+    const urlParams = new URLSearchParams(window.location.search);
+    const editId = urlParams.get('edit');
+    if (editId) {
+      setIsEditMode(true);
+      setEditPatientId(editId);
+      fetchPatientData(editId);
+    }
   }, []);
 
   const fetchHospitals = async () => {
@@ -128,6 +139,39 @@ export default function NewPatientRegistration() {
       }
     } catch (error) {
       console.error('Error fetching scans:', error);
+    }
+  };
+
+  const fetchPatientData = async (patientId: string) => {
+    try {
+      const response = await fetch(`https://varahasdc.co.in/api/admin/patients/${patientId}`);
+      if (response.ok) {
+        const data = await response.json();
+        const patient = data.data;
+        
+        // Populate form with patient data
+        setFormData({
+          ...formData,
+          hospital_name: patient.hospital_id?.toString() || '',
+          doctor_name: patient.doctor_name?.toString() || '',
+          pre: patient.pre || 'Mr.',
+          firstname: patient.patient_name || '',
+          age: patient.age || '',
+          age_type: patient.age_type || 'Year',
+          gender: patient.gender || 'Male',
+          petient_type: patient.category || 'GEN / Paid',
+          address: patient.address || '',
+          city: patient.city || '',
+          contact_number: patient.contact_number || '',
+          type_of_scan: patient.scan_type ? patient.scan_type.split(',') : [],
+          amount: patient.amount?.toString() || '0',
+          total_amount: patient.amount?.toString() || '0',
+          rec_amount: patient.amount_reci?.toString() || '0',
+          due_amount: patient.amount_due?.toString() || '0'
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching patient data:', error);
     }
   };
 
@@ -210,8 +254,8 @@ export default function NewPatientRegistration() {
   return (
     <div className="p-6 space-y-6">
       <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 rounded-xl shadow-lg">
-        <h1 className="text-3xl font-bold mb-2">New Patient Registration</h1>
-        <p className="text-blue-100 text-lg">Complete patient enrollment and scan booking</p>
+        <h1 className="text-3xl font-bold mb-2">{isEditMode ? 'Edit Patient Registration' : 'New Patient Registration'}</h1>
+        <p className="text-blue-100 text-lg">{isEditMode ? 'Update patient information and scan details' : 'Complete patient enrollment and scan booking'}</p>
       </div>
 
       <div className="bg-white rounded-xl shadow-lg border border-gray-100">
