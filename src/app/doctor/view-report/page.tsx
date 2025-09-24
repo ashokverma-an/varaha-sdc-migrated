@@ -1,16 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Eye, Search, Download, Calendar, Filter } from 'lucide-react';
+import { Eye, Search, Download, RefreshCw } from 'lucide-react';
 import * as XLSX from 'xlsx';
+import { useToastContext } from '@/context/ToastContext';
 
 interface CompletedReport {
   patient_id: number;
   cro: string;
   patient_name: string;
-  age: number;
-  gender: string;
-  mobile: string;
   doctor_name: string;
   n_patient_ct: string;
   n_patient_ct_report_date: string;
@@ -18,16 +16,13 @@ interface CompletedReport {
   n_patient_x_ray: string;
   n_patient_x_ray_report_date: string;
   n_patient_x_ray_remark: string;
-  date: string;
-  allot_date: string;
-  amount: number;
 }
 
 export default function ViewReport() {
+  const toast = useToastContext();
   const [reports, setReports] = useState<CompletedReport[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [dateFilter, setDateFilter] = useState('');
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -37,18 +32,17 @@ export default function ViewReport() {
   const itemsPerPage = 20;
 
   useEffect(() => {
-    fetchCompletedReports(1);
-  }, []);
+    fetchCompletedReports();
+  }, [currentPage]);
 
-  const fetchCompletedReports = async (page = 1) => {
+  const fetchCompletedReports = async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams({
-        page: page.toString(),
+        page: currentPage.toString(),
         limit: itemsPerPage.toString()
       });
       
-      if (dateFilter) params.append('date', dateFilter);
       if (fromDate) params.append('from_date', fromDate);
       if (toDate) params.append('to_date', toDate);
       if (searchTerm) params.append('search', searchTerm);
@@ -59,13 +53,13 @@ export default function ViewReport() {
         setReports(data.data || []);
         setTotalRecords(data.total || 0);
         setTotalPages(Math.ceil((data.total || 0) / itemsPerPage));
-        setCurrentPage(page);
       } else {
-        const errorData = await response.json();
-        console.error('API Error:', errorData);
+        const errorData = await response.json().catch(() => ({}));
+        toast.error(errorData.error || 'Failed to fetch completed reports');
       }
     } catch (error) {
       console.error('Error fetching completed reports:', error);
+      toast.error('Error loading data');
     } finally {
       setLoading(false);
     }
@@ -74,42 +68,22 @@ export default function ViewReport() {
   const formatDate = (dateString: string) => {
     if (!dateString || dateString === '0000-00-00') return '-';
     try {
-      let date;
-      if (dateString.includes('-') && dateString.split('-').length === 3) {
-        const parts = dateString.split('-');
-        if (parts[0].length === 4) {
-          date = new Date(dateString);
-        } else {
-          date = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
-        }
-      } else {
-        date = new Date(dateString);
-      }
-      
+      const date = new Date(dateString);
       if (isNaN(date.getTime())) return '-';
-      
-      const day = date.getDate().toString().padStart(2, '0');
-      const month = date.toLocaleDateString('en-US', { month: 'short' });
-      const year = date.getFullYear();
-      return `${day}-${month}-${year}`;
+      return date.toLocaleDateString('en-GB');
     } catch {
       return '-';
     }
   };
 
-
-
   const exportToExcel = async () => {
     setExporting(true);
     try {
-      // Fetch all data for export
       const params = new URLSearchParams({
         page: '1',
-        limit: '10000', // Get all records
-        export: 'true'
+        limit: '10000'
       });
       
-      if (dateFilter) params.append('date', dateFilter);
       if (fromDate) params.append('from_date', fromDate);
       if (toDate) params.append('to_date', toDate);
       if (searchTerm) params.append('search', searchTerm);
@@ -118,220 +92,213 @@ export default function ViewReport() {
       const data = await response.json();
       const allReports = data.data || [];
       
-      // Create workbook with formatted headers
       const wb = XLSX.utils.book_new();
-      
-      // Header row with company info
       const headerData = [
         ['VARAHA DIAGNOSTIC CENTER'],
         ['COMPLETED REPORTS - ' + new Date().toLocaleDateString()],
         [''],
-        ['S.No', 'CRO', 'Patient Name', 'Doctor Name', 'Ct-Scan', 'Ct-Scan Report Date', 'Ct-Scan Review', 'X-Ray Film', 'X-Ray Film Date', 'X-Ray Film Review']
+        ['S.No', 'CRO', 'Patient Name', 'Doctor Name', 'CT-Scan', 'CT Report Date', 'CT Review', 'X-Ray', 'X-Ray Date', 'X-Ray Review']
       ];
       
-      // Add data rows
       const exportData = allReports.map((report: CompletedReport, index: number) => [
-        index + 1,
-        report.cro,
-        report.patient_name,
-        report.doctor_name || '-',
-        report.n_patient_ct,
-        formatDate(report.n_patient_ct_report_date),
-        report.n_patient_ct_remark || '-',
-        report.n_patient_x_ray,
-        formatDate(report.n_patient_x_ray_report_date),
-        report.n_patient_x_ray_remark || '-'
+        index + 1, report.cro, report.patient_name, report.doctor_name || '-',
+        report.n_patient_ct, formatDate(report.n_patient_ct_report_date), report.n_patient_ct_remark || '-',
+        report.n_patient_x_ray, formatDate(report.n_patient_x_ray_report_date), report.n_patient_x_ray_remark || '-'
       ]);
       
-
-      
-      const allData = [...headerData, ...exportData];
-      const ws = XLSX.utils.aoa_to_sheet(allData);
-      
-      // Style the header
-      const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
-      
-      // Merge title cells
-      ws['!merges'] = [
-        { s: { r: 0, c: 0 }, e: { r: 0, c: 9 } },
-        { s: { r: 1, c: 0 }, e: { r: 1, c: 9 } }
-      ];
-      
-      // Set column widths
-      ws['!cols'] = [
-        { width: 8 }, { width: 15 }, { width: 20 }, { width: 20 }, { width: 12 },
-        { width: 15 }, { width: 30 }, { width: 12 }, { width: 15 }, { width: 30 }
-      ];
+      const ws = XLSX.utils.aoa_to_sheet([...headerData, ...exportData]);
+      ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 9 } }, { s: { r: 1, c: 0 }, e: { r: 1, c: 9 } }];
+      ws['!cols'] = Array(10).fill({ width: 15 });
       
       XLSX.utils.book_append_sheet(wb, ws, 'Completed Reports');
-      
-      const fileName = `completed_reports_${new Date().toISOString().split('T')[0]}.xlsx`;
-      XLSX.writeFile(wb, fileName);
+      XLSX.writeFile(wb, `completed_reports_${new Date().toISOString().split('T')[0]}.xlsx`);
       
     } catch (error) {
       console.error('Export error:', error);
+      toast.error('Export failed');
     } finally {
       setExporting(false);
     }
   };
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setCurrentPage(1);
+    fetchCompletedReports();
+  };
+
+  const startIndex = (currentPage - 1) * itemsPerPage;
+
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900">View Report</h1>
-        <div className="flex items-center space-x-2">
-          <Eye className="h-6 w-6 text-green-600" />
-          <span className="text-lg font-medium text-gray-700">Completed Reports</span>
-        </div>
-      </div>
-
-      <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 text-white p-6 rounded-xl shadow-lg">
+        <div className="flex items-center justify-between">
           <div>
-            <input
-              type="text"
-              placeholder="Search by CRO or Patient Name"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-            />
+            <h1 className="text-3xl font-bold mb-2">View Report</h1>
+            <p className="text-emerald-100">Completed nursing reports with CT-Scan and X-Ray</p>
           </div>
-          
-          <div>
-            <input
-              type="date"
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-            />
-          </div>
-          
-          <div>
-            <input
-              type="date"
-              placeholder="From Date"
-              value={fromDate}
-              onChange={(e) => setFromDate(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-            />
-          </div>
-          
-          <div>
-            <input
-              type="date"
-              placeholder="To Date"
-              value={toDate}
-              onChange={(e) => setToDate(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-            />
-          </div>
-          
-          <div className="flex space-x-2">
-            <button
-              onClick={() => fetchCompletedReports(1)}
-              disabled={loading}
-              className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
-            >
-              <Search className="h-4 w-4" />
-              <span>{loading ? 'Loading...' : 'Search'}</span>
-            </button>
-            
+          <div className="flex items-center space-x-3">
             <button
               onClick={exportToExcel}
               disabled={exporting || totalRecords === 0}
-              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors disabled:opacity-50"
             >
-              <Download className="h-4 w-4" />
-              <span>{exporting ? 'Exporting...' : 'Excel'}</span>
+              <Download className="h-5 w-5" />
+              <span>{exporting ? 'Exporting...' : 'Export Excel'}</span>
+            </button>
+            <button
+              onClick={fetchCompletedReports}
+              disabled={loading}
+              className="flex items-center space-x-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-400 rounded-lg transition-colors disabled:opacity-50"
+            >
+              <RefreshCw className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
+              <span>Refresh</span>
             </button>
           </div>
         </div>
+      </div>
 
-        <div className="mb-4 flex justify-between items-center text-sm">
-          <span className="text-gray-600">Total Records: {totalRecords} | Page {currentPage} of {totalPages}</span>
+      {/* Search */}
+      <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+        <form onSubmit={handleSearch} className="flex items-center space-x-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+            <input
+              type="text"
+              placeholder="Search by CRO or Patient Name..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+            />
+          </div>
+          <input
+            type="date"
+            value={fromDate}
+            onChange={(e) => setFromDate(e.target.value)}
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+          />
+          <input
+            type="date"
+            value={toDate}
+            onChange={(e) => setToDate(e.target.value)}
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+          />
+          <button
+            type="submit"
+            className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+          >
+            Search
+          </button>
+        </form>
+      </div>
+
+      {/* Table */}
+      <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <h2 className="text-xl font-semibold text-gray-900">Completed Reports</h2>
+          <p className="text-sm text-gray-600 mt-1">Page {currentPage} of {totalPages}</p>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse border border-gray-300">
-            <thead>
-              <tr className="bg-green-50">
-                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">S.No</th>
-                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">CRO</th>
-                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Patient Name</th>
-                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Doctor Name</th>
-                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Ct-Scan</th>
-                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Ct-Scan Report Date</th>
-                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Ct-Scan Review</th>
-                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">X-Ray Film</th>
-                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">X-Ray Film Date</th>
-                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">X-Ray Film Review</th>
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sr. No.</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CRO</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient Name</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Doctor Name</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CT-Scan</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CT Report Date</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CT Review</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">X-Ray</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">X-Ray Date</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">X-Ray Review</th>
               </tr>
             </thead>
-            <tbody>
-              {reports.map((report, index) => (
-                <tr key={report.patient_id} className="hover:bg-gray-50">
-                  <td className="border border-gray-300 px-3 py-2 text-sm">{(currentPage - 1) * itemsPerPage + index + 1}</td>
-                  <td className="border border-gray-300 px-3 py-2 text-sm font-medium text-blue-600">
-                    {report.cro}
+            <tbody className="bg-white divide-y divide-gray-200">
+              {loading ? (
+                <tr>
+                  <td colSpan={10} className="px-6 py-12 text-center">
+                    <div className="flex items-center justify-center space-x-2">
+                      <RefreshCw className="h-5 w-5 animate-spin text-emerald-500" />
+                      <span className="text-gray-500">Loading completed reports...</span>
+                    </div>
                   </td>
-                  <td className="border border-gray-300 px-3 py-2 text-sm">{report.patient_name}</td>
-                  <td className="border border-gray-300 px-3 py-2 text-sm">{report.doctor_name || '-'}</td>
-                  <td className="border border-gray-300 px-3 py-2 text-sm">{report.n_patient_ct}</td>
-                  <td className="border border-gray-300 px-3 py-2 text-sm">{formatDate(report.n_patient_ct_report_date)}</td>
-                  <td className="border border-gray-300 px-3 py-2 text-sm">{report.n_patient_ct_remark || '-'}</td>
-                  <td className="border border-gray-300 px-3 py-2 text-sm">{report.n_patient_x_ray}</td>
-                  <td className="border border-gray-300 px-3 py-2 text-sm">{formatDate(report.n_patient_x_ray_report_date)}</td>
-                  <td className="border border-gray-300 px-3 py-2 text-sm">{report.n_patient_x_ray_remark || '-'}</td>
                 </tr>
-              ))}
+              ) : reports.length === 0 ? (
+                <tr>
+                  <td colSpan={10} className="px-6 py-12 text-center text-gray-500">No completed reports found</td>
+                </tr>
+              ) : (
+                reports.map((report, index) => (
+                  <tr key={report.patient_id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{startIndex + index + 1}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-blue-600">{report.cro}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">{report.patient_name}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{report.doctor_name || '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">{report.n_patient_ct}</span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatDate(report.n_patient_ct_report_date)}</td>
+                    <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">{report.n_patient_ct_remark || '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">{report.n_patient_x_ray}</span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatDate(report.n_patient_x_ray_report_date)}</td>
+                    <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">{report.n_patient_x_ray_remark || '-'}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
-
           </table>
-          
-          {reports.length === 0 && (
-            <div className="text-center py-8 text-gray-500">
-              {loading ? 'Loading completed reports...' : 'No completed reports found'}
-            </div>
-          )}
         </div>
-        
+
+        {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex justify-center items-center space-x-2 mt-6">
-            <button
-              onClick={() => fetchCompletedReports(currentPage - 1)}
-              disabled={currentPage === 1 || loading}
-              className="px-3 py-2 bg-gray-200 text-gray-700 rounded disabled:opacity-50"
-            >
-              Previous
-            </button>
-            
-            <div className="flex space-x-1">
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                const page = Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i;
-                return (
-                  <button
-                    key={page}
-                    onClick={() => fetchCompletedReports(page)}
-                    disabled={loading}
-                    className={`px-3 py-2 rounded ${
-                      page === currentPage
-                        ? 'bg-green-600 text-white'
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                    }`}
-                  >
-                    {page}
-                  </button>
-                );
-              })}
+          <div className="px-6 py-4 border-t border-gray-200">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-gray-700">Page {currentPage} of {totalPages}</div>
+              <div className="flex items-center space-x-2">
+                {currentPage > 1 && (
+                  <>
+                    <button onClick={() => setCurrentPage(1)} className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">First</button>
+                    <button onClick={() => setCurrentPage(currentPage - 1)} className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">Previous</button>
+                  </>
+                )}
+                
+                <div className="flex items-center space-x-1">
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    const startPage = Math.max(1, currentPage - 2);
+                    const page = startPage + i;
+                    if (page > totalPages) return null;
+                    
+                    return (
+                      <button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={`px-3 py-2 text-sm font-medium rounded-lg ${
+                          currentPage === page ? 'bg-emerald-600 text-white' : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    );
+                  })}
+                </div>
+                
+                {currentPage < totalPages && (
+                  <>
+                    <button onClick={() => setCurrentPage(currentPage + 1)} className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">Next</button>
+                    <button onClick={() => setCurrentPage(totalPages)} className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">Last</button>
+                  </>
+                )}
+              </div>
             </div>
-            
-            <button
-              onClick={() => fetchCompletedReports(currentPage + 1)}
-              disabled={currentPage === totalPages || loading}
-              className="px-3 py-2 bg-gray-200 text-gray-700 rounded disabled:opacity-50"
-            >
-              Next
-            </button>
           </div>
         )}
       </div>
