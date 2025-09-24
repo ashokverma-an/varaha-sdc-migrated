@@ -50,12 +50,54 @@ export default function NursingDetail() {
   const cro = decodeURIComponent(params.cro as string);
 
   const formatDate = (dateString: string) => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = date.toLocaleDateString('en-US', { month: 'short' });
-    const year = date.getFullYear();
-    return `${day}-${month}-${year}`;
+    if (!dateString || dateString === '0000-00-00') return '-';
+    try {
+      // Handle DD-MM-YYYY format from database
+      let date;
+      if (dateString.includes('-') && dateString.split('-').length === 3) {
+        const parts = dateString.split('-');
+        if (parts[0].length === 4) {
+          // YYYY-MM-DD format
+          date = new Date(dateString);
+        } else {
+          // DD-MM-YYYY format
+          date = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+        }
+      } else {
+        date = new Date(dateString);
+      }
+      
+      if (isNaN(date.getTime())) return '-';
+      
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = date.toLocaleDateString('en-US', { month: 'short' });
+      const year = date.getFullYear();
+      return `${day}-${month}-${year}`;
+    } catch (error) {
+      return '-';
+    }
+  };
+
+  const formatDateForInput = (dateString: string) => {
+    if (!dateString || dateString === '0000-00-00') return '';
+    try {
+      let date;
+      if (dateString.includes('-') && dateString.split('-').length === 3) {
+        const parts = dateString.split('-');
+        if (parts[0].length === 4) {
+          // Already YYYY-MM-DD format
+          return dateString;
+        } else {
+          // DD-MM-YYYY format, convert to YYYY-MM-DD
+          return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+        }
+      }
+      date = new Date(dateString);
+      if (isNaN(date.getTime())) return '';
+      return date.toISOString().split('T')[0];
+    } catch (error) {
+      return '';
+    }
   };
   
   const [nursingData, setNursingData] = useState<NursingData | null>(null);
@@ -85,10 +127,10 @@ export default function NursingDetail() {
         const patient = data.data.patient;
         setSelectedDoctor(patient.ct_scan_doctor_id || 0);
         setCTScan(patient.n_patient_ct || 'No');
-        setCTReportDate(patient.n_patient_ct_report_date || '');
+        setCTReportDate(formatDateForInput(patient.n_patient_ct_report_date || ''));
         setCTRemark(patient.n_patient_ct_remark || '');
         setXRay(patient.n_patient_x_ray || 'No');
-        setXRayReportDate(patient.n_patient_x_ray_report_date || '');
+        setXRayReportDate(formatDateForInput(patient.n_patient_x_ray_report_date || ''));
         setXRayRemark(patient.n_patient_x_ray_remark || '');
       } else {
         toast.error('Patient not found');
@@ -344,22 +386,22 @@ export default function NursingDetail() {
 
       {/* Nursing Form */}
       <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold text-gray-900 flex items-center">
             <FileText className="h-5 w-5 mr-2" />
             Nursing Information
           </h2>
         </div>
 
-        <div className="space-y-6">
-          <div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="lg:col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Doctor
             </label>
             <select
               value={selectedDoctor}
               onChange={(e) => setSelectedDoctor(Number(e.target.value))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white"
             >
               <option value={0}>--Select Doctor--</option>
               {nursingData.doctors.map((doctor) => (
@@ -370,121 +412,141 @@ export default function NursingDetail() {
             </select>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
-              Examination Retained - CT-Scan
-            </label>
-            <div className="flex space-x-4 mb-4">
-              <label className="flex items-center">
+          <div className="bg-blue-50 p-4 rounded-lg">
+            <h3 className="text-lg font-semibold text-blue-900 mb-4">CT-Scan</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Examination Retained
+                </label>
+                <div className="flex space-x-6">
+                  <label className="flex items-center cursor-pointer">
+                    <input
+                      type="radio"
+                      name="ct"
+                      value="Yes"
+                      checked={ctScan === 'Yes'}
+                      onChange={(e) => setCTScan(e.target.value)}
+                      className="mr-2 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="text-sm font-medium">Yes</span>
+                  </label>
+                  <label className="flex items-center cursor-pointer">
+                    <input
+                      type="radio"
+                      name="ct"
+                      value="No"
+                      checked={ctScan === 'No'}
+                      onChange={(e) => setCTScan(e.target.value)}
+                      className="mr-2 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="text-sm font-medium">No</span>
+                  </label>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Report Date
+                </label>
                 <input
-                  type="radio"
-                  name="ct"
-                  value="Yes"
-                  checked={ctScan === 'Yes'}
-                  onChange={(e) => setCTScan(e.target.value)}
-                  className="mr-2"
+                  type="date"
+                  value={ctReportDate}
+                  onChange={(e) => setCTReportDate(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
-                Yes
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="ct"
-                  value="No"
-                  checked={ctScan === 'No'}
-                  onChange={(e) => setCTScan(e.target.value)}
-                  className="mr-2"
+                {ctReportDate && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    {formatDate(ctReportDate)}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Remark
+                </label>
+                <textarea
+                  value={ctRemark}
+                  onChange={(e) => setCTRemark(e.target.value)}
+                  rows={3}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Enter CT-Scan remarks..."
                 />
-                No
-              </label>
+              </div>
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              CT-Scan Report Date
-            </label>
-            <input
-              type="date"
-              value={ctReportDate}
-              onChange={(e) => setCTReportDate(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-            />
-          </div>
+          <div className="bg-green-50 p-4 rounded-lg">
+            <h3 className="text-lg font-semibold text-green-900 mb-4">X-Ray Film</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Examination Retained
+                </label>
+                <div className="flex space-x-6">
+                  <label className="flex items-center cursor-pointer">
+                    <input
+                      type="radio"
+                      name="xray"
+                      value="Yes"
+                      checked={xRay === 'Yes'}
+                      onChange={(e) => setXRay(e.target.value)}
+                      className="mr-2 text-green-600 focus:ring-green-500"
+                    />
+                    <span className="text-sm font-medium">Yes</span>
+                  </label>
+                  <label className="flex items-center cursor-pointer">
+                    <input
+                      type="radio"
+                      name="xray"
+                      value="No"
+                      checked={xRay === 'No'}
+                      onChange={(e) => setXRay(e.target.value)}
+                      className="mr-2 text-green-600 focus:ring-green-500"
+                    />
+                    <span className="text-sm font-medium">No</span>
+                  </label>
+                </div>
+              </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              CT-Scan Remark
-            </label>
-            <textarea
-              value={ctRemark}
-              onChange={(e) => setCTRemark(e.target.value)}
-              rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-              placeholder="Enter CT-Scan remarks..."
-            />
-          </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Report Date
+                </label>
+                <input
+                  type="date"
+                  value={xRayReportDate}
+                  onChange={(e) => setXRayReportDate(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+                {xRayReportDate && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    {formatDate(xRayReportDate)}
+                  </p>
+                )}
+              </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
-              X-Ray Film
-            </label>
-            <div className="flex space-x-4 mb-4">
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="xray"
-                  value="Yes"
-                  checked={xRay === 'Yes'}
-                  onChange={(e) => setXRay(e.target.value)}
-                  className="mr-2"
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Remark
+                </label>
+                <textarea
+                  value={xRayRemark}
+                  onChange={(e) => setXRayRemark(e.target.value)}
+                  rows={3}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  placeholder="Enter X-Ray film remarks..."
                 />
-                Yes
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="xray"
-                  value="No"
-                  checked={xRay === 'No'}
-                  onChange={(e) => setXRay(e.target.value)}
-                  className="mr-2"
-                />
-                No
-              </label>
+              </div>
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              X-Ray Report Date
-            </label>
-            <input
-              type="date"
-              value={xRayReportDate}
-              onChange={(e) => setXRayReportDate(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              X-Ray Film Remark
-            </label>
-            <textarea
-              value={xRayRemark}
-              onChange={(e) => setXRayRemark(e.target.value)}
-              rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-              placeholder="Enter X-Ray film remarks..."
-            />
-          </div>
-
-          <div className="flex space-x-4">
+          <div className="lg:col-span-2 flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-200">
             <button
               onClick={handleSaveReport}
               disabled={saving}
-              className="flex items-center space-x-2 px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center justify-center space-x-2 px-8 py-4 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
             >
               <Save className="h-5 w-5" />
               <span>{saving ? 'Saving...' : 'Save Nursing Data'}</span>
@@ -492,7 +554,7 @@ export default function NursingDetail() {
             
             <button
               onClick={() => router.push('/doctor/ct-scan-doctor-list')}
-              className="px-6 py-3 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
+              className="px-8 py-4 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
             >
               Back to List
             </button>
