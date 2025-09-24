@@ -48,11 +48,19 @@ export default function ConsoleQueue() {
       } else {
         const errorData = await response.json().catch(() => ({}));
         console.error('Console queue API error:', errorData);
-        toast.error(`API Error: ${errorData.error || 'Failed to fetch patients'}. Details: ${errorData.details || 'Unknown error'}`);
+        console.log('Full API error response:', errorData);
+        toast.error(`API Error: ${errorData.error || 'Failed to fetch patients'}`);
+        if (errorData.details) {
+          console.error('Error details:', errorData.details);
+        }
+        if (errorData.sqlError) {
+          console.error('SQL Error:', errorData.sqlError, errorData.sqlMessage);
+        }
       }
     } catch (error) {
       console.error('Error fetching patients:', error);
-      toast.error('Error loading data');
+      console.log('Full error details:', error);
+      toast.error(`Error loading data: ${error.message || 'Unknown error'}`);
     } finally {
       setLoading(false);
     }

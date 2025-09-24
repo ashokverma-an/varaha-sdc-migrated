@@ -30,9 +30,24 @@ export default function ConsoleDashboard() {
       if (response.ok) {
         const data = await response.json();
         setStats(data);
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Console stats API error:', errorData);
+        console.log('Full stats API error response:', errorData);
       }
     } catch (error) {
       console.error('Error fetching console stats:', error);
+      console.log('Full stats error details:', error);
+      
+      // Try to get error response if it's a fetch error
+      if (error.response) {
+        try {
+          const errorData = await error.response.json();
+          console.error('Stats API error response:', errorData);
+        } catch (e) {
+          console.error('Could not parse error response:', e);
+        }
+      }
     } finally {
       setLoading(false);
     }
