@@ -44,11 +44,19 @@ export default function PatientRegistrationEdit() {
   const fetchPatients = async () => {
     try {
       // Fetch today's patients with scan_status != 1
-      const today = new Date().toLocaleDateString('en-GB');
-      const response = await fetch(`https://varahasdc.co.in/api/admin/patients/edit?date=${today}`);
+      const today = new Date().toISOString().split('T')[0];
+      console.log('Fetching patients for date:', today);
+      const response = await fetch(`/api/admin/patients/edit?date=${today}`);
+      console.log('Response status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('Received data:', data);
         setPatients(data.data || []);
+      } else {
+        console.error('Failed to fetch patients:', response.statusText);
+        const errorData = await response.text();
+        console.error('Error details:', errorData);
       }
     } catch (error) {
       console.error('Error fetching patients:', error);
@@ -65,7 +73,7 @@ export default function PatientRegistrationEdit() {
 
   const submitSendTo = async () => {
     try {
-      const response = await fetch('https://varahasdc.co.in/api/admin/patients/send', {
+      const response = await fetch('/api/admin/patients/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(sendToData)
@@ -179,48 +187,48 @@ export default function PatientRegistrationEdit() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200">
-          <div className="px-6 py-4 border-b border-gray-200">
+        <div className="bg-white rounded-lg border border-gray-200 shadow-lg">
+          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
             <h3 className="text-lg font-semibold text-gray-900">Registered Patient List</h3>
           </div>
           
           <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-black text-white">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">S. No.</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">CRO No.</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Name</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Amount Status</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Doctor Name</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Hospital Name</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Actions</th>
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="bg-black text-white">
+                  <th className="border border-gray-300 px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider">S. No.</th>
+                  <th className="border border-gray-300 px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider">CRO No.</th>
+                  <th className="border border-gray-300 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Name</th>
+                  <th className="border border-gray-300 px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider">Amount Status</th>
+                  <th className="border border-gray-300 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Doctor Name</th>
+                  <th className="border border-gray-300 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Hospital Name</th>
+                  <th className="border border-gray-300 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white">
                 {paginatedPatients.map((patient, index) => (
-                  <tr key={patient.patient_id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 text-center text-sm">{startIndex + index + 1}</td>
-                    <td className="px-4 py-3 text-center text-sm font-medium">{patient.cro}</td>
-                    <td className="px-4 py-3 text-sm">{patient.pre}{patient.patient_name}</td>
-                    <td className="px-4 py-3 text-center text-sm">{getAmountStatus(patient)}</td>
-                    <td className="px-4 py-3 text-sm">{patient.dname || '-'}</td>
-                    <td className="px-4 py-3 text-sm">{patient.h_name || '-'}</td>
-                    <td className="px-4 py-3 text-sm">
-                      <div className="flex items-center space-x-2">
+                  <tr key={patient.patient_id} className="hover:bg-gray-50 border-b border-gray-200">
+                    <td className="border border-gray-300 px-4 py-3 text-center text-sm">{startIndex + index + 1}</td>
+                    <td className="border border-gray-300 px-4 py-3 text-center text-sm font-medium">{patient.cro}</td>
+                    <td className="border border-gray-300 px-4 py-3 text-sm font-semibold">{patient.pre}{patient.patient_name}</td>
+                    <td className="border border-gray-300 px-4 py-3 text-center text-sm">{getAmountStatus(patient)}</td>
+                    <td className="border border-gray-300 px-4 py-3 text-sm">{patient.dname || '-'}</td>
+                    <td className="border border-gray-300 px-4 py-3 text-sm">{patient.h_name || '-'}</td>
+                    <td className="border border-gray-300 px-4 py-3 text-sm">
+                      <div className="flex flex-col space-y-2">
                         {getStatusButton(patient)}
-                        <div className="flex space-x-1">
+                        <div className="flex space-x-1 justify-center">
                           <a href={`/reception/patient-registration/new?edit=${patient.patient_id}`}>
-                            <button className="p-1 text-blue-600 hover:bg-blue-100 rounded" title="Edit Client">
+                            <button className="p-1 text-blue-600 hover:bg-blue-100 rounded border border-blue-300" title="Edit Client">
                               <Edit className="h-4 w-4" />
                             </button>
                           </a>
                           <a href={`/reception/patient-registration/payment/${patient.patient_id}`}>
-                            <button className="p-1 text-green-600 hover:bg-green-100 rounded" title="View Payment Detail">
+                            <button className="p-1 text-green-600 hover:bg-green-100 rounded border border-green-300" title="View Payment Detail">
                               <FileText className="h-4 w-4" />
                             </button>
                           </a>
-                          <button className="p-1 text-red-600 hover:bg-red-100 rounded" title="View Invoice">
+                          <button className="p-1 text-red-600 hover:bg-red-100 rounded border border-red-300" title="View Invoice">
                             <Eye className="h-4 w-4" />
                           </button>
                         </div>

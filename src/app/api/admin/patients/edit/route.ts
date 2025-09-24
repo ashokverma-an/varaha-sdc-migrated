@@ -11,7 +11,11 @@ const dbConfig = {
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const date = searchParams.get('date') || new Date().toLocaleDateString('en-GB');
+    const inputDate = searchParams.get('date') || new Date().toISOString().split('T')[0];
+    
+    // Convert YYYY-MM-DD to DD-MM-YYYY format for PHP compatibility
+    const dateParts = inputDate.split('-');
+    const phpDate = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
     
     const connection = await mysql.createConnection(dbConfig);
     
@@ -28,7 +32,7 @@ export async function GET(request: NextRequest) {
       ORDER BY p.patient_id DESC
     `;
     
-    const [rows] = await connection.execute(query, [date]);
+    const [rows] = await connection.execute(query, [phpDate]);
     await connection.end();
     
     return NextResponse.json({

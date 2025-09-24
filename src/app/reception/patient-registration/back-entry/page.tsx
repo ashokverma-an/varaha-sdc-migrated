@@ -25,6 +25,8 @@ export default function BackEntryPatientRegistration() {
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
+  const [lastPatient, setLastPatient] = useState<{cro: string, patient_name: string} | null>(null);
+  const [croNumber, setCroNumber] = useState('');
   const [formData, setFormData] = useState({
     patient_name: '',
     age: '',
@@ -44,19 +46,21 @@ export default function BackEntryPatientRegistration() {
 
   useEffect(() => {
     fetchDropdownData();
+    fetchLastPatient();
+    generateCRO();
   }, []);
 
   const fetchDropdownData = async () => {
     try {
       const [hospitalsRes, doctorsRes, categoriesRes] = await Promise.all([
-        fetch('https://varahasdc.co.in/api/admin/hospitals'),
-        fetch('https://varahasdc.co.in/api/admin/doctors'),
-        fetch('https://varahasdc.co.in/api/admin/categories')
+        fetch('/api/hospitals'),
+        fetch('/api/doctors'),
+        fetch('/api/categories')
       ]);
 
       if (hospitalsRes.ok) {
         const hospitalsData = await hospitalsRes.json();
-        setHospitals(hospitalsData.data || []);
+        setHospitals(hospitalsData || []);
       }
 
       if (doctorsRes.ok) {
@@ -66,11 +70,33 @@ export default function BackEntryPatientRegistration() {
 
       if (categoriesRes.ok) {
         const categoriesData = await categoriesRes.json();
-        setCategories(categoriesData.data || []);
+        setCategories(categoriesData || []);
       }
     } catch (error) {
       console.error('Error fetching dropdown data:', error);
     }
+  };
+
+  const fetchLastPatient = async () => {
+    try {
+      const response = await fetch('/api/admin/patients/last-enrolled');
+      if (response.ok) {
+        const data = await response.json();
+        setLastPatient(data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching last patient:', error);
+    }
+  };
+
+  const generateCRO = () => {
+    const today = new Date();
+    const day = String(today.getDate()).padStart(2, '0');
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const year = today.getFullYear();
+    const randomNum = Math.floor(Math.random() * 1000) + 1;
+    const cro = `VDC/${day}-${month}-${year}/${randomNum}`;
+    setCroNumber(cro);
   };
 
   const validateForm = () => {
@@ -203,18 +229,27 @@ export default function BackEntryPatientRegistration() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 rounded-xl shadow-lg">
-        <div className="flex items-center space-x-4">
-          <button 
-            onClick={() => window.location.href = '/reception/patient-registration'}
-            className="p-2 hover:bg-blue-500 rounded-lg transition-colors"
-          >
-            <ArrowLeft className="h-6 w-6" />
-          </button>
-          <div>
-            <h1 className="text-3xl font-bold mb-2">Back Entry Patient Registration</h1>
-            <p className="text-blue-100 text-lg">Register patient with previous date entry</p>
+      <div className="bg-gradient-to-r from-purple-600 to-purple-700 text-white p-6 rounded-xl shadow-lg">
+        <div className="flex justify-between items-start">
+          <div className="flex items-center space-x-4">
+            <button 
+              onClick={() => window.location.href = '/reception/patient-registration'}
+              className="p-2 hover:bg-purple-500 rounded-lg transition-colors"
+            >
+              <ArrowLeft className="h-6 w-6" />
+            </button>
+            <div>
+              <h1 className="text-3xl font-bold mb-2">Back Entry Patient Registration</h1>
+              <p className="text-purple-100 text-lg">Register patient with previous date entry</p>
+            </div>
           </div>
+          {lastPatient && (
+            <div className="bg-purple-800 bg-opacity-50 rounded-lg p-4 text-right">
+              <p className="text-purple-200 text-sm mb-1">Last Enrolled Patient</p>
+              <p className="text-white font-semibold">{lastPatient.cro}</p>
+              <p className="text-purple-100 text-sm">{lastPatient.patient_name}</p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -231,6 +266,20 @@ export default function BackEntryPatientRegistration() {
       </div>
 
       <form onSubmit={handleSubmit} className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+        <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="flex items-center space-x-2">
+            <span className="text-sm font-medium text-blue-800">Generated CRO:</span>
+            <span className="text-lg font-bold text-blue-900">{croNumber}</span>
+            <button
+              type="button"
+              onClick={generateCRO}
+              className="text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700"
+            >
+              Regenerate
+            </button>
+          </div>
+        </div>
+        
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Patient Information */}
           <div className="space-y-2">

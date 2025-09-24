@@ -64,6 +64,8 @@ export default function NewPatientRegistration() {
   const [selectedScans, setSelectedScans] = useState<Scan[]>([]);
   const [showUniId, setShowUniId] = useState(false);
   const [scanSearchTerm, setScanSearchTerm] = useState('');
+  const [errors, setErrors] = useState<{[key: string]: string}>({});
+  const [lastPatient, setLastPatient] = useState<{cro: string, patient_name: string} | null>(null);
   
   const [formData, setFormData] = useState<FormData>({
     date: new Date().toLocaleDateString('en-GB'),
@@ -96,6 +98,7 @@ export default function NewPatientRegistration() {
     fetchHospitals();
     fetchDoctors();
     fetchScans();
+    fetchLastPatient();
     
     // Check for edit mode
     const urlParams = new URLSearchParams(window.location.search);
@@ -143,9 +146,21 @@ export default function NewPatientRegistration() {
     }
   };
 
+  const fetchLastPatient = async () => {
+    try {
+      const response = await fetch('/api/admin/patients/last-enrolled');
+      if (response.ok) {
+        const data = await response.json();
+        setLastPatient(data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching last patient:', error);
+    }
+  };
+
   const fetchPatientData = async (patientId: string) => {
     try {
-      const response = await fetch(`https://varahasdc.co.in/api/admin/patients/${patientId}`);
+      const response = await fetch(`/api/admin/patients/${patientId}`);
       if (response.ok) {
         const data = await response.json();
         const patient = data.data;
@@ -179,6 +194,11 @@ export default function NewPatientRegistration() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
     
     // Handle category change for ID requirement
     if (name === 'petient_type') {
@@ -224,19 +244,52 @@ export default function NewPatientRegistration() {
   };
 
   const validateStep = (step: number) => {
+    const newErrors: {[key: string]: string} = {};
+    
     if (step === 1) {
-      if (!formData.hospital_name || !formData.doctor_name || !formData.firstname) {
-        toast.error('Please fill all required fields in Step 1');
-        return false;
+      if (!formData.hospital_name) {
+        newErrors.hospital_name = 'Hospital Name is required';
+        toast.error('Please select Hospital Name');
+      }
+      if (!formData.doctor_name) {
+        newErrors.doctor_name = 'Doctor Name is required';
+        toast.error('Please select Doctor Name');
+      }
+      if (!formData.firstname.trim()) {
+        newErrors.firstname = 'Patient Name is required';
+        toast.error('Please enter Patient Name');
+      }
+      if (!formData.age.trim()) {
+        newErrors.age = 'Age is required';
+        toast.error('Please enter Age');
+      }
+      if (!formData.contact_number.trim()) {
+        newErrors.contact_number = 'Contact Number is required';
+        toast.error('Please enter Contact Number');
+      }
+      if (formData.contact_number && !/^[0-9]{10}$/.test(formData.contact_number)) {
+        newErrors.contact_number = 'Contact Number must be 10 digits';
+        toast.error('Contact Number must be 10 digits');
       }
     }
+    
     if (step === 2) {
       if (formData.type_of_scan.length === 0) {
+        newErrors.type_of_scan = 'At least one scan type is required';
         toast.error('Please select at least one scan type');
-        return false;
+      }
+      if (!formData.time) {
+        newErrors.time = 'Time In is required';
+        toast.error('Please select Time In');
+      }
+      if (!formData.time_in) {
+        newErrors.time_in = 'Time Out is required';
+        toast.error('Please select Time Out');
       }
     }
-    return true;
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const nextStep = () => {
@@ -273,8 +326,19 @@ export default function NewPatientRegistration() {
   return (
     <div className="p-6 space-y-6">
       <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 rounded-xl shadow-lg">
-        <h1 className="text-3xl font-bold mb-2">{isEditMode ? 'Edit Patient Registration' : 'New Patient Registration'}</h1>
-        <p className="text-blue-100 text-lg">{isEditMode ? 'Update patient information and scan details' : 'Complete patient enrollment and scan booking'}</p>
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">{isEditMode ? 'Edit Patient Registration' : 'New Patient Registration'}</h1>
+            <p className="text-blue-100 text-lg">{isEditMode ? 'Update patient information and scan details' : 'Complete patient enrollment and scan booking'}</p>
+          </div>
+          {lastPatient && !isEditMode && (
+            <div className="bg-blue-800 bg-opacity-50 rounded-lg p-4 text-right">
+              <p className="text-blue-200 text-sm mb-1">Last Enrolled Patient</p>
+              <p className="text-white font-semibold">{lastPatient.cro}</p>
+              <p className="text-blue-100 text-sm">{lastPatient.patient_name}</p>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="bg-white rounded-xl shadow-lg border border-gray-100">
@@ -335,7 +399,9 @@ export default function NewPatientRegistration() {
                     name="hospital_name"
                     value={formData.hospital_name}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+                      errors.hospital_name ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
+                    }`}
                     required
                   >
                     <option value="">Select Hospital</option>
@@ -343,6 +409,7 @@ export default function NewPatientRegistration() {
                       <option key={hospital.h_id} value={hospital.h_id}>{hospital.h_name}</option>
                     ))}
                   </select>
+                  {errors.hospital_name && <p className="text-red-500 text-sm mt-1">{errors.hospital_name}</p>}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Doctor Name <span className="text-red-500">*</span></label>
@@ -350,7 +417,9 @@ export default function NewPatientRegistration() {
                     name="doctor_name"
                     value={formData.doctor_name}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+                      errors.doctor_name ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
+                    }`}
                     required
                   >
                     <option value="">Select Doctor</option>
@@ -358,6 +427,7 @@ export default function NewPatientRegistration() {
                       <option key={doctor.d_id} value={doctor.d_id}>{doctor.dname}</option>
                     ))}
                   </select>
+                  {errors.doctor_name && <p className="text-red-500 text-sm mt-1">{errors.doctor_name}</p>}
                 </div>
               </div>
 
@@ -384,24 +454,30 @@ export default function NewPatientRegistration() {
                     name="firstname"
                     value={formData.firstname}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+                      errors.firstname ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
+                    }`}
                     placeholder="Please enter your First name"
                     required
                   />
+                  {errors.firstname && <p className="text-red-500 text-sm mt-1">{errors.firstname}</p>}
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Age</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Age <span className="text-red-500">*</span></label>
                   <input
                     type="text"
                     name="age"
                     value={formData.age}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+                      errors.age ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
+                    }`}
                     placeholder="Age"
                   />
+                  {errors.age && <p className="text-red-500 text-sm mt-1">{errors.age}</p>}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">In (Year/Month/Days)</label>
@@ -510,15 +586,19 @@ export default function NewPatientRegistration() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Contact Number</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Contact Number <span className="text-red-500">*</span></label>
                   <input
                     type="text"
                     name="contact_number"
                     value={formData.contact_number}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+                      errors.contact_number ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
+                    }`}
                     placeholder="Please enter your contact Number"
+                    maxLength={10}
                   />
+                  {errors.contact_number && <p className="text-red-500 text-sm mt-1">{errors.contact_number}</p>}
                 </div>
               </div>
             </div>
@@ -553,6 +633,7 @@ export default function NewPatientRegistration() {
                     </label>
                   ))}
                 </div>
+                {errors.type_of_scan && <p className="text-red-500 text-sm mt-1">{errors.type_of_scan}</p>}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
@@ -567,12 +648,14 @@ export default function NewPatientRegistration() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Time In</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Time In <span className="text-red-500">*</span></label>
                   <select
                     name="time"
                     value={formData.time}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+                      errors.time ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
+                    }`}
                   >
                     <option value="">Select Time</option>
                     <option value="08:00">08:00 AM</option>
@@ -595,14 +678,17 @@ export default function NewPatientRegistration() {
                     <option value="16:30">04:30 PM</option>
                     <option value="17:00">05:00 PM</option>
                   </select>
+                  {errors.time && <p className="text-red-500 text-sm mt-1">{errors.time}</p>}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Time Out</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Time Out <span className="text-red-500">*</span></label>
                   <select
                     name="time_in"
                     value={formData.time_in}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+                      errors.time_in ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
+                    }`}
                   >
                     <option value="">Select Time</option>
                     <option value="08:30">08:30 AM</option>
@@ -625,6 +711,7 @@ export default function NewPatientRegistration() {
                     <option value="17:00">05:00 PM</option>
                     <option value="17:30">05:30 PM</option>
                   </select>
+                  {errors.time_in && <p className="text-red-500 text-sm mt-1">{errors.time_in}</p>}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Amount</label>
