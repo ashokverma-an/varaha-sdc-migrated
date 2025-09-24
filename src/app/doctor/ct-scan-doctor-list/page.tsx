@@ -173,10 +173,10 @@ export default function CTScanDoctorList() {
             <tbody className="bg-white divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center">
+                  <td colSpan={7} className="px-6 py-12 text-center">
                     <div className="flex items-center justify-center space-x-2">
                       <RefreshCw className="h-5 w-5 animate-spin text-blue-500" />
-                      <span className="text-gray-500">Loading corridor data...</span>
+                      <span className="text-gray-500">Loading patient data...</span>
                     </div>
                   </td>
                 </tr>

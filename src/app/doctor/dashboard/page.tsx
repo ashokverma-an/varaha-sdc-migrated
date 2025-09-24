@@ -119,7 +119,7 @@ export default function DoctorDashboard() {
             <div className="p-2 rounded-lg bg-blue-500">
               <Stethoscope className="h-5 w-5 text-white" />
             </div>
-            <span className="font-medium text-gray-700">Doctor List</span>
+            <span className="font-medium text-gray-700">CT Scan Doctor List</span>
           </a>
         </div>
       </div>
