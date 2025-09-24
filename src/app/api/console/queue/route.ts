@@ -3,9 +3,18 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const date = searchParams.get('date') || new Date().toISOString().split('T')[0];
+    const page = searchParams.get('page') || '1';
+    const limit = searchParams.get('limit') || '10';
+    const search = searchParams.get('search') || '';
     
-    const response = await fetch(`https://varahasdc.co.in/api/console/queue?date=${date}`, {
+    // Build query string for external API
+    const queryParams = new URLSearchParams({
+      page,
+      limit,
+      ...(search && { search })
+    });
+    
+    const response = await fetch(`https://varahasdc.co.in/api/console/queue?${queryParams}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -26,7 +35,11 @@ export async function GET(request: NextRequest) {
       details: error.message,
       stack: error.stack,
       query: Object.fromEntries(searchParams),
-      fetchUrl: `https://varahasdc.co.in/api/console/queue?date=${searchParams.get('date') || new Date().toISOString().split('T')[0]}`,
+      fetchUrl: `https://varahasdc.co.in/api/console/queue?${new URLSearchParams({
+        page: searchParams.get('page') || '1',
+        limit: searchParams.get('limit') || '10',
+        ...(searchParams.get('search') && { search: searchParams.get('search')! })
+      })}`,
       errorType: 'External API Error'
     }, { status: 500 });
   }
