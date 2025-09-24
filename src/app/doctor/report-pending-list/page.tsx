@@ -352,7 +352,6 @@ export default function ReportPendingList() {
             </button>
           </div>
         )}
-        </div>
       </div>
     </div>
   );

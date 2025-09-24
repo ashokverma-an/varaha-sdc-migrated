@@ -364,7 +364,6 @@ export default function ViewReport() {
             </button>
           </div>
         )}
-        </div>
       </div>
     </div>
   );
