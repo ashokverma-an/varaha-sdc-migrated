@@ -26,7 +26,7 @@ interface PatientData {
   } | null;
 }
 
-export default function ConsolePatient({ params }: { params: { cro: string } }) {
+export default function ConsolePatient({ params }: { params: Promise<{ cro: string }> }) {
   const toast = useToastContext();
   const router = useRouter();
   const [patientData, setPatientData] = useState<PatientData | null>(null);
@@ -34,6 +34,7 @@ export default function ConsolePatient({ params }: { params: { cro: string } }) 
   const [startTime, setStartTime] = useState('');
   const [stopTime, setStopTime] = useState('');
   const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString());
+  const [cro, setCro] = useState('');
   const [formData, setFormData] = useState({
     examination_id: '',
     number_scan: '',
@@ -45,15 +46,19 @@ export default function ConsolePatient({ params }: { params: { cro: string } }) 
     remark: ''
   });
 
-  const cro = decodeURIComponent(params.cro);
+  useEffect(() => {
+    params.then(p => setCro(decodeURIComponent(p.cro)));
+  }, [params]);
 
   useEffect(() => {
-    fetchPatientData();
+    if (cro) {
+      fetchPatientData();
+    }
     const timer = setInterval(() => {
       setCurrentTime(new Date().toLocaleTimeString());
     }, 1000);
     return () => clearInterval(timer);
-  }, []);
+  }, [cro]);
 
   const fetchPatientData = async () => {
     setLoading(true);
