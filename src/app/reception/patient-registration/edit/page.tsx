@@ -94,25 +94,30 @@ export default function PatientRegistrationEdit() {
     const status = patient.scan_status;
     
     let buttonText = '';
-    const buttonClass = 'btn btn-info';
     let disabled = isDue;
+    let buttonColor = 'bg-blue-600 hover:bg-blue-700';
 
     switch (status) {
       case 0:
         buttonText = 'Awaiting For Process';
+        buttonColor = 'bg-blue-600 hover:bg-blue-700';
         break;
       case 2:
         buttonText = 'Stand In Corridor Queue';
         disabled = true;
+        buttonColor = 'bg-gray-500';
         break;
       case 3:
         buttonText = 'Recall';
+        buttonColor = 'bg-orange-600 hover:bg-orange-700';
         break;
       case 4:
         buttonText = 'Pending';
+        buttonColor = 'bg-yellow-600 hover:bg-yellow-700';
         break;
       default:
         buttonText = 'Unknown Status';
+        buttonColor = 'bg-gray-600';
     }
 
     if (status === 2) {
@@ -123,7 +128,9 @@ export default function PatientRegistrationEdit() {
       <button
         onClick={() => !disabled && handleSendTo(patient)}
         disabled={disabled}
-        className={`px-3 py-1 rounded text-sm ${disabled ? 'bg-gray-400 text-gray-600 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
+        className={`px-2 py-1 rounded text-xs font-medium text-white ${
+          disabled ? 'bg-gray-400 cursor-not-allowed' : buttonColor
+        } transition-colors`}
       >
         {buttonText}
       </button>
@@ -162,18 +169,18 @@ export default function PatientRegistrationEdit() {
         <p className="text-blue-100 text-lg">Manage and edit registered patient information</p>
       </div>
 
-      <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+      <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-300">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Search Patient to Edit</h3>
+          <h3 className="text-lg font-medium text-black mb-2">Search Patient to Edit</h3>
           <div className="flex items-center space-x-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5" />
               <input
                 type="text"
                 placeholder="Search by CRO or patient name..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="pl-10 pr-4 py-2 border border-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black bg-white"
               />
             </div>
             <button
@@ -187,49 +194,51 @@ export default function PatientRegistrationEdit() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 shadow-lg">
-          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-            <h3 className="text-lg font-semibold text-gray-900">Registered Patient List</h3>
+        <div className="bg-white rounded-lg border border-gray-300 shadow-lg">
+          <div className="px-6 py-4 border-b border-gray-300 bg-white">
+            <h3 className="text-lg font-semibold text-black">Registered Patient List</h3>
           </div>
           
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
+            <table className="w-full border-collapse border border-gray-400">
               <thead>
                 <tr className="bg-black text-white">
-                  <th className="border border-gray-300 px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider">S. No.</th>
-                  <th className="border border-gray-300 px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider">CRO No.</th>
-                  <th className="border border-gray-300 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Name</th>
-                  <th className="border border-gray-300 px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider">Amount Status</th>
-                  <th className="border border-gray-300 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Doctor Name</th>
-                  <th className="border border-gray-300 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Hospital Name</th>
-                  <th className="border border-gray-300 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Actions</th>
+                  <th className="border border-gray-400 px-3 py-2 text-center text-xs font-bold uppercase">S. No.</th>
+                  <th className="border border-gray-400 px-3 py-2 text-center text-xs font-bold uppercase">CRO No.</th>
+                  <th className="border border-gray-400 px-3 py-2 text-left text-xs font-bold uppercase">Name</th>
+                  <th className="border border-gray-400 px-3 py-2 text-center text-xs font-bold uppercase">Amount Status</th>
+                  <th className="border border-gray-400 px-3 py-2 text-left text-xs font-bold uppercase">Doctor Name</th>
+                  <th className="border border-gray-400 px-3 py-2 text-left text-xs font-bold uppercase">Hospital Name</th>
+                  <th className="border border-gray-400 px-3 py-2 text-left text-xs font-bold uppercase">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-white">
                 {paginatedPatients.map((patient, index) => (
-                  <tr key={patient.patient_id} className="hover:bg-gray-50 border-b border-gray-200">
-                    <td className="border border-gray-300 px-4 py-3 text-center text-sm">{startIndex + index + 1}</td>
-                    <td className="border border-gray-300 px-4 py-3 text-center text-sm font-medium">{patient.cro}</td>
-                    <td className="border border-gray-300 px-4 py-3 text-sm font-semibold">{patient.pre}{patient.patient_name}</td>
-                    <td className="border border-gray-300 px-4 py-3 text-center text-sm">{getAmountStatus(patient)}</td>
-                    <td className="border border-gray-300 px-4 py-3 text-sm">{patient.dname || '-'}</td>
-                    <td className="border border-gray-300 px-4 py-3 text-sm">{patient.h_name || '-'}</td>
-                    <td className="border border-gray-300 px-4 py-3 text-sm">
-                      <div className="flex flex-col space-y-2">
-                        {getStatusButton(patient)}
+                  <tr key={patient.patient_id} className="hover:bg-gray-100 even:bg-gray-50">
+                    <td className="border border-gray-400 px-3 py-2 text-center text-sm text-black">{startIndex + index + 1}</td>
+                    <td className="border border-gray-400 px-3 py-2 text-center text-sm font-semibold text-black">{patient.cro}</td>
+                    <td className="border border-gray-400 px-3 py-2 text-sm font-semibold text-black">{patient.pre}{patient.patient_name}</td>
+                    <td className="border border-gray-400 px-3 py-2 text-center text-sm">{getAmountStatus(patient)}</td>
+                    <td className="border border-gray-400 px-3 py-2 text-sm text-black">{patient.dname || '-'}</td>
+                    <td className="border border-gray-400 px-3 py-2 text-sm text-black">{patient.h_name || '-'}</td>
+                    <td className="border border-gray-400 px-3 py-2 text-sm">
+                      <div className="flex flex-col space-y-1">
+                        <div className="mb-1">
+                          {getStatusButton(patient)}
+                        </div>
                         <div className="flex space-x-1 justify-center">
                           <a href={`/reception/patient-registration/new?edit=${patient.patient_id}`}>
-                            <button className="p-1 text-blue-600 hover:bg-blue-100 rounded border border-blue-300" title="Edit Client">
-                              <Edit className="h-4 w-4" />
+                            <button className="p-1 text-blue-600 hover:bg-blue-100 rounded border border-blue-300 text-xs" title="Edit Client">
+                              <Edit className="h-3 w-3" />
                             </button>
                           </a>
                           <a href={`/reception/patient-registration/payment/${patient.patient_id}`}>
-                            <button className="p-1 text-green-600 hover:bg-green-100 rounded border border-green-300" title="View Payment Detail">
-                              <FileText className="h-4 w-4" />
+                            <button className="p-1 text-green-600 hover:bg-green-100 rounded border border-green-300 text-xs" title="View Payment Detail">
+                              <FileText className="h-3 w-3" />
                             </button>
                           </a>
-                          <button className="p-1 text-red-600 hover:bg-red-100 rounded border border-red-300" title="View Invoice">
-                            <Eye className="h-4 w-4" />
+                          <button className="p-1 text-red-600 hover:bg-red-100 rounded border border-red-300 text-xs" title="View Invoice">
+                            <Eye className="h-3 w-3" />
                           </button>
                         </div>
                       </div>
@@ -241,10 +250,10 @@ export default function PatientRegistrationEdit() {
           </div>
 
           {paginatedPatients.length === 0 && (
-            <div className="text-center py-12">
-              <User className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No Patients Found</h3>
-              <p className="text-gray-500">
+            <div className="text-center py-12 bg-white">
+              <User className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-black mb-2">No Patients Found</h3>
+              <p className="text-black">
                 {loading ? 'Loading patients...' : 'No registered patients found for today.'}
               </p>
             </div>
@@ -252,25 +261,25 @@ export default function PatientRegistrationEdit() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-              <div className="text-sm text-gray-700">
+            <div className="px-6 py-4 border-t border-gray-400 bg-white flex items-center justify-between">
+              <div className="text-sm text-black">
                 Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredPatients.length)} of {filteredPatients.length}
               </div>
               <div className="flex space-x-2">
                 <button
                   onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                   disabled={currentPage === 1}
-                  className="px-3 py-1 border border-gray-300 rounded disabled:opacity-50"
+                  className="px-3 py-1 border border-gray-400 rounded disabled:opacity-50 text-black bg-white hover:bg-gray-100"
                 >
                   Previous
                 </button>
-                <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded">
+                <span className="px-3 py-1 bg-blue-600 text-white rounded font-medium">
                   {currentPage} of {totalPages}
                 </span>
                 <button
                   onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                   disabled={currentPage === totalPages}
-                  className="px-3 py-1 border border-gray-300 rounded disabled:opacity-50"
+                  className="px-3 py-1 border border-gray-400 rounded disabled:opacity-50 text-black bg-white hover:bg-gray-100"
                 >
                   Next
                 </button>
