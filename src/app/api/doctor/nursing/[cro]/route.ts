@@ -33,6 +33,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     });
     
   } catch (error) {
+    const { cro } = await params;
+    const decodedCro = decodeURIComponent(cro);
     console.error('Nursing patient detail API error:', error);
     return NextResponse.json({ 
       success: false,

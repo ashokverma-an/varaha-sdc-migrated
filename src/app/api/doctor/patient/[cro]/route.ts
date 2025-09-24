@@ -33,14 +33,16 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     });
     
   } catch (error) {
+    const { cro } = await params;
+    const decodedCro = decodeURIComponent(cro);
     console.error('Patient detail API error:', error);
     return NextResponse.json({ 
       success: false,
       error: 'Failed to fetch patient details',
       details: error instanceof Error ? error.message : String(error),
       requestUrl: request.url,
-      backendUrl: `https://varahasdc.co.in/api/doctor/patient/${encodeURIComponent(decodeURIComponent(cro))}`,
-      cro: decodeURIComponent(cro)
+      backendUrl: `https://varahasdc.co.in/api/doctor/patient/${encodeURIComponent(decodedCro)}`,
+      cro: decodedCro
     }, { status: 500 });
   }
 }

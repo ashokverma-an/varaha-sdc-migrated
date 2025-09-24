@@ -166,16 +166,12 @@ export default function NursingDetail() {
             <span>${patient.address || '-'}</span>
           </div>
           <div class="row">
-            <span class="label">Hospital:</span>
-            <span>${patient.hospital_name || '-'}</span>
+            <span class="label">Contact:</span>
+            <span>${patient.contact_number || '-'}</span>
           </div>
           <div class="row">
-            <span class="label">Doctor:</span>
-            <span>${patient.doctor_name || '-'}</span>
-          </div>
-          <div class="row">
-            <span class="label">Scan Type:</span>
-            <span>${patient.scan_name || '-'}</span>
+            <span class="label">Category:</span>
+            <span>${patient.category || '-'}</span>
           </div>
           <div class="row">
             <span class="label">Date:</span>
@@ -183,13 +179,12 @@ export default function NursingDetail() {
           </div>
         </div>
         
-        ${patient.remark ? `
+        ${patient.n_patient_ct_remark ? `
         <div class="report-section">
-          <h3>Medical Report</h3>
-          <p>${patient.remark}</p>
-          <div style="margin-top: 15px;">
-            <strong>Report Date:</strong> ${patient.report_date || new Date().toLocaleDateString()}
-          </div>
+          <h3>CT Scan Report</h3>
+          <p><strong>CT Scan:</strong> ${patient.n_patient_ct}</p>
+          <p><strong>Report Date:</strong> ${patient.n_patient_ct_report_date || '-'}</p>
+          <p><strong>Remark:</strong> ${patient.n_patient_ct_remark}</p>
         </div>
         ` : ''}
         
