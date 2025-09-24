@@ -1,11 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Clock, Eye, Search, Download } from 'lucide-react';
-import Link from 'next/link';
+import { Eye, Search, Download, Calendar, Filter } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
-interface PendingReport {
+interface CompletedReport {
   patient_id: number;
   cro: string;
   patient_name: string;
@@ -17,30 +16,34 @@ interface PendingReport {
   hospital_name: string;
   date: string;
   allot_date: string;
-  c_status: number;
+  amount: number;
+  category: string;
   remark: string;
+  c_status: number;
+  added_on: string;
 }
 
-export default function ReportPendingList() {
-  const [reports, setReports] = useState<PendingReport[]>([]);
+export default function ViewReport() {
+  const [reports, setReports] = useState<CompletedReport[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [dateFilter, setDateFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState('pending');
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
 
   useEffect(() => {
-    fetchPendingReports();
+    fetchCompletedReports();
   }, []);
 
-  const fetchPendingReports = async () => {
+  const fetchCompletedReports = async () => {
     try {
-      const response = await fetch('/api/doctor/pending-patients');
+      const response = await fetch('/api/doctor/completed-reports');
       if (response.ok) {
         const data = await response.json();
         setReports(data.data || []);
       }
     } catch {
-      console.error('Error fetching pending reports');
+      console.error('Error fetching completed reports');
     } finally {
       setLoading(false);
     }
@@ -78,11 +81,18 @@ export default function ReportPendingList() {
     
     const matchesDate = !dateFilter || report.date === dateFilter;
     
-    const matchesStatus = statusFilter === 'all' || 
-                         (statusFilter === 'pending' && (report.c_status === 0 || report.c_status === null));
+    let matchesDateRange = true;
+    if (fromDate && toDate) {
+      const reportDate = new Date(report.date);
+      const from = new Date(fromDate);
+      const to = new Date(toDate);
+      matchesDateRange = reportDate >= from && reportDate <= to;
+    }
     
-    return matchesSearch && matchesDate && matchesStatus;
+    return matchesSearch && matchesDate && matchesDateRange;
   });
+
+  const totalAmount = filteredReports.reduce((sum, report) => sum + (report.amount || 0), 0);
 
   const exportToExcel = () => {
     const exportData = filteredReports.map((report, index) => ({
@@ -97,37 +107,58 @@ export default function ReportPendingList() {
       'Scan Type': report.scan_name || '-',
       'Date': formatDate(report.date),
       'Allot Date': formatDate(report.allot_date),
-      'Status': report.c_status === 1 ? 'Completed' : 'Pending',
-      'Remark': report.remark || '-'
+      'Amount': report.amount || 0,
+      'Category': report.category || '-',
+      'Remark': report.remark || '-',
+      'Report Date': formatDate(report.added_on)
     }));
+
+    // Add total row
+    exportData.push({
+      'S.No': '' as any,
+      'CRO Number': '',
+      'Patient Name': '',
+      'Age': '' as any,
+      'Gender': '',
+      'Mobile': '',
+      'Doctor Name': '',
+      'Hospital Name': '',
+      'Scan Type': '',
+      'Date': '',
+      'Allot Date': 'TOTAL',
+      'Amount': totalAmount,
+      'Category': '',
+      'Remark': '',
+      'Report Date': ''
+    });
 
     const ws = XLSX.utils.json_to_sheet(exportData);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Pending Reports');
+    XLSX.utils.book_append_sheet(wb, ws, 'Completed Reports');
     
-    const fileName = `pending_reports_${new Date().toISOString().split('T')[0]}.xlsx`;
+    const fileName = `completed_reports_${new Date().toISOString().split('T')[0]}.xlsx`;
     XLSX.writeFile(wb, fileName);
   };
 
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900">Report Pending List</h1>
+        <h1 className="text-3xl font-bold text-gray-900">View Report</h1>
         <div className="flex items-center space-x-2">
-          <Clock className="h-6 w-6 text-orange-600" />
-          <span className="text-lg font-medium text-gray-700">Reports Awaiting Review</span>
+          <Eye className="h-6 w-6 text-green-600" />
+          <span className="text-lg font-medium text-gray-700">Completed Reports</span>
         </div>
       </div>
 
       <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
           <div>
             <input
               type="text"
               placeholder="Search by CRO or Patient Name"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
             />
           </div>
           
@@ -136,26 +167,35 @@ export default function ReportPendingList() {
               type="date"
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
             />
           </div>
           
           <div>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-            >
-              <option value="pending">Pending Only</option>
-              <option value="all">All Reports</option>
-            </select>
+            <input
+              type="date"
+              placeholder="From Date"
+              value={fromDate}
+              onChange={(e) => setFromDate(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            />
+          </div>
+          
+          <div>
+            <input
+              type="date"
+              placeholder="To Date"
+              value={toDate}
+              onChange={(e) => setToDate(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            />
           </div>
           
           <div className="flex space-x-2">
             <button
-              onClick={fetchPendingReports}
+              onClick={fetchCompletedReports}
               disabled={loading}
-              className="flex items-center space-x-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors disabled:opacity-50"
+              className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
             >
               <Search className="h-4 w-4" />
               <span>{loading ? 'Loading...' : 'Search'}</span>
@@ -164,7 +204,7 @@ export default function ReportPendingList() {
             <button
               onClick={exportToExcel}
               disabled={filteredReports.length === 0}
-              className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
             >
               <Download className="h-4 w-4" />
               <span>Excel</span>
@@ -172,14 +212,15 @@ export default function ReportPendingList() {
           </div>
         </div>
 
-        <div className="mb-4 text-sm text-gray-600">
-          Total Records: {filteredReports.length}
+        <div className="mb-4 flex justify-between items-center text-sm">
+          <span className="text-gray-600">Total Records: {filteredReports.length}</span>
+          <span className="text-gray-600 font-medium">Total Amount: ₹{totalAmount.toLocaleString()}</span>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full border-collapse border border-gray-300">
             <thead>
-              <tr className="bg-orange-50">
+              <tr className="bg-green-50">
                 <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">S.No</th>
                 <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">CRO Number</th>
                 <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Patient Name</th>
@@ -191,8 +232,10 @@ export default function ReportPendingList() {
                 <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Scan Type</th>
                 <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Date</th>
                 <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Allot Date</th>
-                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Status</th>
-                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Action</th>
+                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Amount</th>
+                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Category</th>
+                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Remark</th>
+                <th className="border border-gray-300 px-3 py-2 text-left text-sm font-medium">Report Date</th>
               </tr>
             </thead>
             <tbody>
@@ -211,32 +254,27 @@ export default function ReportPendingList() {
                   <td className="border border-gray-300 px-3 py-2 text-sm">{report.scan_name || '-'}</td>
                   <td className="border border-gray-300 px-3 py-2 text-sm">{formatDate(report.date)}</td>
                   <td className="border border-gray-300 px-3 py-2 text-sm">{formatDate(report.allot_date)}</td>
-                  <td className="border border-gray-300 px-3 py-2 text-sm">
-                    <span className={`px-2 py-1 rounded text-xs ${
-                      report.c_status === 1 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-orange-100 text-orange-800'
-                    }`}>
-                      {report.c_status === 1 ? 'Completed' : 'Pending'}
-                    </span>
-                  </td>
-                  <td className="border border-gray-300 px-3 py-2 text-sm">
-                    <Link
-                      href={`/doctor/nursing/${encodeURIComponent(report.cro)}`}
-                      className="inline-flex items-center space-x-1 px-3 py-1 bg-orange-600 text-white rounded hover:bg-orange-700 transition-colors text-xs"
-                    >
-                      <Eye className="h-3 w-3" />
-                      <span>Review</span>
-                    </Link>
-                  </td>
+                  <td className="border border-gray-300 px-3 py-2 text-sm">₹{(report.amount || 0).toLocaleString()}</td>
+                  <td className="border border-gray-300 px-3 py-2 text-sm">{report.category || '-'}</td>
+                  <td className="border border-gray-300 px-3 py-2 text-sm">{report.remark || '-'}</td>
+                  <td className="border border-gray-300 px-3 py-2 text-sm">{formatDate(report.added_on)}</td>
                 </tr>
               ))}
             </tbody>
+            {filteredReports.length > 0 && (
+              <tfoot>
+                <tr className="bg-gray-100 font-medium">
+                  <td colSpan={11} className="border border-gray-300 px-3 py-2 text-sm text-right">TOTAL:</td>
+                  <td className="border border-gray-300 px-3 py-2 text-sm">₹{totalAmount.toLocaleString()}</td>
+                  <td colSpan={3} className="border border-gray-300 px-3 py-2 text-sm"></td>
+                </tr>
+              </tfoot>
+            )}
           </table>
           
           {filteredReports.length === 0 && (
             <div className="text-center py-8 text-gray-500">
-              {loading ? 'Loading pending reports...' : 'No pending reports found'}
+              {loading ? 'Loading completed reports...' : 'No completed reports found'}
             </div>
           )}
         </div>
