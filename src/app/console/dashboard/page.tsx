@@ -32,7 +32,11 @@ export default function ConsoleDashboard() {
         setStats(data);
       }
     } catch (error) {
-      console.error('Error fetching stats:', error);
+      console.error('Error fetching console stats:', error);
+      if (error.response) {
+        const errorData = await error.response.json().catch(() => ({}));
+        console.error('Console stats API error:', errorData);
+      }
     } finally {
       setLoading(false);
     }

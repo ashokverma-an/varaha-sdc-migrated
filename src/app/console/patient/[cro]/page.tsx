@@ -69,7 +69,8 @@ export default function ConsolePatient({ params }: { params: Promise<{ cro: stri
         setPatientData(data.data);
       } else {
         const errorData = await response.json().catch(() => ({}));
-        toast.error(errorData.error || 'Failed to fetch patient data');
+        console.error('Console patient API error:', errorData);
+        toast.error(`API Error: ${errorData.error || 'Failed to fetch patient data'}. Details: ${errorData.details || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error fetching patient data:', error);

@@ -157,7 +157,9 @@ export default function RoleBasedSidebar({ userRole }: SidebarProps) {
       bgColor: 'bg-violet-50',
       menus: [
         { id: 'dashboard', label: 'Dashboard', icon: BarChart3, href: '/console/dashboard' },
-        { id: 'daily-report', label: 'Daily Report', icon: FileText, href: '/console/daily-report' }
+        { id: 'patient-queue', label: 'Patient In Queue', icon: Users, href: '/console' },
+        { id: 'queue-after', label: 'Patient Queue - After', icon: Clock, href: '/console/queue-after' },
+        { id: 'daily-report', label: 'Day Wise Report', icon: FileText, href: '/console/daily-report' }
       ]
     }
   };

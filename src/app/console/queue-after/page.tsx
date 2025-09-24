@@ -45,7 +45,8 @@ export default function ConsoleQueueAfter() {
         setTotalPages(Math.ceil((data.total || 0) / itemsPerPage));
       } else {
         const errorData = await response.json().catch(() => ({}));
-        toast.error(errorData.error || 'Failed to fetch patients');
+        console.error('Console queue-after API error:', errorData);
+        toast.error(`API Error: ${errorData.error || 'Failed to fetch patients'}. Details: ${errorData.details || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error fetching patients:', error);

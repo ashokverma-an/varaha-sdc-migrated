@@ -40,7 +40,8 @@ export default function ConsoleDailyReport() {
         setReports(data.data || []);
       } else {
         const errorData = await response.json().catch(() => ({}));
-        toast.error(errorData.error || 'Failed to fetch daily report');
+        console.error('Console daily report API error:', errorData);
+        toast.error(`API Error: ${errorData.error || 'Failed to fetch daily report'}. Details: ${errorData.details || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error fetching daily report:', error);
