@@ -183,12 +183,12 @@ export default function ReceptionDoctors() {
             <tbody>
               {paginatedDoctors.map((doctor, index) => (
                 <tr key={doctor.d_id} className="hover:bg-gray-50">
-                  <td className="border border-gray-300 px-4 py-2">{startIndex + index + 1}</td>
-                  <td className="border border-gray-300 px-4 py-2 font-medium">{doctor.dname}</td>
-                  <td className="border border-gray-300 px-4 py-2">{doctor.dage || '-'}</td>
-                  <td className="border border-gray-300 px-4 py-2">{doctor.d_gender || '-'}</td>
-                  <td className="border border-gray-300 px-4 py-2 text-center">{doctor.specialist || '-'}</td>
-                  <td className="border border-gray-300 px-4 py-2 text-center">{doctor.contact || '-'}</td>
+                  <td className="border border-gray-300 px-4 py-2 text-black">{startIndex + index + 1}</td>
+                  <td className="border border-gray-300 px-4 py-2 font-medium text-black">{doctor.dname}</td>
+                  <td className="border border-gray-300 px-4 py-2 text-black">{doctor.dage || '-'}</td>
+                  <td className="border border-gray-300 px-4 py-2 text-black">{doctor.d_gender || '-'}</td>
+                  <td className="border border-gray-300 px-4 py-2 text-center text-black">{doctor.specialist || '-'}</td>
+                  <td className="border border-gray-300 px-4 py-2 text-center text-black">{doctor.contact || '-'}</td>
                   <td className="border border-gray-300 px-4 py-2">
                     <div className="flex space-x-2">
                       <button onClick={() => handleEdit(doctor)} className="p-1 text-blue-600 hover:bg-blue-100 rounded">
@@ -240,11 +240,11 @@ export default function ReceptionDoctors() {
 
       {/* Simple Doctor Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg w-full max-w-md">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg w-full max-w-md shadow-2xl">
             <div className="bg-blue-600 text-white p-4 rounded-t-lg">
               <div className="flex justify-between items-center">
-                <h3 className="text-lg font-semibold">Doctor Detail</h3>
+                <h3 className="text-lg font-semibold text-white">Doctor Detail</h3>
                 <button onClick={() => setShowModal(false)} className="text-white hover:text-gray-200">
                   <X className="h-5 w-5" />
                 </button>
@@ -254,7 +254,7 @@ export default function ReceptionDoctors() {
             <div className="p-6">
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="form-group">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Doctor Name</label>
+                  <label className="block text-sm font-medium text-black mb-1">Doctor Name</label>
                   <input
                     type="text"
                     name="dname"
@@ -266,7 +266,7 @@ export default function ReceptionDoctors() {
                   />
                 </div>
                 <div className="form-group">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Age</label>
+                  <label className="block text-sm font-medium text-black mb-1">Age</label>
                   <input
                     type="text"
                     name="dage"
@@ -278,7 +278,7 @@ export default function ReceptionDoctors() {
                   />
                 </div>
                 <div className="form-group">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+                  <label className="block text-sm font-medium text-black mb-2">Gender</label>
                   <div className="flex space-x-4">
                     <label className="flex items-center">
                       <input
@@ -289,7 +289,7 @@ export default function ReceptionDoctors() {
                         onChange={handleInputChange}
                         className="mr-2"
                       />
-                      <span className="text-sm">Male</span>
+                      <span className="text-sm text-black">Male</span>
                     </label>
                     <label className="flex items-center">
                       <input
@@ -300,12 +300,12 @@ export default function ReceptionDoctors() {
                         onChange={handleInputChange}
                         className="mr-2"
                       />
-                      <span className="text-sm">Female</span>
+                      <span className="text-sm text-black">Female</span>
                     </label>
                   </div>
                 </div>
                 <div className="form-group">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Specialist</label>
+                  <label className="block text-sm font-medium text-black mb-1">Specialist</label>
                   <input
                     type="text"
                     name="specialist"
@@ -317,7 +317,7 @@ export default function ReceptionDoctors() {
                   />
                 </div>
                 <div className="form-group">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Clinic Name</label>
+                  <label className="block text-sm font-medium text-black mb-1">Clinic Name</label>
                   <input
                     type="text"
                     name="clinic"
@@ -329,7 +329,7 @@ export default function ReceptionDoctors() {
                   />
                 </div>
                 <div className="form-group">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Contact No.</label>
+                  <label className="block text-sm font-medium text-black mb-1">Contact No.</label>
                   <input
                     type="text"
                     name="contact"
@@ -341,7 +341,7 @@ export default function ReceptionDoctors() {
                   />
                 </div>
                 <div className="form-group">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Clinic Address</label>
+                  <label className="block text-sm font-medium text-black mb-1">Clinic Address</label>
                   <input
                     type="text"
                     name="clinic_add"
