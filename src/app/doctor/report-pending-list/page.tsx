@@ -33,7 +33,7 @@ export default function ReportPendingList() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
   const [exporting, setExporting] = useState(false);
-  const itemsPerPage = 20;
+  const itemsPerPage = 10;
 
   useEffect(() => {
     fetchPendingReports();
