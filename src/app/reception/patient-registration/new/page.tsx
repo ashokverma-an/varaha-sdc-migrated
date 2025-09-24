@@ -63,6 +63,7 @@ export default function NewPatientRegistration() {
   const [scans, setScans] = useState<Scan[]>([]);
   const [selectedScans, setSelectedScans] = useState<Scan[]>([]);
   const [showUniId, setShowUniId] = useState(false);
+  const [scanSearchTerm, setScanSearchTerm] = useState('');
   
   const [formData, setFormData] = useState<FormData>({
     date: new Date().toLocaleDateString('en-GB'),
@@ -108,10 +109,10 @@ export default function NewPatientRegistration() {
 
   const fetchHospitals = async () => {
     try {
-      const response = await fetch('https://varahasdc.co.in/api/admin/hospitals');
+      const response = await fetch('/api/hospitals');
       if (response.ok) {
         const data = await response.json();
-        setHospitals(data.data || []);
+        setHospitals(data || []);
       }
     } catch (error) {
       console.error('Error fetching hospitals:', error);
@@ -120,10 +121,10 @@ export default function NewPatientRegistration() {
 
   const fetchDoctors = async () => {
     try {
-      const response = await fetch('https://varahasdc.co.in/api/admin/doctors');
+      const response = await fetch('/api/doctors');
       if (response.ok) {
         const data = await response.json();
-        setDoctors(data.data || []);
+        setDoctors(data || []);
       }
     } catch (error) {
       console.error('Error fetching doctors:', error);
@@ -132,10 +133,10 @@ export default function NewPatientRegistration() {
 
   const fetchScans = async () => {
     try {
-      const response = await fetch('https://varahasdc.co.in/api/admin/scans');
+      const response = await fetch('/api/scans');
       if (response.ok) {
         const data = await response.json();
-        setScans(data.data || []);
+        setScans(data || []);
       }
     } catch (error) {
       console.error('Error fetching scans:', error);
@@ -222,9 +223,27 @@ export default function NewPatientRegistration() {
     setFormData(prev => ({ ...prev, due_amount: due.toString() }));
   };
 
+  const validateStep = (step: number) => {
+    if (step === 1) {
+      if (!formData.hospital_name || !formData.doctor_name || !formData.firstname) {
+        toast.error('Please fill all required fields in Step 1');
+        return false;
+      }
+    }
+    if (step === 2) {
+      if (formData.type_of_scan.length === 0) {
+        toast.error('Please select at least one scan type');
+        return false;
+      }
+    }
+    return true;
+  };
+
   const nextStep = () => {
-    if (currentStep < 3) {
-      setCurrentStep(currentStep + 1);
+    if (validateStep(currentStep)) {
+      if (currentStep < 3) {
+        setCurrentStep(currentStep + 1);
+      }
     }
   };
 
@@ -311,7 +330,7 @@ export default function NewPatientRegistration() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Hospital Name</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Hospital Name <span className="text-red-500">*</span></label>
                   <select
                     name="hospital_name"
                     value={formData.hospital_name}
@@ -326,7 +345,7 @@ export default function NewPatientRegistration() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Doctor Name</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Doctor Name <span className="text-red-500">*</span></label>
                   <select
                     name="doctor_name"
                     value={formData.doctor_name}
@@ -344,7 +363,7 @@ export default function NewPatientRegistration() {
 
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Patient Name</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Patient Name <span className="text-red-500">*</span></label>
                   <select
                     name="pre"
                     value={formData.pre}
@@ -509,9 +528,20 @@ export default function NewPatientRegistration() {
           {currentStep === 2 && (
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">Scan Type</label>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-60 overflow-y-auto border border-gray-200 rounded-md p-4">
-                  {scans.map(scan => (
+                <label className="block text-sm font-medium text-gray-700 mb-3">Scan Type <span className="text-red-500">*</span></label>
+                <div className="mb-4">
+                <input
+                  type="text"
+                  placeholder="Search scans..."
+                  value={scanSearchTerm}
+                  onChange={(e) => setScanSearchTerm(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-3"
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-60 overflow-y-auto border border-gray-200 rounded-md p-4">
+                  {scans.filter(scan => 
+                    scan.s_name.toLowerCase().includes(scanSearchTerm.toLowerCase())
+                  ).map(scan => (
                     <label key={scan.s_id} className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded">
                       <input
                         type="checkbox"
@@ -545,13 +575,25 @@ export default function NewPatientRegistration() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Select Time</option>
+                    <option value="08:00">08:00 AM</option>
+                    <option value="08:30">08:30 AM</option>
                     <option value="09:00">09:00 AM</option>
+                    <option value="09:30">09:30 AM</option>
                     <option value="10:00">10:00 AM</option>
+                    <option value="10:30">10:30 AM</option>
                     <option value="11:00">11:00 AM</option>
+                    <option value="11:30">11:30 AM</option>
                     <option value="12:00">12:00 PM</option>
+                    <option value="12:30">12:30 PM</option>
+                    <option value="13:00">01:00 PM</option>
+                    <option value="13:30">01:30 PM</option>
                     <option value="14:00">02:00 PM</option>
+                    <option value="14:30">02:30 PM</option>
                     <option value="15:00">03:00 PM</option>
+                    <option value="15:30">03:30 PM</option>
                     <option value="16:00">04:00 PM</option>
+                    <option value="16:30">04:30 PM</option>
+                    <option value="17:00">05:00 PM</option>
                   </select>
                 </div>
                 <div>
@@ -563,13 +605,25 @@ export default function NewPatientRegistration() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Select Time</option>
+                    <option value="08:30">08:30 AM</option>
+                    <option value="09:00">09:00 AM</option>
+                    <option value="09:30">09:30 AM</option>
                     <option value="10:00">10:00 AM</option>
+                    <option value="10:30">10:30 AM</option>
                     <option value="11:00">11:00 AM</option>
+                    <option value="11:30">11:30 AM</option>
                     <option value="12:00">12:00 PM</option>
+                    <option value="12:30">12:30 PM</option>
                     <option value="13:00">01:00 PM</option>
+                    <option value="13:30">01:30 PM</option>
+                    <option value="14:00">02:00 PM</option>
+                    <option value="14:30">02:30 PM</option>
                     <option value="15:00">03:00 PM</option>
+                    <option value="15:30">03:30 PM</option>
                     <option value="16:00">04:00 PM</option>
+                    <option value="16:30">04:30 PM</option>
                     <option value="17:00">05:00 PM</option>
+                    <option value="17:30">05:30 PM</option>
                   </select>
                 </div>
                 <div>

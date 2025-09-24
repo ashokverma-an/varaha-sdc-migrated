@@ -216,7 +216,10 @@ export default function PaymentStatus() {
       {/* Action Buttons */}
       <div className="flex justify-center space-x-4">
         <button
-          onClick={() => window.print()}
+          onClick={() => {
+            const printUrl = `https://varahasdc.co.in/sdc_admin/d_payment.php?cro=${paymentDetail.cro}&r_amount=0&d_amount=0`;
+            window.open(printUrl, '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
+          }}
           className="flex items-center space-x-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
           <Receipt className="h-5 w-5" />
