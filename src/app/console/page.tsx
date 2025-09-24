@@ -60,7 +60,7 @@ export default function ConsoleQueue() {
     } catch (error) {
       console.error('Error fetching patients:', error);
       console.log('Full error details:', error);
-      toast.error(`Error loading data: ${error.message || 'Unknown error'}`);
+      toast.error(`Error loading data: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setLoading(false);
     }
