@@ -13,10 +13,16 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
       if (response.status === 404) {
-        return NextResponse.json({ error: 'Patient not found' }, { status: 404 });
+        return NextResponse.json({ 
+          error: 'Patient not found',
+          details: errorText,
+          status: response.status,
+          url: response.url
+        }, { status: 404 });
       }
-      throw new Error('Failed to fetch patient details');
+      throw new Error(`HTTP ${response.status}: ${errorText}`);
     }
 
     const data = await response.json();
@@ -30,7 +36,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     console.error('Patient detail API error:', error);
     return NextResponse.json({ 
       success: false,
-      error: 'Failed to fetch patient details' 
+      error: 'Failed to fetch patient details',
+      details: error instanceof Error ? error.message : String(error),
+      requestUrl: request.url,
+      backendUrl: `https://varahasdc.co.in/api/doctor/patient/${encodeURIComponent(decodeURIComponent(cro))}`,
+      cro: decodeURIComponent(cro)
     }, { status: 500 });
   }
 }
