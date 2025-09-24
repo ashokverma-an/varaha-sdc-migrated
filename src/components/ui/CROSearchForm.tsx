@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Search, Printer, Receipt, CreditCard } from 'lucide-react';
+import { Search, Printer, CreditCard } from 'lucide-react';
 import { FormInput, FormButton } from './FormComponents';
 import ReceiptPrint from './ReceiptPrint';
 import { Toast, useToast } from './Toast';

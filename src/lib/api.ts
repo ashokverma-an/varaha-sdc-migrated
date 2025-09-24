@@ -1,6 +1,6 @@
 // API Configuration - Dynamic API base URL
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.API_BASE_URL || 'https://varahasdc.co.in/api';
-const USE_EXTERNAL_API = true; // Set to true to bypass local API routes
+
 
 // User credentials from database
 export const USER_CREDENTIALS = {

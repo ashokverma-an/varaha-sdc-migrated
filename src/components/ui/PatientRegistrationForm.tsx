@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Plus, Minus, Calculator } from 'lucide-react';
-import { FormInput, FormButton } from './FormComponents';
+import { X } from 'lucide-react';
+import { FormInput } from './FormComponents';
 import ReceiptPrint from './ReceiptPrint';
 
 interface PatientRegistrationFormProps {
@@ -74,7 +74,7 @@ export default function PatientRegistrationForm({ isOpen, onClose, onSubmit }: P
 
   useEffect(() => {
     calculateAmounts();
-  }, [formData.selectedScans, formData.discount, formData.receivedAmount, formData.category]);
+  }, [formData.selectedScans, formData.discount, formData.receivedAmount, formData.category, scanTypes, freeCategories]);
 
   const calculateAmounts = () => {
     const totalScanAmount = formData.selectedScans.reduce((sum, scanId) => {
