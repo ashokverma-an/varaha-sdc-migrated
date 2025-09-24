@@ -14,12 +14,29 @@ interface PatientDetail {
   mobile: string;
   address: string;
   date: string;
+  contact_number: string;
+  category: string;
+  scan_type: string;
+  n_patient_ct: string;
+  n_patient_ct_report_date: string;
+  n_patient_ct_remark: string;
+  ct_scan_doctor_id: number;
+}
+
+interface Scan {
+  s_id: number;
+  s_name: string;
+}
+
+interface Doctor {
+  id: number;
   doctor_name: string;
-  hospital_name: string;
-  scan_name: string;
-  c_status: number;
-  remark: string;
-  report_date: string;
+}
+
+interface NursingData {
+  patient: PatientDetail;
+  scans: Scan[];
+  doctors: Doctor[];
 }
 
 export default function NursingDetail() {
@@ -28,11 +45,13 @@ export default function NursingDetail() {
   const toast = useToastContext();
   const cro = decodeURIComponent(params.cro as string);
   
-  const [patient, setPatient] = useState<PatientDetail | null>(null);
+  const [nursingData, setNursingData] = useState<NursingData | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [reportDetail, setReportDetail] = useState('');
-  const [remark, setRemark] = useState('');
+  const [selectedDoctor, setSelectedDoctor] = useState<number>(0);
+  const [ctScan, setCTScan] = useState<string>('No');
+  const [ctReportDate, setCTReportDate] = useState<string>('');
+  const [ctRemark, setCTRemark] = useState<string>('');
 
   useEffect(() => {
     if (cro) {
@@ -43,11 +62,15 @@ export default function NursingDetail() {
   const fetchPatientDetail = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/doctor/patient/${encodeURIComponent(cro)}`);
+      const response = await fetch(`/api/doctor/nursing/${encodeURIComponent(cro)}`);
       if (response.ok) {
         const data = await response.json();
-        setPatient(data.data);
-        setRemark(data.data.remark || '');
+        setNursingData(data.data);
+        const patient = data.data.patient;
+        setSelectedDoctor(patient.ct_scan_doctor_id || 0);
+        setCTScan(patient.n_patient_ct || 'No');
+        setCTReportDate(patient.n_patient_ct_report_date || '');
+        setCTRemark(patient.n_patient_ct_remark || '');
       } else {
         toast.error('Patient not found');
         router.push('/doctor/ct-scan-doctor-list');
@@ -61,41 +84,39 @@ export default function NursingDetail() {
   };
 
   const handleSaveReport = async () => {
-    if (!remark.trim()) {
-      toast.error('Please enter a remark');
-      return;
-    }
-
     setSaving(true);
     try {
-      const response = await fetch('/api/doctor/add-report', {
+      const response = await fetch('/api/doctor/save-nursing', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           cro: cro,
-          report_detail: reportDetail,
-          remark: remark
+          ct_scan_doctor_id: selectedDoctor,
+          n_patient_ct: ctScan,
+          n_patient_ct_report_date: ctReportDate,
+          n_patient_ct_remark: ctRemark
         }),
       });
 
       if (response.ok) {
-        toast.success('Report saved successfully');
-        fetchPatientDetail(); // Refresh data
+        toast.success('Nursing data saved successfully');
+        fetchPatientDetail();
       } else {
-        toast.error('Failed to save report');
+        toast.error('Failed to save nursing data');
       }
     } catch (error) {
-      console.error('Error saving report:', error);
-      toast.error('Error saving report');
+      console.error('Error saving nursing data:', error);
+      toast.error('Error saving nursing data');
     } finally {
       setSaving(false);
     }
   };
 
   const handlePrint = () => {
-    if (!patient) return;
+    if (!nursingData) return;
+    const patient = nursingData.patient;
 
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
@@ -203,7 +224,7 @@ export default function NursingDetail() {
     );
   }
 
-  if (!patient) {
+  if (!nursingData) {
     return (
       <div className="p-6 space-y-6">
         <div className="text-center">
@@ -231,8 +252,8 @@ export default function NursingDetail() {
             <ArrowLeft className="h-6 w-6" />
           </button>
           <div>
-            <h1 className="text-3xl font-bold mb-2">Patient Details - {patient.cro}</h1>
-            <p className="text-emerald-100 text-lg">Medical Report & Nursing Details</p>
+            <h1 className="text-3xl font-bold mb-2">Patient Details - {nursingData.patient.cro}</h1>
+            <p className="text-emerald-100 text-lg">Nursing Details & CT Scan Information</p>
           </div>
         </div>
       </div>
@@ -248,123 +269,145 @@ export default function NursingDetail() {
           <div className="space-y-3">
             <div className="flex justify-between">
               <span className="text-gray-600">CRO Number:</span>
-              <span className="font-medium">{patient.cro}</span>
+              <span className="font-medium">{nursingData.patient.cro}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">Patient Name:</span>
-              <span className="font-medium">{patient.patient_name}</span>
+              <span className="font-medium">{nursingData.patient.patient_name}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">Age/Gender:</span>
-              <span className="font-medium">{patient.age}, {patient.gender}</span>
+              <span className="font-medium">{nursingData.patient.age}, {nursingData.patient.gender}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">Mobile:</span>
-              <span className="font-medium">{patient.mobile}</span>
+              <span className="font-medium">{nursingData.patient.mobile}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">Address:</span>
-              <span className="font-medium">{patient.address || '-'}</span>
+              <span className="text-gray-600">Contact:</span>
+              <span className="font-medium">{nursingData.patient.contact_number || '-'}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">Date:</span>
-              <span className="font-medium">{patient.date}</span>
+              <span className="text-gray-600">Category:</span>
+              <span className="font-medium">{nursingData.patient.category || '-'}</span>
             </div>
           </div>
         </div>
 
-        {/* Medical Information */}
+        {/* Scan Information */}
         <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
           <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
             <FileText className="h-5 w-5 mr-2" />
-            Medical Information
+            Scan Information
           </h2>
           
-          <div className="space-y-3">
-            <div className="flex justify-between">
-              <span className="text-gray-600">Hospital:</span>
-              <span className="font-medium">{patient.hospital_name || '-'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Doctor:</span>
-              <span className="font-medium">{patient.doctor_name || '-'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Scan Type:</span>
-              <span className="font-medium">{patient.scan_name || '-'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Status:</span>
-              <span className={`px-2 py-1 text-xs rounded-full ${
-                patient.c_status === 1 
-                  ? 'bg-green-100 text-green-800' 
-                  : 'bg-red-100 text-red-800'
-              }`}>
-                {patient.c_status === 1 ? 'Completed' : 'Pending'}
-              </span>
-            </div>
-            {patient.report_date && (
-              <div className="flex justify-between">
-                <span className="text-gray-600">Report Date:</span>
-                <span className="font-medium">{new Date(patient.report_date).toLocaleDateString()}</span>
+          <div className="space-y-4">
+            <div>
+              <h3 className="font-medium text-gray-900 mb-2">Scan Types</h3>
+              <div className="space-y-2">
+                {nursingData.scans.map((scan, index) => (
+                  <div key={scan.s_id} className="flex items-center space-x-2">
+                    <span className="text-sm text-gray-600">{index + 1}.</span>
+                    <span className="text-sm font-medium">{scan.s_name}</span>
+                  </div>
+                ))}
               </div>
-            )}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Report Section */}
+      {/* Nursing Form */}
       <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold text-gray-900 flex items-center">
             <FileText className="h-5 w-5 mr-2" />
-            Medical Report
+            Nursing Information
           </h2>
-          <button
-            onClick={handlePrint}
-            className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-          >
-            <Printer className="h-4 w-4" />
-            <span>Print Report</span>
-          </button>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Report Details
+              Doctor
             </label>
-            <textarea
-              value={reportDetail}
-              onChange={(e) => setReportDetail(e.target.value)}
-              rows={4}
+            <select
+              value={selectedDoctor}
+              onChange={(e) => setSelectedDoctor(Number(e.target.value))}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-              placeholder="Enter detailed report findings..."
+            >
+              <option value={0}>--Select Doctor--</option>
+              {nursingData.doctors.map((doctor) => (
+                <option key={doctor.id} value={doctor.id}>
+                  {doctor.doctor_name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Examination Retained - CT-Scan
+            </label>
+            <div className="flex space-x-4 mb-4">
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="ct"
+                  value="Yes"
+                  checked={ctScan === 'Yes'}
+                  onChange={(e) => setCTScan(e.target.value)}
+                  className="mr-2"
+                />
+                Yes
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="ct"
+                  value="No"
+                  checked={ctScan === 'No'}
+                  onChange={(e) => setCTScan(e.target.value)}
+                  className="mr-2"
+                />
+                No
+              </label>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              CT-Scan Report Date
+            </label>
+            <input
+              type="date"
+              value={ctReportDate}
+              onChange={(e) => setCTReportDate(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Remark *
+              CT-Scan Remark
             </label>
             <textarea
-              value={remark}
-              onChange={(e) => setRemark(e.target.value)}
-              rows={3}
+              value={ctRemark}
+              onChange={(e) => setCTRemark(e.target.value)}
+              rows={4}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-              placeholder="Enter medical remarks..."
-              required
+              placeholder="Enter CT-Scan remarks..."
             />
           </div>
 
           <div className="flex space-x-4">
             <button
               onClick={handleSaveReport}
-              disabled={saving || !remark.trim()}
+              disabled={saving}
               className="flex items-center space-x-2 px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Save className="h-5 w-5" />
-              <span>{saving ? 'Saving...' : 'Save Report'}</span>
+              <span>{saving ? 'Saving...' : 'Save Nursing Data'}</span>
             </button>
             
             <button
