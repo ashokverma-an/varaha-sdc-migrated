@@ -14,12 +14,16 @@ interface PatientDetail {
   mobile: string;
   address: string;
   date: string;
+  allot_date: string;
   contact_number: string;
   category: string;
   scan_type: string;
   n_patient_ct: string;
   n_patient_ct_report_date: string;
   n_patient_ct_remark: string;
+  n_patient_x_ray: string;
+  n_patient_x_ray_report_date: string;
+  n_patient_x_ray_remark: string;
   ct_scan_doctor_id: number;
 }
 
@@ -44,6 +48,15 @@ export default function NursingDetail() {
   const router = useRouter();
   const toast = useToastContext();
   const cro = decodeURIComponent(params.cro as string);
+
+  const formatDate = (dateString: string) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = date.toLocaleDateString('en-US', { month: 'short' });
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
   
   const [nursingData, setNursingData] = useState<NursingData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -52,6 +65,9 @@ export default function NursingDetail() {
   const [ctScan, setCTScan] = useState<string>('No');
   const [ctReportDate, setCTReportDate] = useState<string>('');
   const [ctRemark, setCTRemark] = useState<string>('');
+  const [xRay, setXRay] = useState<string>('No');
+  const [xRayReportDate, setXRayReportDate] = useState<string>('');
+  const [xRayRemark, setXRayRemark] = useState<string>('');
 
   useEffect(() => {
     if (cro) {
@@ -71,6 +87,9 @@ export default function NursingDetail() {
         setCTScan(patient.n_patient_ct || 'No');
         setCTReportDate(patient.n_patient_ct_report_date || '');
         setCTRemark(patient.n_patient_ct_remark || '');
+        setXRay(patient.n_patient_x_ray || 'No');
+        setXRayReportDate(patient.n_patient_x_ray_report_date || '');
+        setXRayRemark(patient.n_patient_x_ray_remark || '');
       } else {
         toast.error('Patient not found');
         router.push('/doctor/ct-scan-doctor-list');
@@ -96,7 +115,10 @@ export default function NursingDetail() {
           ct_scan_doctor_id: selectedDoctor,
           n_patient_ct: ctScan,
           n_patient_ct_report_date: ctReportDate,
-          n_patient_ct_remark: ctRemark
+          n_patient_ct_remark: ctRemark,
+          n_patient_x_ray: xRay,
+          n_patient_x_ray_report_date: xRayReportDate,
+          n_patient_x_ray_remark: xRayRemark
         }),
       });
 
@@ -286,6 +308,14 @@ export default function NursingDetail() {
               <span className="text-gray-600">Category:</span>
               <span className="font-medium">{nursingData.patient.category || '-'}</span>
             </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Date:</span>
+              <span className="font-medium">{formatDate(nursingData.patient.date)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Appointment Date:</span>
+              <span className="font-medium">{formatDate(nursingData.patient.allot_date)}</span>
+            </div>
           </div>
         </div>
 
@@ -392,6 +422,61 @@ export default function NursingDetail() {
               rows={4}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
               placeholder="Enter CT-Scan remarks..."
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              X-Ray Film
+            </label>
+            <div className="flex space-x-4 mb-4">
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="xray"
+                  value="Yes"
+                  checked={xRay === 'Yes'}
+                  onChange={(e) => setXRay(e.target.value)}
+                  className="mr-2"
+                />
+                Yes
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="xray"
+                  value="No"
+                  checked={xRay === 'No'}
+                  onChange={(e) => setXRay(e.target.value)}
+                  className="mr-2"
+                />
+                No
+              </label>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              X-Ray Report Date
+            </label>
+            <input
+              type="date"
+              value={xRayReportDate}
+              onChange={(e) => setXRayReportDate(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              X-Ray Film Remark
+            </label>
+            <textarea
+              value={xRayRemark}
+              onChange={(e) => setXRayRemark(e.target.value)}
+              rows={4}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+              placeholder="Enter X-Ray film remarks..."
             />
           </div>
 
